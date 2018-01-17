@@ -39,5 +39,6 @@
     "puzzle"
   ],
   "author": "Gabriel Roy-Lortie",
-  "license": "GPL-3.0-or-later"
+  "license": "GPL-3.0-or-later",
+  "repository": "https://github.com/gabrielrl/parcour-web.git"
 }
