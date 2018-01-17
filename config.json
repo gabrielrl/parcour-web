@@ -1,0 +1,4 @@
+{
+  "backend": "http://localhost:3000",
+  "parcours": "/api/v1/parcours"
+}
