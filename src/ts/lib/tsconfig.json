@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES5",
+    "typeRoots": [
+      "../../../node_modules/@types"
+    ],
+    "types": [ "lodash", "three" ],
+    "lib": [
+      "es6", "dom"
+    ],    
+    "outFile": "prkr.bundle.js",
+    "declaration": true
+  },
+  "include": [
+    "**/*.ts"
+  ]
+}
