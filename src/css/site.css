@@ -1,0 +1,112 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.right {
+  /* text-align: right; */
+  float: right;
+}
+
+body {
+  font-family: Roboto, sans-serif;
+  margin: 0;
+  padding: 0;
+  color: #fff;
+  background-color: #444;
+}
+
+input, textarea, select, button {
+  font-family: Roboto, sans-serif;
+}
+
+h2 {
+  font-size: 1.6em;
+  margin: 10px 0;
+}
+
+header {
+  padding: 80px 8px 8px 8px;
+}
+
+header h1 {
+  display: inline-block;
+  
+  font-size: 7em;
+  color: orangered;
+  text-shadow: 0px 2px 15px rgba(0, 0, 0, 0.75);
+}
+
+main {
+  padding: 8px;
+
+  color: #000;
+  background-color: #fff;
+}
+
+button {
+  color: black;
+  background-color: orangered;
+  border: none;
+  box-shadow: 0px 2px 10px 2px rgba(0,0,0,0.75);  
+  cursor: pointer;
+
+  padding: 4px;
+}
+
+button.big {
+  font-size: 1.6em;
+  padding: 10px;
+}
+
+.action {
+  color: orangered;
+  cursor: pointer;
+}
+
+.action:hover {
+  color: orange;
+}
+
+button:hover {
+  background-color: orange;
+}
+
+.prkr-list-item {
+  padding: 4px;
+  cursor: pointer;
+}
+.prkr-list-item:hover {
+  background-color: #ccc;
+}
+.prkr-list-item:hover .prkr-item-name {
+  color: orangered;
+}
+
+.prkr-item-name {
+  font-weight: 700;
+}
+
+.prkr-item-lastupdate {
+  display: inline-block;
+}
+
+.prkr-item-id {
+  display: inline-block;
+  color: #888;
+  margin-left: 20px;
+}
+
+.prkr-item-actions {
+  display: none;
+  font-size: 2em;
+}
+.prkr-list-item:hover .prkr-item-actions {
+  display: block;
+}
+
+footer {
+  margin-top: 20px;
+  padding: 8px;
+}

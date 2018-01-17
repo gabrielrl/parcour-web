@@ -1,0 +1,148 @@
+
+body {
+  font-family: Roboto, Arial, Helvetica, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.hidden { display: none; }
+
+#prkred-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  /* height: 40px; */
+  overflow: hidden;
+
+  color: #fff;
+  background-color: #444;
+}
+
+/*#prkred-left {
+  position: absolute;
+  top: 120px;
+  left: 0px;
+  width: 80px;
+  bottom: 0;
+  overflow: hidden;
+
+  color: #fff;
+  background-color: #444;
+}*/
+
+#prkred-main {
+  position: absolute;
+  top: 120px;
+  left: 0;
+  /*left: 80px;*/
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+}
+
+/*#prkred-toolbox {
+  color: #fff;
+  background-color: #444;
+}
+
+#prkred-toolbox button {
+  margin: 2px;
+  height: 36px;
+
+  color: #ccc;
+  background-color: transparent;
+  font-weight: bold;
+  border: none;
+}
+
+#prkred-toolbox button.active {
+  color: #000;
+  background-color: #eee;
+}
+
+#prkred-toolbox button.disabled {
+  opacity: 0.55;
+}*/
+
+/*.prkred-pal-item {
+  min-height: 40px;
+  padding: 8px;
+}
+
+.prkred-pal-item:hover {
+  background-color: #000;
+}
+
+div.prkred-pal-item.active {
+  color: #000;
+  background-color: #fff;  
+}*/
+
+.prkr-ribbon-tab-root {
+  height: 40px;
+  overflow-y: hidden;
+  overflow-x: auto;
+}
+.prkr-ribbon-content-root {
+  height: 80px;
+  overflow-y: hidden;
+  overflow-x: auto;
+}
+
+.prkr-ribbon-tab {
+  padding: 4px 8px;
+  line-height: 32px;
+  font-size: 28;
+  display: inline-block;
+  cursor: default;
+}
+.prkr-ribbon-tab:hover {
+  background-color: grey;
+}
+.prkr-ribbon-tab.selected {
+  color: black;
+  background-color: white;
+
+}
+
+.prkr-ribbon-item {
+  display: inline-block;
+  height: 80px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+.prkr-ribbon-item:hover {
+  background-color: grey;
+}
+.prkr-ribbon-item.selected {
+  color: black;
+  background-color: white;
+}
+/* .prkr-ribbon-item.disabled:hover {
+  background-color: #444;
+} */
+.prkr-ribbon-item.disabled {
+  color: #888;
+  background-color: #444;
+  cursor: default;
+}
+.prkr-ribbon-item.highlighted {
+  text-shadow: 0 0 10px orange;
+}
+
+.ribbon-item-image {
+  display: block;
+  height: 52px;
+  min-width: 50px;
+  text-align: center;
+  line-height: 52px;
+  font-size: 26px;
+}
+.ribbon-item-text {
+  text-align: center;
+  line-height: 10px;
+  font-size: 10px;  
+}

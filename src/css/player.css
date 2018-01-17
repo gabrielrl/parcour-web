@@ -1,0 +1,54 @@
+body {
+  font-family: "Roboto";
+}
+
+#prpl-main {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+}
+
+#prpl-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+
+  display: none;
+  
+  color: white;
+  background-color: rgba(0, 0, 0, 0.5);
+  text-shadow: 0 0 4px black, 0 0 1.69em black;
+}
+
+.prpl-overlay-caption {
+  margin: 4em auto 2em auto;
+  max-width: 600px;
+
+  font-size: 3em;
+  text-align: center;
+}
+
+.prpl-overlay-body {
+  margin: 1em auto;
+  max-width: 600px;
+
+  font-size: 1.5em;
+  /*text-align: center;*/
+}
+
+.prpl-overlay-footer {
+  margin: 1em auto;
+  max-width: 600px;
+
+  text-align: right;
+}
+
+.number {
+  color: #ff8c00;
+}
