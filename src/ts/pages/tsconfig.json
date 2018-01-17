@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES5",
+    "typeRoots": [
+      "../../../node_modules/@types"
+    ],
+    "types": [ "lodash", "jquery", "three" ],
+    "lib": [
+      "es6", "dom"
+    ]
+  },
+  "include": [
+    "**/*.ts"
+  ]
+}
