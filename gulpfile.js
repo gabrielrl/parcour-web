@@ -97,13 +97,25 @@ C.dep.fontAwesome = {
   dest: C.destBase + 'lib/fa'
 };
 C.dep.three = {
-  src: 'node_modules/three/build/*',
+  src: [
+    'node_modules/three/build/*',
+    'node_modules/three/examples/js/Detector.js',
+    'node_modules/three/examples/js/controls/OrbitControls.js'
+  ],
   dest: C.destBase + 'lib/js'
 };
 C.dep.ammoJs = {
   src: 'node_modules/ammo.js/ammo.js',
   dest: C.destBase + 'lib/js'
 };
+C.dep.stats = {
+  src: 'node_modules/stats.js/build/*',
+  dest: C.destBase + 'lib/js'
+}
+C.dep.datGui = {
+  src: 'node_modules/dat.gui/build/*',
+  dest: C.destBase + 'lib/js'
+}
 C.assets = {
   src: C.srcBase + 'assets/*.*',
   dest: C.destBase + 'assets'
@@ -223,10 +235,20 @@ gulp.task('dep-ammo', function() {
     .pipe(gulp.dest(C.dep.ammoJs.dest));
 });
 
+gulp.task('dep-stats', function() {
+  return gulp.src(C.dep.stats.src)
+    .pipe(gulp.dest(C.dep.stats.dest));
+});
+
+gulp.task('dep-datgui', function() {
+  return gulp.src(C.dep.datGui.src)
+    .pipe(gulp.dest(C.dep.datGui.dest));
+});
+
 
 gulp.task('dep', [
   'dep-lodash', 'dep-jquery', 'dep-uuid', 'dep-roboto-fontface', 'dep-font-awesome',
-  'dep-three', 'dep-ammo'
+  'dep-three', 'dep-ammo', 'dep-stats'
 ], function() {});
 
 // Assets

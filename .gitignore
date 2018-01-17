@@ -1,4 +1,9 @@
+# Dependencies
 node_modules/
 bower_components/
 
+# Generated files
 build/
+src/ts/defs/prkr.bundle.d.ts
+src/ts/defs/prkr-editor.bundle.d.ts
+src/ts/defs/prkr-player.bundle.d.ts
