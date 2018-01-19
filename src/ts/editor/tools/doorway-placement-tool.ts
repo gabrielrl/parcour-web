@@ -1,6 +1,5 @@
 /// <reference path="./doorway-helper.ts" />
 /// <reference path="../edit-steps/edit-step.ts" />
-/// <reference path="../edit-steps/add-doorway-step.ts" />
 
 namespace PRKR.Editor.Tools {
 
@@ -134,11 +133,6 @@ namespace PRKR.Editor.Tools {
           location: this._activeCandidate.localPosition,
           size: Model.Constants.DoorwaySize
         });
-        // let step = new AddDoorwayStep({
-        //   areaId: this._activeCandidate.area.id,
-        //   location: this._activeCandidate.localPosition,
-        //   size: Model.Constants.DoorwaySize
-        // });
         return step;
       }
       return undefined;

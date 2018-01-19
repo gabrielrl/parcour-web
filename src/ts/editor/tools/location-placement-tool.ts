@@ -2,8 +2,6 @@
 
 /// <reference path="../edit-steps/edit-step.ts" />
 /// <reference path="../edit-steps/move-to-step.ts" />
-/// <reference path="../edit-steps/add-location-step.ts" />
-
 
 /// <reference path="./tool.ts" />
 /// <reference path="./constants.ts" />
@@ -191,8 +189,6 @@ namespace PRKR.Editor.Tools {
           location: this._targetAreaLocation,
           kind: this._kind
         });
-        // return new AddLocationStep(
-        //   this._targetAreaId, this._targetAreaLocation, this._kind);
       }
     }
 
