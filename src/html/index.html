@@ -1,0 +1,134 @@
+<!doctype html>
+<html>
+<head>
+  <title>Parcour</title>
+
+  <link rel="stylesheet" href="css/site.css">
+
+  <link rel="stylesheet" href="fonts/roboto/css/roboto/roboto-fontface.css">
+
+  <link rel="stylesheet" href="lib/fa/css/font-awesome.min.css">
+  
+  <script src="lib/js/lodash.min.js"></script>
+  <script src="lib/js/jquery.min.js"></script>
+
+</head>
+<body>
+  <header>
+    <h1>Parcour</h1>
+    <div class="right">
+      <button id="build-button" class="big"><i class="fa fa-paint-brush"></i> CREATE</button>
+    </div>
+  </header>
+  <main>
+    <div>
+    </div>
+    <div>
+      <h2><i class="fa fa-gamepad"></i> PLAY</h2>
+      <div id="prkr-list-area"></div>
+    </div>
+  </main>
+  <footer>
+    <div>
+      The Parcour project<br />
+      By Gabriel Roy-Lortie
+    </div>
+  </footer>
+
+  <script>
+"use strict";
+
+// Fetch configuration
+var config = null;
+fetchConfiguration();
+
+$('#build-button').on('click', e => {
+  window.location.assign('./editor.html');
+});
+
+function fetchConfiguration() {
+  $.getJSON('./config.json').then(
+    (data, status, xhr) => {
+      config = data;
+      fetchParcours();
+    },
+    (xhr, status, err) => {
+      var message = 'Unable to fetch configuration.';
+      console.error(message);
+      alert(message);
+    }
+  );
+}
+
+function fetchParcours() {
+  var url = config.backend + config.parcours;
+  $.getJSON(url).then(
+    (data, status, xhr) => {
+      console.log({ data, status });
+      $('#prkr-list-area').append(parcourList(data));
+    },
+    (xhr, status, err) => {
+      console.error({ data, status, xhr });
+    }
+  );
+}
+
+function parcourList(parcours) {
+  var root = $('<div class="prkr-list" />');
+  parcours.forEach(p => {
+    var lastUpdate = new Date(p.updatedOn).toLocaleString();
+    var formattedId = p.id.substr(0, 4) + '&hellip;' + p.id.substr(p.id.length - 5);
+    var elem = $(`<div id="${p.id}" class="prkr-list-item">
+      <div class="prkr-item-actions right">
+        <span class="action edit-action"><i class="fa fa-edit"></i></span>
+        <span class="action delete-action"><i class="fa fa-minus-circle"></i></span>
+      </div>
+      <div class="prkr-item-name">${p.name}</div>
+      <div class="prkr-item-lastupdate">${lastUpdate}</div>
+      <div class="prkr-item-id">${formattedId}</div>
+    </div>`);
+    elem.on('click', e => playParcour(e, p.id));
+    elem.find('.edit-action').on('click', e => editParcour(e, p.id));
+    elem.find('.delete-action').on('click', e => deleteParcour(e, p.id));
+    root.append(elem);
+  });
+  return root;
+}
+
+function playParcour(event, id) {
+  event.preventDefault();  
+  window.open('./player.html?id=' + id);
+  return false;
+}
+
+function editParcour(event, id) {
+  event.preventDefault();  
+  window.location.assign('./editor.html?id=' + id);
+  return false;
+}
+
+function deleteParcour(event, id) {  
+  event.preventDefault();  
+  if (confirm(`Are you sure you want to delete the following parcour?\n
+    ID: ${id}`)) {
+    $.ajax({
+      method: 'DELETE',
+      url: config.backend + config.parcours + '/' + id
+    }).then(
+      (data, status, xhr) => {
+        console.info('Parcour deleted.');
+        console.info(data);
+        $('#' + id).remove();
+      },
+      (xhr, status, err) => {
+        console.error('Error deleting parcour.');
+        console.error(data);
+      }
+    );
+  }
+  return false;
+}
+
+  </script>
+</body>
+</html>

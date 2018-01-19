@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <title>Parcour Player</title>
+
+    <link rel="stylesheet" href="css/player.css">
+    <link rel="stylesheet" href="fonts/roboto/css/roboto/roboto-fontface.css">
+
+    <link rel="stylesheet" href="lib/fa/css/font-awesome.min.css">
+  </head>
+
+  <body>
+
+    <script src="lib/js/lodash.js"></script>
+    <script src="lib/js/jquery.min.js"></script>
+    <script src="lib/js/ammo.js"></script>
+    <script src="lib/js/three.min.js"></script>
+    <script src="lib/js/OrbitControls.js"></script>    
+    <script src="lib/js/Detector.js"></script>
+    <script src="lib/js/stats.min.js"></script>
+    <script src="js/prkr.bundle.js"></script>
+    <script src="js/prkr-player.bundle.js"></script>
+    <script>
+
+      if (!Detector.webgl) {
+        Detector.addGetWebGLMessage();
+      } else {
+
+        // Fetch configuration.
+        $.getJSON('./config.json').then(
+          (data, status, xhr) => {
+            var player = new PRKR.Player.ParcourPlayer(data);
+            player.init();
+            // The player will `run()` itself depending on the
+            // configuration and the current window.location.
+          },
+          (xhr, status, err)  => {
+            var message = 'Could not fetch configuration. Aborting.';
+            console.error(message);
+            alert(message);
+          }
+        );
+
+      }
+
+    </script>
+
+  </body>
+</html>
