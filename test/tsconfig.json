@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES5",
+    "typeRoots": [
+      "../../node_modules/@types"
+    ],
+    "types": [
+      "lodash", "chai", "mocha", "three"
+    ],
+    "lib": [
+      "es6", "dom"
+    ]
+  },
+  "include": [
+    "**/*.ts"
+  ]
+}

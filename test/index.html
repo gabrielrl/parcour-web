@@ -1,0 +1,40 @@
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Parcour's automated tests (in browser)</title>
+  <link href="../node_modules/mocha/mocha.css" rel="stylesheet" />
+</head>
+<body>
+<div id="mocha"></div>
+
+  <script src="../bower_components/lodash/dist/lodash.js"></script>
+
+  <script src="../node_modules/mocha/mocha.js"></script>
+  <script src="../node_modules/chai/chai.js"></script>
+
+  <script src="../build/js/libs/three.min.js"></script>
+  <script src="../build/js/prkr.bundle.js"></script>
+
+  <script>mocha.setup('bdd')</script>
+
+  <!-- Core lib tests -->
+  <script src="m.spec.js"></script>
+  <script src="polar.spec.js"></script>
+  <script src="js/parcour.spec.js"></script>
+  <script src="js/parcour-object.spec.js"></script>
+  <script src="room-area.spec.js"></script>
+  <script src="js/doorway.spec.js"></script>
+  <script src="js/parcour-validator.spec.js"></script>
+
+  <!-- Editor  -->
+  <script src="../build/js/prkr-editor.bundle.js"></script>
+  <!-- Editor tests --> 
+  <script src="composed-step.spec.js"></script>
+  <script src="js/add-doorway-step.spec.js"></script>
+
+  <script>
+    mocha.checkLeaks();
+    mocha.globals(['THREE', 'PRKR']);
+    mocha.run();
+  </script></body>
+</html>
