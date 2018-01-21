@@ -1,2 +1,4 @@
 # parcour-web
-Parcour browser applications
+Browser applications for the Parcour project.
+
+Not sure yet what it is.
