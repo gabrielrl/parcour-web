@@ -51,6 +51,59 @@ body {
   overflow: hidden;
 }
 
+.propertiesPanelRoot {
+  /* column */
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  justify-content: space-between;
+}
+
+.prkr-props-head {
+  /* Streched row */
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: baseline;
+  justify-content: space-between;
+  align-content: stretch;
+}
+
+.prkr-props-body {
+  display: flex;
+  flex-grow: 1;
+}
+
+#propertiesPanelTitle {
+  height: 40px;
+  line-height: 40px;
+  user-select: none;
+}
+
+#propertiesPanelClose {
+  margin: 4px;
+  width: 40px;
+  height: 40px;
+  line-height: 40px;
+  text-align: center;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+#propertiesPanelClose:hover {
+  background-color: hsla(0, 50%, 0%, 0.5);
+}
+
+#propertiesPanelBody {
+  /* column */
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  justify-content: space-around;
+}
+
 /*#prkred-toolbox {
   color: #fff;
   background-color: #444;

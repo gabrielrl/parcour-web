@@ -28,8 +28,33 @@ namespace PRKR.Editor.Components {
     private _build() {
       let $root = $(
         `<div id="propertiesPanelRoot" class="prkr-props-root">
-          <div>
-            <h1>PROPERTIES PANEL</h1>
+          <div class="prkr-props-head">
+            <div id="propertiesPanelTitle">Properties</div>
+            <div id="propertiesPanelClose" class="right">
+              <i class="fa fa-times" />
+            </div>
+          </div>
+          <div id="propertiesPanelBody" class="prkr-props-body">
+          
+            <div class="prkr-props-item">
+              <div class="prkr-props-item-label">Color</div>
+              <div class="prkr-props-item-editor"><input id="colorInput" /></div>
+              <div class="prkr-props-item-info"><i class="fa fa-info" /></div>
+            </div>
+
+            <div class="prkr-props-item">
+              <div class="prkr-props-item-label">Hue</div>
+              <div class="prkr-props-item-editor"><input id="colorInput" /></div>
+              <div class="prkr-props-item-info"><i class="fa fa-info" /></div>
+            </div>
+
+            <div class="prkr-props-item">
+              <div class="prkr-props-item-label">Intensity</div>
+              <div class="prkr-props-item-editor"><input id="colorInput" /></div>
+              <div class="prkr-props-item-info"><i class="fa fa-info" /></div>
+            </div>
+            
+
           </div>
         </div>`);
       
