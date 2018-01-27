@@ -20,8 +20,6 @@
 /// <reference path="./tools/doorway-placement-tool.ts" />
 /// <reference path="./tools/delegation.ts" />
 
-/// <reference path="./components/asset-palette.ts" />
-
 namespace PRKR.Editor {
   // Convinience imports.
   import Vector2 = THREE.Vector2;
@@ -101,11 +99,14 @@ namespace PRKR.Editor {
 
     /** The various top level containers that makes the editor's DOM layout */
     private _domLayout
-      : { top: HTMLDivElement, left: HTMLDivElement, main: HTMLDivElement }
+      : { top: HTMLDivElement, left: HTMLDivElement, right: HTMLDivElement, main: HTMLDivElement }
       = null;
 
     /** The ribbon menu. */
     private _ribbon: Components.Ribbon;
+
+    /** The properties panel. */
+    private _propertiesPanel: Components.PropertiesPanel;
 
     /** The three.js WebGL scene. */
     private _scene: THREE.Scene;
@@ -176,6 +177,7 @@ namespace PRKR.Editor {
       this._initDomLayout();
       
       this._initRibbon();
+      this._initPropertiesPanel();
       // this._initToolBar();
       // this._initAssetPalette();
 
@@ -193,7 +195,8 @@ namespace PRKR.Editor {
 
     public run() {
 
-      this._ribbon.update();      
+      this._ribbon.update();
+      // TODO this._propertiesPanel.update();
 
       // Set-up listeners on viewport element.
       let $main = $(this._domLayout.main);
@@ -872,6 +875,9 @@ namespace PRKR.Editor {
 
       let left = document.createElement('div');
       left.id = 'prkred-left';
+
+      let right = document.createElement('div');
+      right.id = 'prkred-right';
       
       let main = document.createElement('div');
       main.id = 'prkred-main';
@@ -879,6 +885,7 @@ namespace PRKR.Editor {
       let layout = {
         top: top,
         left: left,
+        right: right,
         main: main
       };
       
@@ -887,6 +894,7 @@ namespace PRKR.Editor {
       this._viewport.appendChild(top);
       this._viewport.appendChild(left);
       this._viewport.appendChild(main);
+      this._viewport.appendChild(right);
 
       return;
     }
@@ -1026,6 +1034,18 @@ namespace PRKR.Editor {
       this._domLayout.top.appendChild(ribbon.dom);
 
       this._ribbon = ribbon;
+    }
+
+    ///// PROPERTIES PANEL /////
+
+    private _initPropertiesPanel() {
+      // TODO.
+
+      let props = new Components.PropertiesPanel(this, {});
+
+      this._domLayout.right.appendChild(props.dom);
+
+      this._propertiesPanel = props;
     }
 
     private _initThreeJs() {
