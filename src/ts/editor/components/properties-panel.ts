@@ -7,7 +7,7 @@ namespace PRKR.Editor.Components {
     // TODO
   }
 
-  export class PropertiesPanel {
+  export class PropertiesPanel implements Component {
 
     private _editor: ParcourEditor;
     private _configuration: PropertiesPanelConfiguration;
