@@ -67,6 +67,41 @@ namespace PRKR.Editor.Objects {
       target.copy(this.roomArea.location);
       return target;
     }
+
+    private static PROPERTIES: Property[] = [{
+      name: 'light.color',
+      display: 'Light Color',
+      info: 'Amount of color in the light. 1 means a saturated color and 0 means white.',
+      editor: 'range',
+      type: 'number',
+      getValue: o => { return 0; /* TODO */ }
+    }, {
+      name: 'light.hue',
+      display: 'Light Hue',
+      info: 'Hue of light color. Has no effect if "Color" is 0.',
+      editor: 'range', // min: 0, max: 0,
+      type: 'number',
+      getValue: o => { return 0; /* TODO */ }
+    }, {
+      name: 'light.intensity',
+      display: 'Light Intensity',
+      info: 'Intensity of the light. 0 means no light and 1 means full light.',
+      editor: 'range',
+      type: 'number',
+      getValue: o => { return 0; /* TODO */ }
+      
+    }];
+
+    /**
+     * Gets the properties of the current object.
+     * @returns the properties of the current object.
+     */
+    public getProperties(): Property[] {
+
+      return [].concat(RoomObject.PROPERTIES);
+
+    }
+    
     
     /** Override */
     protected _computeBoundingBox(): Box3 {

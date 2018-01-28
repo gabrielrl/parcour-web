@@ -49,9 +49,19 @@ body {
   right: 0;
   bottom: 0;
   overflow: hidden;
+
+  /* column */
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  justify-content: flex-start;
+  
+  background: rgba(255, 255, 255, 0.5);
+  
 }
 
-.propertiesPanelRoot {
+#propertiesPanelRoot {
   /* column */
   display: flex;
   flex-direction: column;
@@ -79,6 +89,8 @@ body {
   height: 40px;
   line-height: 40px;
   user-select: none;
+
+  font-weight: 700;
 }
 
 #propertiesPanelClose {
@@ -93,6 +105,7 @@ body {
 
 #propertiesPanelClose:hover {
   background-color: hsla(0, 50%, 0%, 0.5);
+  color: white;
 }
 
 #propertiesPanelBody {
@@ -102,7 +115,41 @@ body {
   flex-wrap: nowrap;
   align-items: stretch;
   justify-content: space-around;
+
+  width: 200px;
 }
+
+
+.prkr-proped {
+  /* column */
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  justify-content: space-around;
+}
+
+.prkr-proped:hover {
+  background-color: white;
+}
+
+.prkr-proped-label {
+  /* text-transform: capitalize; */
+  font-variant: small-caps;
+}
+
+.prkr-proped-field { }
+
+.prkr-proped-info { }
+
+.cloaked {
+  display: none;
+}
+
+.prkr-proped.prkr-proped-range .prkr-proped-field input {
+  width: 100%;
+}
+
 
 /*#prkred-toolbox {
   color: #fff;

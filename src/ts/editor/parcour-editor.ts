@@ -334,6 +334,7 @@ namespace PRKR.Editor {
       this._selectedObjects = selected;
 
       this._ribbon.update();
+      this._propertiesPanel.set(selected);
       //this._updateToolBar();
 
       this.requestRender();
@@ -383,6 +384,9 @@ namespace PRKR.Editor {
 
       this._selectedObjects = selected;
 
+      this._ribbon.update();
+      this._propertiesPanel.set(selected);
+
       // this._updateToolBar();
       this.requestRender();
 
@@ -406,6 +410,9 @@ namespace PRKR.Editor {
       });
 
       this._selectedObjects = selected;
+
+      this._ribbon.update();
+      this._propertiesPanel.set(selected);
 
       //this._updateToolBar();
       this.requestRender();

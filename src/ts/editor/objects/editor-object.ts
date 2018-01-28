@@ -158,6 +158,12 @@ namespace PRKR.Editor.Objects {
      */
     public abstract getWorldPosition(target?: Vector3): Vector3;
 
+    /**
+     * Gets the properties of the current object.
+     * @returns the properties of the current object.
+     */
+    public abstract getProperties(): Property[];
+
     /** Compute the current object's bounding box. */
     protected abstract _computeBoundingBox(): Box3;
   }

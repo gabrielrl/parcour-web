@@ -64,6 +64,16 @@ namespace PRKR.Editor.Objects {
       }
       return target;
     }
+
+    /**
+     * Gets the properties of the current object.
+     * @returns the properties of the current object.
+     */
+    public getProperties(): Property[] {
+
+      return [];
+    }
+    
     
     /** Override */
     protected _computeBoundingBox() {
