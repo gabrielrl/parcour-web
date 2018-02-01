@@ -21,10 +21,12 @@ namespace PRKR.Editor.Components {
     private _build() {
       let p = this._property;
 
+      // TODO min, max, value
+
       let $root = $(`<div class="prkr-proped prkr-proped-range">
-        <div class="prkr-proped-label">${p.display}</div>
-        <div class="prkr-proped-field">
-          <input id="property-${p.name}-input" name="${p.name}" type="range" value="" />
+        <div class="prkr-proped-label margin">${p.display}</div>
+        <div class="prkr-proped-field padding">
+          <input id="property-${p.name}-input" name="${p.name}" type="range" min="" max="" value="" />
         </div>
         <div class="prkr-proped-info cloaked">${p.info}</div>
       </div>`);

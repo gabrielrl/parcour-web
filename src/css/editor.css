@@ -7,7 +7,14 @@ body {
   box-sizing: border-box;
 }
 
+/* General stuff */
+
 .hidden { display: none; }
+
+/* LAYOUT */
+
+.padding { padding: 4px; }
+.margin { margin: 4px; }
 
 #prkred-top {
   position: absolute;
@@ -57,8 +64,7 @@ body {
   align-items: stretch;
   justify-content: flex-start;
   
-  background: rgba(255, 255, 255, 0.5);
-  
+  background: rgba(255, 255, 255, 0.5);  
 }
 
 #propertiesPanelRoot {
@@ -253,4 +259,33 @@ div.prkred-pal-item.active {
   text-align: center;
   line-height: 10px;
   font-size: 10px;  
+}
+
+/* SLIDERS */
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 15px;
+  width: 100%;
+  /* background-color: hsla(180, 100%, 50%, 1); */
+  border: solid 1.5px black;
+  outline: none;
+  /*opacity: 0.7;*/
+  border-radius: 8px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 25px;
+  height: 25px;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  border-radius: 50%;
+  border: solid 1.5px black;  
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
 }
