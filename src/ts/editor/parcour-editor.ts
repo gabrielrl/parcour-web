@@ -417,7 +417,19 @@ namespace PRKR.Editor {
       //this._updateToolBar();
       this.requestRender();
 
-      return selected;
+      return selected;    
+    }
+
+    /**
+     * Gets the current value of the specified property from 
+     * the active object.
+     * @param prop 
+     */
+    public getPropertyValue(prop: Objects.Property) {
+      // Which is the active object? the first or the last one?
+      if (this._selectedObjects.length !== 0) {
+        return prop.getValue(this._selectedObjects[0].model);
+      }
     }
 
     private _raycaster: THREE.Raycaster = new THREE.Raycaster();

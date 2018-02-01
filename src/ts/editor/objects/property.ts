@@ -17,9 +17,15 @@ namespace PRKR.Editor.Objects {
     /** Editor type. */
     editor: string;
 
+    /** Minimal value (if applicable). */
+    min?: number;
+
+    /** Maximal value (if applicable). */
+    max?: number;
+
     getValue(parcourObject: PRKR.Model.ParcourObject): any;
 
     // TODO setValue() ??
-    
+
   }
 }
