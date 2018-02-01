@@ -53,9 +53,12 @@ namespace PRKR.Editor.Components {
 
     /** Called once the user releases the thumb. */
     private _onChange(evt: JQueryEventObject) {
-      console.log('on value', evt);
+      // console.log('on value', evt);
 
       let val = this._$input.val();
+
+      console.log(`Set '${this._property.name}' value to ${val}`);
+
       //this._property.setValue(evt.)
     }
 
