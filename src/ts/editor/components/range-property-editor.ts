@@ -1,5 +1,5 @@
 namespace PRKR.Editor.Components {
-  import Property = Objects.Property;
+  import Property = Model.Property;
 
   export class RangePropertyEditor implements PropertyEditor {
 

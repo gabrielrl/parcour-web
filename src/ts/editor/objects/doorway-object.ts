@@ -45,16 +45,6 @@ namespace PRKR.Editor.Objects {
       this._frame;
     }
 
-    /**
-     * Gets the properties of the current object.
-     * @returns the properties of the current object.
-     */
-    public getProperties(): Property[] {
-
-      return [];
-    }
-
-
     /** Compute the current object's bounding box. */
     protected _computeBoundingBox(): Box3 {
       let box = new THREE.Box3();

@@ -1,4 +1,4 @@
-namespace PRKR.Editor.Objects {
+namespace PRKR.Model {
 
   export interface Property {
 
@@ -23,9 +23,11 @@ namespace PRKR.Editor.Objects {
     /** Maximal value (if applicable). */
     max?: number;
 
-    getValue(parcourObject: PRKR.Model.ParcourObject): any;
+    /** Getter for the property's value. */
+    getValue(parcourObject: ParcourObject): any;
 
-    // TODO setValue() ??
+    /** Optional setter for the property's value. */
+    setValue?(parcourObject: ParcourObject): void; 
 
   }
 }

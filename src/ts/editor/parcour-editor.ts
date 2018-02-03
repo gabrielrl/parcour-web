@@ -28,6 +28,7 @@ namespace PRKR.Editor {
   import CameraRig = PRKR.CameraRig;
   import Parcour = PRKR.Model.Parcour;
   import ParcourObject = PRKR.Model.ParcourObject;
+  import Property = PRKR.Model.Property;
   import Area = PRKR.Model.Area;
   import AreaElement = PRKR.Model.AreaElement;
   import RoomArea = PRKR.Model.RoomArea;
@@ -425,7 +426,7 @@ namespace PRKR.Editor {
      * the active object.
      * @param prop 
      */
-    public getPropertyValue(prop: Objects.Property) {
+    public getPropertyValue(prop: Model.Property) {
       // Which is the active object? the first or the last one?
       if (this._selectedObjects.length !== 0) {
         return prop.getValue(this._selectedObjects[0].model);
