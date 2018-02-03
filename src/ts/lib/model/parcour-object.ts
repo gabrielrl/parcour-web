@@ -88,7 +88,7 @@ namespace PRKR.Model {
     public setPropertyValue(name: string, value: any) {
       let prop = this.getProperty(name);
       if (prop && prop.setValue) {
-        prop.setValue(this);
+        prop.setValue(this, value);
       }
     }
 

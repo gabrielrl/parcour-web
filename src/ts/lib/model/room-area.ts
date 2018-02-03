@@ -55,6 +55,17 @@ namespace PRKR.Model {
         } else {
           return 0;
         }
+      },
+      setValue: (o, v) => {
+        if (o instanceof RoomArea) {
+          if (v != null) {
+            if (v < 0) v = 0;
+            if (v > 1) v = 1;
+            o.light.color = v;
+          } else {
+            delete o.light.color;
+          }
+        }
       }
     }, {
       name: 'light.hue',
@@ -68,20 +79,44 @@ namespace PRKR.Model {
         } else {
           return 0;
         }
+      },
+      setValue: (o, v) => {
+        if (o instanceof RoomArea) {
+          if (v != null) {
+            if (v < 0) v = 0;
+            if (v > 1) v = 1;
+            o.light.hue = v;
+          } else {
+            delete o.light.hue;
+          }
+        }
       }
+      
     }, {
       name: 'light.intensity',
       display: 'Light Intensity',
       info: 'Intensity of the light. 0 means no light and 1 means full light.',
       editor: 'range',
       type: 'number',
-      getValue: o => {
+      getValue: o => {        
         if (o instanceof RoomArea && o.light && o.light.intensity != null) {
           return o.light.intensity;
         } else {
           return 1;
         }
+      },
+      setValue: (o, v) => {
+        if (o instanceof RoomArea) {
+          if (v != null) {
+            if (v < 0) v = 0;
+            if (v > 1) v = 1;
+            o.light.intensity = v;
+          } else {
+            delete o.light.intensity;
+          }
+        }
       }
+      
       
     }];
 

@@ -59,7 +59,7 @@ namespace PRKR.Editor.Components {
 
       console.log(`Set '${this._property.name}' value to ${val}`);
 
-      //this._property.setValue(evt.)
+      this._editor.setPropertyValue(this._property, val);
     }
 
   }

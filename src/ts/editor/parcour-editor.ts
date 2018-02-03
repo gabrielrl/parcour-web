@@ -433,6 +433,28 @@ namespace PRKR.Editor {
       }
     }
 
+    /**
+     * Sets the current value of the specified property for 
+     * all selected objects.
+     * @param prop 
+     */
+    public setPropertyValue(prop: Model.Property, value: any) {
+      // TODO MAKE AN EDIT STEP...
+      // THIS IS TEMPORARY.
+      if (prop.setValue != null) {
+        _.forEach(this._selectedObjects, o => {
+          prop.setValue(o.model, value); 
+        });
+        this._updateDirtyNodes(this._selectedObjects.map(o => o.id));
+      }
+
+      this._modelIsDirty = true;
+      this.requestRender();
+      this._ribbon.update();
+
+    }
+
+
     private _raycaster: THREE.Raycaster = new THREE.Raycaster();
 
     /**

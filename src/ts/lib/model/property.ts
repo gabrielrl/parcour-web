@@ -27,7 +27,7 @@ namespace PRKR.Model {
     getValue(parcourObject: ParcourObject): any;
 
     /** Optional setter for the property's value. */
-    setValue?(parcourObject: ParcourObject): void; 
+    setValue?(parcourObject: ParcourObject, value: any): void; 
 
   }
 }
