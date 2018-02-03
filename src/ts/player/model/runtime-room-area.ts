@@ -57,15 +57,22 @@ namespace PRKR.Player.Model {
       this._scene = new THREE.Scene();
       this._scene.add(mesh);
 
-      let ambientLigth = new THREE.AmbientLight( 0x404040 ); // soft white light
-      this._scene.add(ambientLigth);
-
-      // TEMPORARY Fun with light colors.
       let lightColor = new THREE.Color();
-      let hue = Math.random();
-      lightColor.setHSL(hue, 1, 0.8);
+      // TODO extract duplicate code (room light to color).
+      let hue = this._room.light.hue || 0;
+      let saturation = this._room.light.color != null
+        ? this._room.light.color
+        : 0;
+      let lightness = this._room.light.intensity != null
+        ? this._room.light.intensity - saturation * 0.5
+        : 1 - saturation * 0.5;
+      lightColor.setHSL(hue, saturation, lightness);
+      let spotLight = new THREE.SpotLight(lightColor);
 
-      let spotLight = new THREE.SpotLight(lightColor.getHex());
+      let ambiantLightColor = new THREE.Color();
+      ambiantLightColor.setHSL(hue, saturation * 0.1, 0.15 + 0.20 * (lightness));
+      let ambientLigth = new THREE.AmbientLight( ambiantLightColor );
+      this._scene.add(ambientLigth);
 
       let roomLocation = this._room.location;
       let roomSize = this._room.size;
@@ -80,7 +87,7 @@ namespace PRKR.Player.Model {
         0,
         roomLocation.z + roomSize.z * 0.5
       );
-      spotLight.angle = Math.PI / 4;
+      spotLight.angle = Math.PI / 4 + (Math.PI / 4 * lightness);
       spotLight.penumbra = 0.25;
       spotLight.castShadow = true;
       this._scene.add(spotLight);
