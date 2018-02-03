@@ -49,13 +49,11 @@ namespace PRKR.Model {
       info: 'Amount of color in the light. 1 means a saturated color and 0 means white.',
       editor: 'range',
       type: 'number',
-      min: 0,
-      max: 100,
       getValue: o => {
         if (o instanceof RoomArea && o.light && o.light.color != null) {
-          return o.light.color * 100;
+          return o.light.color;
         } else {
-          return 100;
+          return 0;
         }
       }
     }, {
@@ -64,11 +62,9 @@ namespace PRKR.Model {
       info: 'Hue of light color. Has no effect if "Color" is 0.',
       editor: 'range',
       type: 'number',
-      min: 0,
-      max: 100,
       getValue: o => {
         if (o instanceof RoomArea && o.light && o.light.hue != null) {
-          return o.light.hue * 100;
+          return o.light.hue;
         } else {
           return 0;
         }
@@ -79,13 +75,11 @@ namespace PRKR.Model {
       info: 'Intensity of the light. 0 means no light and 1 means full light.',
       editor: 'range',
       type: 'number',
-      min: 0,
-      max: 100,      
       getValue: o => {
         if (o instanceof RoomArea && o.light && o.light.intensity != null) {
           return o.light.intensity;
         } else {
-          return 100;
+          return 1;
         }
       }
       
