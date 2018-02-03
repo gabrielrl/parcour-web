@@ -52,11 +52,11 @@ namespace PRKR.Model {
       min: 0,
       max: 100,
       getValue: o => {
-         if (o instanceof RoomArea) {
-           if (o.light && o.light.color) {
-
-           }
-         }
+        if (o instanceof RoomArea && o.light && o.light.color != null) {
+          return o.light.color * 100;
+        } else {
+          return 100;
+        }
       }
     }, {
       name: 'light.hue',
@@ -67,7 +67,11 @@ namespace PRKR.Model {
       min: 0,
       max: 100,
       getValue: o => {
-        return 25; /* TODO */
+        if (o instanceof RoomArea && o.light && o.light.hue != null) {
+          return o.light.hue * 100;
+        } else {
+          return 0;
+        }
       }
     }, {
       name: 'light.intensity',
@@ -78,7 +82,11 @@ namespace PRKR.Model {
       min: 0,
       max: 100,      
       getValue: o => {
-        return 100; /* TODO */
+        if (o instanceof RoomArea && o.light && o.light.intensity != null) {
+          return o.light.intensity;
+        } else {
+          return 100;
+        }
       }
       
     }];
