@@ -44,13 +44,19 @@ namespace PRKR.Editor.Components {
         // Build the editors.
 
         _.forEach(props, p => {
+
           let editor: PropertyEditor = null;
 
-          switch(p.editor) {
-            case 'Range':
-            case 'range':
-              editor = new RangePropertyEditor(this._editor, p);
-              break;
+          editor = _.find(editors, e => e.name === p.name);
+          if (!editor) {
+
+            switch(p.editor) {
+              case 'Range':
+              case 'range':
+                editor = new RangePropertyEditor(this._editor, p);
+                break;
+            }
+
           }
 
           if (editor) {

@@ -19,6 +19,8 @@ namespace PRKR.Editor.Components {
       this._build();
     }
 
+    get name() { return this._property.name; }
+
     get dom() { return this._domRoot; }
 
     private _build() {
