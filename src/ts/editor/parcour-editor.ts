@@ -11,6 +11,8 @@
 /// <reference path="./components/asset-palette.ts" />
 /// <reference path="./components/palette-item.ts" />
 
+/// <reference path="./edit-steps/set-property-step.ts" />
+
 /// <reference path="./tools/tool.ts" />
 /// <reference path="./tools/select-tool.ts" />
 /// <reference path="./tools/move-tool.ts" />
@@ -37,6 +39,7 @@ namespace PRKR.Editor {
   import Tool = PRKR.Editor.Tools.Tool;
   import EditStep = PRKR.Editor.EditSteps.EditStep;
   import StepResult = PRKR.Editor.EditSteps.StepResult;
+  import SetPropertyStep = PRKR.Editor.EditSteps.SetPropertyStep;
 
   export class ParcourEditor implements ParcourEditor /*, EditorApi */ {
 
@@ -439,18 +442,11 @@ namespace PRKR.Editor {
      * @param prop 
      */
     public setPropertyValue(prop: Model.Property, value: any) {
-      // TODO MAKE AN EDIT STEP...
-      // THIS IS TEMPORARY.
-      if (prop.setValue != null) {
-        _.forEach(this._selectedObjects, o => {
-          prop.setValue(o.model, value); 
-        });
-        this._updateDirtyNodes(this._selectedObjects.map(o => o.id));
-      }
 
-      this._modelIsDirty = true;
-      this.requestRender();
-      this._ribbon.update();
+      let ids = this._selectedObjects.map(o => o.id);
+      let step = new SetPropertyStep(ids, prop.name, value);
+
+      this.addEditStep(step);
 
     }
 
