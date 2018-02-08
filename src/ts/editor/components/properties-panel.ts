@@ -34,7 +34,38 @@ namespace PRKR.Editor.Components {
       if (objects) {
         objects = _.castArray(objects);
         if (objects.length !== 0) {
-          empty = false;
+
+          var editors: PropertyEditor[] = []
+
+          _.forEach(objects, object => {
+            let props = object.getProperties();
+
+            // Try to build an editor for each property.
+            _.forEach(props, p => {
+  
+              // Merge editors when properties have the same name.
+              let editor: PropertyEditor = null;  
+              editor = _.find(editors, e => e.name === p.name);
+              if (!editor) {
+  
+                switch(p.editor) {
+                  case 'Range':
+                  case 'range':
+                    editor = new RangePropertyEditor(this._editor, p);
+                    break;
+                }
+              }
+  
+              if (editor) {
+                editors.push(editor);
+              }
+            });
+  
+          });
+
+          if (editors.length !== 0) {
+            empty = false;
+          }
         }        
       }
 
@@ -44,34 +75,7 @@ namespace PRKR.Editor.Components {
       } else {
         this._$root.removeClass('empty');
 
-        let editors: PropertyEditor[] = []
-
-        _.forEach(objects, object => {
-          let props = object.getProperties();
-          // Build the editors.
-          _.forEach(props, p => {
-
-            let editor: PropertyEditor = null;
-
-            editor = _.find(editors, e => e.name === p.name);
-            if (!editor) {
-
-              switch(p.editor) {
-                case 'Range':
-                case 'range':
-                  editor = new RangePropertyEditor(this._editor, p);
-                  break;
-              }
-            }
-
-            if (editor) {
-              editors.push(editor);
-            }
-          });
-
-        });
-
-        // Append them to the DOM.
+        // Append editors to the DOM.
         this._$bodyRoot.append(editors.map(e => e.dom));
       }
     }
