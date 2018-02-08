@@ -11,7 +11,7 @@ namespace PRKR.Editor.Components {
 
     private _editor: ParcourEditor;
     private _configuration: PropertiesPanelConfiguration;
-    private _domRoot: HTMLElement;
+    private _$root: JQuery;
     private _$bodyRoot: JQuery;
 
     constructor(editor: ParcourEditor, configuration: PropertiesPanelConfiguration) {
@@ -22,8 +22,7 @@ namespace PRKR.Editor.Components {
       this.set(null);
     }
 
-    get dom() { return this._domRoot; }
-
+    get dom() { return this._$root[0]; }
 
     set(objects: Editor.Objects.EditorObject | Editor.Objects.EditorObject[]) {
 
@@ -41,9 +40,9 @@ namespace PRKR.Editor.Components {
 
       // Set new state.
       if (empty) {
-        this._domRoot.classList.add('empty');
+        this._$root.addClass('empty');
       } else {
-        this._domRoot.classList.remove('empty');
+        this._$root.removeClass('empty');
 
         let editors: PropertyEditor[] = []
 
@@ -78,7 +77,7 @@ namespace PRKR.Editor.Components {
     }
 
     private _build() {
-      let $root = $(
+      this._$root = $(
         `<div id="propertiesPanelRoot" class="prkr-props-root">
           <div class="prkr-props-head padding">
             <div id="propertiesPanelTitle">PROPERTIES</div>
@@ -90,8 +89,7 @@ namespace PRKR.Editor.Components {
           </div>
         </div>`);
       
-        this._domRoot = $root[0];
-        this._$bodyRoot = $root.find('#propertiesPanelBody');
+        this._$bodyRoot = this._$root.find('#propertiesPanelBody');
     }
 
   }
