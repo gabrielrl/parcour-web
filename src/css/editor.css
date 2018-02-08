@@ -76,6 +76,10 @@ body {
   justify-content: space-between;
 }
 
+#propertiesPanelRoot.empty {
+  display: none;
+}
+
 .prkr-props-head {
   /* Streched row */
   display: flex;

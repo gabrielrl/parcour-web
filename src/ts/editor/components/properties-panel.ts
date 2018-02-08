@@ -19,7 +19,7 @@ namespace PRKR.Editor.Components {
       this._configuration = configuration;
 
       this._build();
-
+      this.set(null);
     }
 
     get dom() { return this._domRoot; }
@@ -30,45 +30,51 @@ namespace PRKR.Editor.Components {
       // Clear previous state.
       this._$bodyRoot.empty();
 
-      if (!objects) return;
-      objects = _.castArray(objects);
-      if (objects.length === 0) return;
+      // Determine if empty.
+      let empty = true;
+      if (objects) {
+        objects = _.castArray(objects);
+        if (objects.length !== 0) {
+          empty = false;
+        }        
+      }
 
       // Set new state.
-      let editors: PropertyEditor[] = []
+      if (empty) {
+        this._domRoot.classList.add('empty');
+      } else {
+        this._domRoot.classList.remove('empty');
 
-      _.forEach(objects, object => {
-      
-        let props = object.getProperties();
+        let editors: PropertyEditor[] = []
 
-        // Build the editors.
+        _.forEach(objects, object => {
+          let props = object.getProperties();
+          // Build the editors.
+          _.forEach(props, p => {
 
-        _.forEach(props, p => {
+            let editor: PropertyEditor = null;
 
-          let editor: PropertyEditor = null;
+            editor = _.find(editors, e => e.name === p.name);
+            if (!editor) {
 
-          editor = _.find(editors, e => e.name === p.name);
-          if (!editor) {
-
-            switch(p.editor) {
-              case 'Range':
-              case 'range':
-                editor = new RangePropertyEditor(this._editor, p);
-                break;
+              switch(p.editor) {
+                case 'Range':
+                case 'range':
+                  editor = new RangePropertyEditor(this._editor, p);
+                  break;
+              }
             }
 
-          }
+            if (editor) {
+              editors.push(editor);
+            }
+          });
 
-          if (editor) {
-            editors.push(editor);
-          }
         });
 
-      });
-
-      // Append them to the DOM.
-      this._$bodyRoot.append(editors.map(e => e.dom));
-
+        // Append them to the DOM.
+        this._$bodyRoot.append(editors.map(e => e.dom));
+      }
     }
 
     private _build() {
