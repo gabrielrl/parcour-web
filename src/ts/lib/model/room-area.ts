@@ -8,6 +8,18 @@ namespace PRKR.Model {
   export interface RoomAreaOptions extends AreaData {
     location: Vector3;
     size: THREE.Vector3;
+    light?: RoomLight;
+  }
+
+  export interface RoomLight {
+    /** Light color component. */
+    color?: number;
+
+    /** Light color hue. */
+    hue?: number;
+
+    /** Light intensity. */
+    intensity?: number;
   }
 
   /**
@@ -15,8 +27,102 @@ namespace PRKR.Model {
    */
   export class RoomArea extends Area {
 
+    private _light: RoomLight;
+
     constructor(data?: RoomAreaOptions) {
       super(data);
+
+      if (data && data.light) {
+        this._light = data.light;
+      } else {
+        this._light = {};
+      }
+    }
+
+    get light() {
+      return this._light;
+    }
+
+    private static PROPERTIES: Property[] = [{
+      name: 'light.color',
+      display: 'Light Color',
+      info: 'Amount of color in the light. 1 means a saturated color and 0 means white.',
+      editor: 'range',
+      type: 'number',
+      getValue: o => {
+        if (o instanceof RoomArea && o.light && o.light.color != null) {
+          return o.light.color;
+        } else {
+          return 0;
+        }
+      },
+      setValue: (o, v) => {
+        if (o instanceof RoomArea) {
+          if (v != null) {
+            if (v < 0) v = 0;
+            if (v > 1) v = 1;
+            o.light.color = v;
+          } else {
+            delete o.light.color;
+          }
+        }
+      }
+    }, {
+      name: 'light.hue',
+      display: 'Light Hue',
+      info: 'Hue of light color. Has no effect if "Color" is 0.',
+      editor: 'range',
+      type: 'number',
+      getValue: o => {
+        if (o instanceof RoomArea && o.light && o.light.hue != null) {
+          return o.light.hue;
+        } else {
+          return 0;
+        }
+      },
+      setValue: (o, v) => {
+        if (o instanceof RoomArea) {
+          if (v != null) {
+            if (v < 0) v = 0;
+            if (v > 1) v = 1;
+            o.light.hue = v;
+          } else {
+            delete o.light.hue;
+          }
+        }
+      }
+      
+    }, {
+      name: 'light.intensity',
+      display: 'Light Intensity',
+      info: 'Intensity of the light. 0 means no light and 1 means full light.',
+      editor: 'range',
+      type: 'number',
+      getValue: o => {        
+        if (o instanceof RoomArea && o.light && o.light.intensity != null) {
+          return o.light.intensity;
+        } else {
+          return 1;
+        }
+      },
+      setValue: (o, v) => {
+        if (o instanceof RoomArea) {
+          if (v != null) {
+            if (v < 0) v = 0;
+            if (v > 1) v = 1;
+            o.light.intensity = v;
+          } else {
+            delete o.light.intensity;
+          }
+        }
+      }
+      
+      
+    }];
+
+    /** Override. */
+    public getProperties() {
+      return super.getProperties().concat(RoomArea.PROPERTIES);
     }
     
     /**
@@ -76,6 +182,7 @@ namespace PRKR.Model {
     // Override
     public _copy(source: RoomArea) {
       super._copy(source);
+      this._light = _.clone(source.light);
     }
 
     public toObject(): any {
@@ -84,7 +191,8 @@ namespace PRKR.Model {
         id: this.id,
         name: this.name,
         location: this.location.toArray(),
-        size: this.size.toArray()
+        size: this.size.toArray(),
+        light: _.clone(this._light)
       });
       return o;
     }

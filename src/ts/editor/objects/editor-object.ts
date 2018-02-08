@@ -6,6 +6,7 @@ namespace PRKR.Editor.Objects {
   import Box3 = THREE.Box3;
   import Parcour = PRKR.Model.Parcour;
   import ParcourObject = PRKR.Model.ParcourObject;
+  import Property = PRKR.Model.Property;
 
   /**
    * Base abstract class for every object the user can manipulate through
@@ -157,6 +158,14 @@ namespace PRKR.Editor.Objects {
      * @returns the world position for the current object.
      */
     public abstract getWorldPosition(target?: Vector3): Vector3;
+
+    /**
+     * Gets the properties of the current object.
+     * @returns the properties of the current object.
+     */
+    public getProperties(): Property[] {
+      return this._model.getProperties();
+    }
 
     /** Compute the current object's bounding box. */
     protected abstract _computeBoundingBox(): Box3;

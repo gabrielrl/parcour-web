@@ -7,7 +7,14 @@ body {
   box-sizing: border-box;
 }
 
+/* General stuff */
+
 .hidden { display: none; }
+
+/* LAYOUT */
+
+.padding { padding: 4px; }
+.margin { margin: 4px; }
 
 #prkred-top {
   position: absolute;
@@ -42,6 +49,117 @@ body {
   bottom: 0;
   overflow: hidden;
 }
+
+#prkred-right {
+  position: absolute;
+  top: 120px;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+
+  /* column */
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  justify-content: flex-start;
+  
+  background: rgba(255, 255, 255, 0.5);  
+}
+
+#propertiesPanelRoot {
+  /* column */
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  justify-content: space-between;
+}
+
+#propertiesPanelRoot.empty {
+  display: none;
+}
+
+.prkr-props-head {
+  /* Streched row */
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: baseline;
+  justify-content: space-between;
+  align-content: stretch;
+}
+
+.prkr-props-body {
+  display: flex;
+  flex-grow: 1;
+}
+
+#propertiesPanelTitle {
+  height: 40px;
+  line-height: 40px;
+  user-select: none;
+
+  font-weight: 700;
+}
+
+#propertiesPanelClose {
+  margin: 4px;
+  width: 40px;
+  height: 40px;
+  line-height: 40px;
+  text-align: center;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+#propertiesPanelClose:hover {
+  background-color: hsla(0, 50%, 0%, 0.5);
+  color: white;
+}
+
+#propertiesPanelBody {
+  /* column */
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  justify-content: space-around;
+
+  width: 200px;
+}
+
+
+.prkr-proped {
+  /* column */
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  justify-content: space-around;
+}
+
+.prkr-proped:hover {
+  background-color: white;
+}
+
+.prkr-proped-label {
+  /* text-transform: capitalize; */
+  font-variant: small-caps;
+}
+
+.prkr-proped-field { }
+
+.prkr-proped-info { }
+
+.cloaked {
+  display: none;
+}
+
+.prkr-proped.prkr-proped-range .prkr-proped-field input {
+  width: 100%;
+}
+
 
 /*#prkred-toolbox {
   color: #fff;
@@ -145,4 +263,33 @@ div.prkred-pal-item.active {
   text-align: center;
   line-height: 10px;
   font-size: 10px;  
+}
+
+/* SLIDERS */
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 15px;
+  width: 100%;
+  /* background-color: hsla(180, 100%, 50%, 1); */
+  border: solid 1.5px black;
+  outline: none;
+  /*opacity: 0.7;*/
+  border-radius: 8px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 25px;
+  height: 25px;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  border-radius: 50%;
+  border: solid 1.5px black;  
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
 }

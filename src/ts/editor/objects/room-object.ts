@@ -45,8 +45,20 @@ namespace PRKR.Editor.Objects {
         this.sceneObject.remove(this._roomMesh);
       }
       let g = new PRKR.Builders.RoomGeometryBuilder(
-        <RoomArea>this.model, this.parcour).getGeometry();      
-      this._roomMesh = new THREE.Mesh(g, RoomObject.DEFAULT_MATERIAL);
+        <RoomArea>this.model, this.parcour).getGeometry();
+      let c = new THREE.Color();
+      let hue = this.roomArea.light.hue || 0;
+      let saturation = this.roomArea.light.color != null
+        ? this.roomArea.light.color
+        : 0;
+      let lightness = this.roomArea.light.intensity != null
+        ? this.roomArea.light.intensity - saturation * 0.5
+        : 1 - saturation * 0.5;
+      c.setHSL(hue, saturation, lightness);
+      let m = new THREE.MeshLambertMaterial({
+        color: c
+      });      
+      this._roomMesh = new THREE.Mesh(g, m);
       this.sceneObject.add(this._roomMesh);
       this.getWorldPosition(this.sceneObject.position);
       return this._roomMesh;

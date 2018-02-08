@@ -64,7 +64,7 @@ namespace PRKR.Editor.Objects {
       }
       return target;
     }
-    
+
     /** Override */
     protected _computeBoundingBox() {
       let box = new THREE.Box3(

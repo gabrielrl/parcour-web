@@ -25,7 +25,7 @@ namespace PRKR.Editor.Components {
     $elem: JQuery;
   }
 
-  export class Ribbon {
+  export class Ribbon implements Component {
 
     private _editor: ParcourEditor;
     private _configuration: RibbonConfiguration;

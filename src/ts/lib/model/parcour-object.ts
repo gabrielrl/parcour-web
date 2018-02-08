@@ -60,6 +60,38 @@ namespace PRKR.Model {
       return instance;
     }
 
+    /**
+     * Return the editable properties of the object.
+     * When overriden, concat result with super's result.
+     */
+    public getProperties(): Property[] {
+      return [];
+    }
+
+    /**
+     * Gets a property by its name.
+     * @param name Property name.
+     */
+    public getProperty(name: string) {
+      return _.find(this.getProperties(), p => p.name === name);
+    }
+
+    /**
+     * Gets a property value from a property name.
+     * @param name Property name.
+     */
+    public getPropertyValue(name: string): any {
+      let prop = this.getProperty(name);
+      if (prop) return prop.getValue(this);
+    }
+
+    public setPropertyValue(name: string, value: any) {
+      let prop = this.getProperty(name);
+      if (prop && prop.setValue) {
+        prop.setValue(this, value);
+      }
+    }
+
     // Override this one. call super.
     protected _copy(source: ParcourObject) {
       // Copy properties.
