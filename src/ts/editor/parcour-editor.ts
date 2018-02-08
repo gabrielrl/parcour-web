@@ -200,7 +200,7 @@ namespace PRKR.Editor {
     public run() {
 
       this._ribbon.update();
-      // TODO this._propertiesPanel.update();
+      this._propertiesPanel.update();
 
       // Set-up listeners on viewport element.
       let $main = $(this._domLayout.main);
@@ -338,8 +338,7 @@ namespace PRKR.Editor {
       this._selectedObjects = selected;
 
       this._ribbon.update();
-      this._propertiesPanel.set(selected);
-      //this._updateToolBar();
+      this._propertiesPanel.update();
 
       this.requestRender();
 
@@ -389,9 +388,8 @@ namespace PRKR.Editor {
       this._selectedObjects = selected;
 
       this._ribbon.update();
-      this._propertiesPanel.set(selected);
+      this._propertiesPanel.update();
 
-      // this._updateToolBar();
       this.requestRender();
 
       return selected;
@@ -416,9 +414,8 @@ namespace PRKR.Editor {
       this._selectedObjects = selected;
 
       this._ribbon.update();
-      this._propertiesPanel.set(selected);
+      this._propertiesPanel.update();
 
-      //this._updateToolBar();
       this.requestRender();
 
       return selected;    
@@ -585,8 +582,10 @@ namespace PRKR.Editor {
       this._modelIsDirty = true;
       this._sanitizeSelection();
 
-      this.requestRender();
       this._ribbon.update();
+      this._propertiesPanel.update();
+
+      this.requestRender();
 
       return result;
     }
@@ -612,8 +611,10 @@ namespace PRKR.Editor {
       this._modelIsDirty = true;
       this._sanitizeSelection();
 
-      this.requestRender();
       this._ribbon.update();
+      this._propertiesPanel.update();
+
+      this.requestRender();
 
       return result;
     }
@@ -643,8 +644,10 @@ namespace PRKR.Editor {
       this._modelIsDirty = true;
       this._sanitizeSelection();
 
-      this.requestRender();
       this._ribbon.update();
+      this._propertiesPanel.update();
+
+      this.requestRender();
 
       return result;      
     }
@@ -753,6 +756,7 @@ namespace PRKR.Editor {
             this._modelIsDirty = false;
             this._modelIsNew = false;
             this._ribbon.update();
+            this._propertiesPanel.update();
           },
           (xhr, status, err) => {
             console.error('Error saving parcour', err);
@@ -1079,7 +1083,7 @@ namespace PRKR.Editor {
     private _initPropertiesPanel() {
       // TODO.
 
-      let props = new Components.PropertiesPanel(this, {});
+      let props = new Components.PropertiesPanel(this);
 
       this._domLayout.right.appendChild(props.dom);
 

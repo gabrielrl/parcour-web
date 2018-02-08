@@ -3,71 +3,63 @@ namespace PRKR.Editor.Components {
   import Tool = Editor.Tools.Tool;
   import Command = Editor.Commands.Command;
 
-  export interface PropertiesPanelConfiguration {
-    // TODO
-  }
-
   export class PropertiesPanel implements Component {
 
     private _editor: ParcourEditor;
-    private _configuration: PropertiesPanelConfiguration;
     private _$root: JQuery;
     private _$bodyRoot: JQuery;
 
-    constructor(editor: ParcourEditor, configuration: PropertiesPanelConfiguration) {
+    constructor(editor: ParcourEditor) {
       this._editor = editor;
-      this._configuration = configuration;
 
       this._build();
-      this.set(null);
+      this.update();
     }
 
     get dom() { return this._$root[0]; }
 
-    set(objects: Editor.Objects.EditorObject | Editor.Objects.EditorObject[]) {
+    update() {
 
       // Clear previous state.
       this._$bodyRoot.empty();
 
       // Determine if empty.
       let empty = true;
-      if (objects) {
-        objects = _.castArray(objects);
-        if (objects.length !== 0) {
+      let objects = this._editor.selectedObjects;
+      if (objects.length !== 0) {
 
-          var editors: PropertyEditor[] = []
+        var editors: PropertyEditor[] = []
 
-          _.forEach(objects, object => {
-            let props = object.getProperties();
+        _.forEach(objects, object => {
+          let props = object.getProperties();
 
-            // Try to build an editor for each property.
-            _.forEach(props, p => {
-  
-              // Merge editors when properties have the same name.
-              let editor: PropertyEditor = null;  
-              editor = _.find(editors, e => e.name === p.name);
-              if (!editor) {
-  
-                switch(p.editor) {
-                  case 'Range':
-                  case 'range':
-                    editor = new RangePropertyEditor(this._editor, p);
-                    break;
-                }
+          // Try to build an editor for each property.
+          _.forEach(props, p => {
+
+            // Merge editors when properties have the same name.
+            let editor: PropertyEditor = null;  
+            editor = _.find(editors, e => e.name === p.name);
+            if (!editor) {
+
+              switch(p.editor) {
+                case 'Range':
+                case 'range':
+                  editor = new RangePropertyEditor(this._editor, p);
+                  break;
               }
-  
-              if (editor) {
-                editors.push(editor);
-              }
-            });
-  
+            }
+
+            if (editor) {
+              editors.push(editor);
+            }
           });
 
-          if (editors.length !== 0) {
-            empty = false;
-          }
-        }        
-      }
+        });
+
+        if (editors.length !== 0) {
+          empty = false;
+        }
+      }        
 
       // Set new state.
       if (empty) {
