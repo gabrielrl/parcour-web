@@ -76,11 +76,12 @@ namespace PRKR.Editor.Components {
       this._$root = $(
         `<div id="propertiesPanelRoot" class="prkr-props-root">
           <div class="prkr-props-head padding">
-            <div id="propertiesPanelTitle">PROPERTIES</div>
-            <div id="propertiesPanelClose" class="right">
-              <i class="fa fa-angle-right" />
-            </div>
-          </div>
+            <div id="propertiesPanelTitle">PROPERTIES</div>` +
+            // Restore the close button when ready to implement it.
+            // <div id="propertiesPanelClose" class="right">
+            //   <i class="fa fa-angle-right" />
+            // </div>
+          `</div>
           <div id="propertiesPanelBody" class="prkr-props-body">
           </div>
         </div>`);
