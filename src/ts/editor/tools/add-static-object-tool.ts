@@ -2,6 +2,7 @@ namespace PRKR.Editor.Tools {
 
   import Vector3 = THREE.Vector3;
   import Box3 = THREE.Box3;
+  import RectangleHelper = PRKR.Helpers.RectangleHelper;
   import BoundingBoxHelper = PRKR.Helpers.BoundingBoxHelper;
   import AddObjectStep = EditSteps.AddObjectStep;
   import ResultLevel = PRKR.Validators.ResultLevel;
@@ -30,15 +31,15 @@ namespace PRKR.Editor.Tools {
     /** Drawn rectangle raw (unadjusted) size. */
     private _rawSize: Vector3 = new Vector3();
     
-    /** Drawn room (adjusted, final) location. */
+    /** Drawn rectangle (adjusted, final) location. */
     private _location: Vector3 = new Vector3();
 
-    /** Drawn room (adjusted, final) size. */
+    /** Drawn rectangle (adjusted, final) size. */
     private _size: Vector3 = new Vector3();
 
     /** The helper bounding box displayed when the user draws. */
-    private _rawHelper: BoundingBoxHelper =
-      new BoundingBoxHelper(M.Box3.Unit, {
+    private _rawHelper: RectangleHelper =
+      new RectangleHelper(M.Box2.Unit, {
         useFaces: false,
         useLines: true,
         lineMaterial: C.Materials.Lines.Valid
