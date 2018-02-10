@@ -49,6 +49,11 @@ namespace PRKR.Editor.Tools {
       return true;
     }
 
+    public activate() {
+      // TODO message according to state
+      this._editor.setStatus('Click to select an object'); 
+    }
+
     public notifyMouseDown(e: JQueryMouseEventObject) {
 
       // Switch to "selecting" mode.
@@ -56,7 +61,7 @@ namespace PRKR.Editor.Tools {
       this._selectionTarget = this._target;
       this._mouseDownEvent = e;
 
-      this._updateCursor();
+      this._update();
     }
     
     public notifyMouseMove(e: JQueryMouseEventObject) {
@@ -81,7 +86,7 @@ namespace PRKR.Editor.Tools {
         this._getMoveTool().notifyMouseMove(e);
       } 
 
-      this._updateCursor();
+      this._update();
     }
 
     public notifyMouseUp(e: JQueryMouseEventObject) {
@@ -115,7 +120,7 @@ namespace PRKR.Editor.Tools {
 
       }
 
-      this._updateCursor();
+      this._update();
 
     }
 
@@ -123,7 +128,7 @@ namespace PRKR.Editor.Tools {
 
     /**
      * Updates the `_target` property with the closet object under the mouse
-     * cursor using the specified mouse event, `e`.
+     *  using the specified mouse event, `e`.
      * @returns `this._target`.
      */
     private _updateTarget(e: JQueryMouseEventObject): EditorObject {
@@ -137,10 +142,10 @@ namespace PRKR.Editor.Tools {
     }
 
     /**
-     * Sets the editor cursor based on the current state.
+     * Sets the editor  based on the current state.
      */
-    private _updateCursor(): void {
-      // In "moving" mode, we let the move tool set the cursor.
+    private _update(): void {
+      // In "moving" mode, we let the move tool set the .
       if (!this._moving) {
         let pointer: string = null;        
         if (this._target != null) {

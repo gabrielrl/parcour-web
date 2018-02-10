@@ -67,6 +67,23 @@ body {
   background: rgba(255, 255, 255, 0.5);  
 }
 
+#prkred-bottom {
+  position: absolute;
+  bottom: 0;
+  overflow: hidden;
+}
+
+#statusBar {
+  padding: 4px;
+
+  background: transparent;
+  color: black;
+  text-shadow: 0px 0px 3.5px white;
+
+  user-select: none;
+  cursor: default;
+}
+
 #propertiesPanelRoot {
   /* column */
   display: flex;
