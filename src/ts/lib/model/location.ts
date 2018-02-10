@@ -57,7 +57,7 @@ namespace PRKR.Model {
     }
 
     // Override.
-    protected _clone(source: Location) {
+    protected _copy(source: Location) {
       super._copy(source);
       this._kind = source.kind;
     }
