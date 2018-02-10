@@ -20,6 +20,7 @@
 /// <reference path="./tools/camera-pan-tool.ts" />
 /// <reference path="./tools/camera-rotate-tool.ts" />
 /// <reference path="./tools/doorway-placement-tool.ts" />
+/// <reference path="./tools/add-static-object-tool.ts" />
 /// <reference path="./tools/delegation.ts" />
 
 namespace PRKR.Editor {
@@ -170,7 +171,8 @@ namespace PRKR.Editor {
         new PRKR.Editor.Tools.RoomDrawingTool(this),
         new PRKR.Editor.Tools.CameraPanTool(this),
         new PRKR.Editor.Tools.CameraRotateTool(this),
-        new PRKR.Editor.Tools.DoorwayPlacementTool(this)
+        new PRKR.Editor.Tools.DoorwayPlacementTool(this),
+        new PRKR.Editor.Tools.AddStaticObjectTool(this)
       ];
 
       // Build tool map.
@@ -1040,6 +1042,11 @@ namespace PRKR.Editor {
             display: 'Doorways',
             image: 'fa-external-link-square',
             tool: this._toolMap['doorway-placement']
+          }, {
+            name: 'addStaticObject',
+            display: 'Static Object',
+            image: 'fa-cubes',
+            tool: this._toolMap['add-static-object']
           }]
         }, {
           name: 'locations',
