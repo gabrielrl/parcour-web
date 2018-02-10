@@ -238,7 +238,6 @@ namespace PRKR.Editor.Tools {
         location: this._location.toArray(),
         size: this._size.toArray()
       })
-      // return new AddRoomStep(this._location, this._size);
     }
 
     /**
