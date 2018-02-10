@@ -100,11 +100,6 @@ namespace PRKR.Helpers {
 
       if (!plane) { throw new Error('plane must be defined'); }
 
-      // if (plane !== OrthoPlane.XZ) {
-      //   // TODO support other ortho planes...
-      //   throw new Error('RectangleLineHelper only support the XZ ortho plane... for now');
-      // }
-
       let mapping = getMappingFromOrthoPlane(plane);
 
       array.push(mapping(rect.min.x, rect.min.y));
@@ -115,18 +110,6 @@ namespace PRKR.Helpers {
       array.push(mapping(rect.min.x, rect.max.y));
       array.push(mapping(rect.min.x, rect.max.y));
       array.push(mapping(rect.min.x, rect.min.y));
-
-      // array.push(new Vector3(rect.min.x, 0, rect.min.y));
-      // array.push(new Vector3(rect.max.x, 0, rect.min.y));
-
-      // array.push(new Vector3(rect.max.x, 0, rect.min.y));
-      // array.push(new Vector3(rect.max.x, 0, rect.max.y));
-
-      // array.push(new Vector3(rect.max.x, 0, rect.max.y));
-      // array.push(new Vector3(rect.min.x, 0, rect.max.y));
-
-      // array.push(new Vector3(rect.min.x, 0, rect.max.y));
-      // array.push(new Vector3(rect.min.x, 0, rect.min.y));
     }
   }
 
