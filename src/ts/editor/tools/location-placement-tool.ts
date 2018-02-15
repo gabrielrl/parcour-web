@@ -76,7 +76,7 @@ namespace PRKR.Editor.Tools {
         });
     }
 
-    /** Gets if the start placement tool is enabled. */
+    /** Gets if the location placement tool is enabled. */
     get enabled() { return true; }
 
     get name() { return 'location-placement'; }
@@ -90,6 +90,9 @@ namespace PRKR.Editor.Tools {
 
       this._editor.addToScene(this._helper);
       this._editor.addToScene(this._tileHelper);
+
+      this._editor.setPointer('crosshair');
+      this._editor.setStatus(`Click on the floor to set ${ LocationPlacementTool.kindToString(this._kind) } location`);
     }
 
     public deactivate() {
@@ -140,6 +143,18 @@ namespace PRKR.Editor.Tools {
       this._placing = false;
 
       this._editor.requestRender();
+    }
+
+    /**
+     * Gets a string from a LocationKind
+     * @param kind a LocationKind enum instance
+     */
+    public static kindToString(kind: LocationKind) {
+      if (kind === LocationKind.Start) {
+        return 'Start';
+      } else {
+        return 'End';
+      }
     }
 
     /**
