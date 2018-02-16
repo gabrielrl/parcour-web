@@ -10,6 +10,9 @@ namespace PRKR.Editor.Tools {
 
     private _editor: ParcourEditor = null;
 
+    /**
+     * Closest object under the mouse when `_updateTarget` was last called.
+     */
     private _target: EditorObject = null;
 
     /**
@@ -50,8 +53,7 @@ namespace PRKR.Editor.Tools {
     }
 
     public activate() {
-      // TODO message according to state
-      this._editor.setStatus('Click to select an object'); 
+      this._setStatusMessage();
     }
 
     public notifyMouseDown(e: JQueryMouseEventObject) {
@@ -66,6 +68,11 @@ namespace PRKR.Editor.Tools {
     
     public notifyMouseMove(e: JQueryMouseEventObject) {
 
+      if (this._moving) {
+        this._getMoveTool().notifyMouseMove(e);
+        return;
+      } 
+      
       this._updateTarget(e);
 
       if (this._selecting) {
@@ -74,17 +81,15 @@ namespace PRKR.Editor.Tools {
           // Moving the mouse after having clicked a selected object...
           // Switch to "move mode".
           this._moving = true;
-          this._getMoveTool().notifyMouseDown(this._mouseDownEvent);
+          let moveTool = this._getMoveTool();
+          moveTool.activate();
+          moveTool.notifyMouseDown(this._mouseDownEvent);
           this._selecting = false;
           this._selectionTarget = null;
-          // this._mouseDownEvent = null;
           
+          return;
         }
-      } 
-      
-      if (this._moving) {
-        this._getMoveTool().notifyMouseMove(e);
-      } 
+      }
 
       this._update();
     }
@@ -115,7 +120,9 @@ namespace PRKR.Editor.Tools {
 
       } else if (this._moving) {
 
-        this._getMoveTool().notifyMouseUp(e);
+        let moveTool = this._getMoveTool();        
+        moveTool.notifyMouseUp(e);
+        moveTool.deactivate();
         this._moving = false;   
 
       }
@@ -156,7 +163,52 @@ namespace PRKR.Editor.Tools {
           }
         }
         this._editor.setPointer(pointer);
+        this._setStatusMessage();
       }
+    }
+
+    private _setStatusMessage() {
+      // console.log('_setStatusMesasge');
+      this._editor.setStatus(this._buildStatusMessage());
+    }
+
+    private _buildStatusMessage() {
+
+      if (this._selecting) {
+
+        if (this._selectionTarget) {
+          if (this._target && this._selectionTarget === this._target) {
+            return `Release to select '${ this._target.name }'`;
+          } else {
+            return 'Release to cancel selection';
+          }
+          
+        } else {
+          return 'Release to clear selection';
+        }
+
+      } else {
+
+        let sel = this._editor.selectedObjects;
+        if (sel.length === 0) {
+          if (this._target) {
+            return `Click to select '${ this._target.name }'`;
+          } else {
+            return 'Click an object to select it';
+          }
+
+        } else {          
+          if (this._target) {
+            if (sel.indexOf(this._target) !== -1) {
+              return `Click and drag to move '${ this._target.name }'`
+            } else {
+              return `Click to select '${ this._target.name }'. CTRL to multi-select`;
+            }
+          } else {
+            return 'Click to clear selection';
+          }          
+        }      
+      } 
     }
 
     private _moveTool: MoveTool = null;
