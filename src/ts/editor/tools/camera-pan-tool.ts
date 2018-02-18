@@ -24,14 +24,18 @@ namespace PRKR.Editor.Tools {
 
     public get enabled() { return true; }
 
+    public activate() {
+      this._editor.setPointer('-webkit-grab');
+      this._editor.setStatus('Click and drag to pan camera');
+    }
+
     public notifyMouseDown(event: JQueryMouseEventObject): void {
 
       this._panning = true;
       this._origin.set(event.offsetX, event.offsetY);
       this._editor.getCameraPosition(this._originalCameraPosition);
 
-      console.debug('CameraPan mouse down', 'origin=', this._origin);
-
+      this._editor.setPointer('-webkit-grabbing');
     }
 
     public notifyMouseMove(event: JQueryMouseEventObject): void {
@@ -71,6 +75,7 @@ namespace PRKR.Editor.Tools {
     public notifyMouseUp(event: JQueryMouseEventObject): void {
 
       this._panning = false;
+      this._editor.setPointer('-webkit-grab');
 
     }
   }

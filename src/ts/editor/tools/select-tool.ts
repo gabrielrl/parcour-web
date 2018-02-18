@@ -10,6 +10,9 @@ namespace PRKR.Editor.Tools {
 
     private _editor: ParcourEditor = null;
 
+    /**
+     * Closest object under the mouse when `_updateTarget` was last called.
+     */
     private _target: EditorObject = null;
 
     /**
@@ -49,6 +52,10 @@ namespace PRKR.Editor.Tools {
       return true;
     }
 
+    public activate() {
+      this._setStatusMessage();
+    }
+
     public notifyMouseDown(e: JQueryMouseEventObject) {
 
       // Switch to "selecting" mode.
@@ -56,11 +63,16 @@ namespace PRKR.Editor.Tools {
       this._selectionTarget = this._target;
       this._mouseDownEvent = e;
 
-      this._updateCursor();
+      this._update();
     }
     
     public notifyMouseMove(e: JQueryMouseEventObject) {
 
+      if (this._moving) {
+        this._getMoveTool().notifyMouseMove(e);
+        return;
+      } 
+      
       this._updateTarget(e);
 
       if (this._selecting) {
@@ -69,19 +81,17 @@ namespace PRKR.Editor.Tools {
           // Moving the mouse after having clicked a selected object...
           // Switch to "move mode".
           this._moving = true;
-          this._getMoveTool().notifyMouseDown(this._mouseDownEvent);
+          let moveTool = this._getMoveTool();
+          moveTool.activate();
+          moveTool.notifyMouseDown(this._mouseDownEvent);
           this._selecting = false;
           this._selectionTarget = null;
-          // this._mouseDownEvent = null;
           
+          return;
         }
-      } 
-      
-      if (this._moving) {
-        this._getMoveTool().notifyMouseMove(e);
-      } 
+      }
 
-      this._updateCursor();
+      this._update();
     }
 
     public notifyMouseUp(e: JQueryMouseEventObject) {
@@ -110,12 +120,14 @@ namespace PRKR.Editor.Tools {
 
       } else if (this._moving) {
 
-        this._getMoveTool().notifyMouseUp(e);
+        let moveTool = this._getMoveTool();        
+        moveTool.notifyMouseUp(e);
+        moveTool.deactivate();
         this._moving = false;   
 
       }
 
-      this._updateCursor();
+      this._update();
 
     }
 
@@ -123,7 +135,7 @@ namespace PRKR.Editor.Tools {
 
     /**
      * Updates the `_target` property with the closet object under the mouse
-     * cursor using the specified mouse event, `e`.
+     *  using the specified mouse event, `e`.
      * @returns `this._target`.
      */
     private _updateTarget(e: JQueryMouseEventObject): EditorObject {
@@ -137,10 +149,10 @@ namespace PRKR.Editor.Tools {
     }
 
     /**
-     * Sets the editor cursor based on the current state.
+     * Sets the editor  based on the current state.
      */
-    private _updateCursor(): void {
-      // In "moving" mode, we let the move tool set the cursor.
+    private _update(): void {
+      // In "moving" mode, we let the move tool set the .
       if (!this._moving) {
         let pointer: string = null;        
         if (this._target != null) {
@@ -151,7 +163,52 @@ namespace PRKR.Editor.Tools {
           }
         }
         this._editor.setPointer(pointer);
+        this._setStatusMessage();
       }
+    }
+
+    private _setStatusMessage() {
+      // console.log('_setStatusMesasge');
+      this._editor.setStatus(this._buildStatusMessage());
+    }
+
+    private _buildStatusMessage() {
+
+      if (this._selecting) {
+
+        if (this._selectionTarget) {
+          if (this._target && this._selectionTarget === this._target) {
+            return `Release to select '${ this._target.name }'`;
+          } else {
+            return 'Release to cancel selection';
+          }
+          
+        } else {
+          return 'Release to clear selection';
+        }
+
+      } else {
+
+        let sel = this._editor.selectedObjects;
+        if (sel.length === 0) {
+          if (this._target) {
+            return `Click to select '${ this._target.name }'`;
+          } else {
+            return 'Click an object to select it';
+          }
+
+        } else {          
+          if (this._target) {
+            if (sel.indexOf(this._target) !== -1) {
+              return `Click and drag to move '${ this._target.name }'`
+            } else {
+              return `Click to select '${ this._target.name }'. CTRL to multi-select`;
+            }
+          } else {
+            return 'Click to clear selection';
+          }          
+        }      
+      } 
     }
 
     private _moveTool: MoveTool = null;

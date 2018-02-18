@@ -53,6 +53,10 @@ namespace PRKR.Editor.Tools {
 
     private _movement: Vector3 = new Vector3();
 
+    public activate() {
+      this._editor.setStatus(`Click and drag to move ${ this._buildObjectsString() }`);
+    }
+
     public notifyMouseDown(event: JQueryMouseEventObject): void {
 
       if (this._moving) return;
@@ -99,6 +103,7 @@ namespace PRKR.Editor.Tools {
         this._editor.addToScene(this._sceneObject);
         this._editor.requestRender();
         this._editor.setPointer('-webkit-grabbing');
+        this._editor.setStatus(`Release to move ${ this._buildObjectsString() }`);
       }
     }
 
@@ -214,6 +219,22 @@ namespace PRKR.Editor.Tools {
 
       let editStep = new EditSteps.ComposedStep(targetSteps);
       return editStep;
+    }
+
+    /**
+     * Builds a string to describe the objects that are
+     * currently selected.
+     */
+    private _buildObjectsString(): string {
+
+      var objectsString = '';
+      let sel = this._editor.selectedObjects;
+      if (sel.length === 1) {
+        objectsString = `'${ sel[0].name}'`;
+      } else {
+        objectsString = `${ sel.length } objects`;
+      }
+      return objectsString;
     }
 
     private _buildTargetHelpers(
