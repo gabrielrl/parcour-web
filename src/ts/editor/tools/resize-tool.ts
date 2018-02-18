@@ -53,6 +53,9 @@ namespace PRKR.Editor.Tools {
     /** Override. */
     public activate() {
       this._reset();
+      // TODO Better status messages for this tool.
+      //      and better mouse pointers too.
+      this._editor.setStatus('Click and drag handles to resize object');
       this._editor.requestRender();
     }
 
