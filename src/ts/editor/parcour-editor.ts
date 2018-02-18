@@ -42,7 +42,7 @@ namespace PRKR.Editor {
   import StepResult = PRKR.Editor.EditSteps.StepResult;
   import SetPropertyStep = PRKR.Editor.EditSteps.SetPropertyStep;
 
-  export class ParcourEditor implements ParcourEditor /*, EditorApi */ {
+  export class ParcourEditor {
 
     constructor(configuration: PRKR.Configuration, model?: Parcour, viewport?: HTMLElement) {
       if (!configuration) {
@@ -103,15 +103,22 @@ namespace PRKR.Editor {
     private _palette: Components.AssetPalette = null;
 
     /** The various top level containers that makes the editor's DOM layout */
-    private _domLayout
-      : { top: HTMLDivElement, left: HTMLDivElement, right: HTMLDivElement, main: HTMLDivElement }
-      = null;
+    private _domLayout : {
+      top: HTMLDivElement,
+      left: HTMLDivElement,
+      right: HTMLDivElement,
+      main: HTMLDivElement,
+      bottom: HTMLDivElement
+    } = null;
 
     /** The ribbon menu. */
     private _ribbon: Components.Ribbon;
 
     /** The properties panel. */
     private _propertiesPanel: Components.PropertiesPanel;
+
+    /** jQuery wrapper around the status bar DIV.  */
+    private _$statusBar: JQuery;
 
     /** The three.js WebGL scene. */
     private _scene: THREE.Scene;
@@ -184,8 +191,7 @@ namespace PRKR.Editor {
       
       this._initRibbon();
       this._initPropertiesPanel();
-      // this._initToolBar();
-      // this._initAssetPalette();
+      this._initStatusBar();
 
       this._setActiveTool(this._tools[0]);
 
@@ -710,6 +716,10 @@ namespace PRKR.Editor {
       this._renderer.domElement.style.cursor = pointerName;
     }
 
+    public setStatus(message: string) {
+      this._$statusBar.html(message);
+    }
+
     public getCameraRig(): CameraRig {
       return this._cameras;
     }
@@ -926,11 +936,15 @@ namespace PRKR.Editor {
       let main = document.createElement('div');
       main.id = 'prkred-main';
 
+      let bottom = document.createElement('div');
+      bottom.id = 'prkred-bottom';
+
       let layout = {
         top: top,
         left: left,
         right: right,
-        main: main
+        main: main,
+        bottom: bottom
       };
       
       this._domLayout = layout;
@@ -939,6 +953,7 @@ namespace PRKR.Editor {
       this._viewport.appendChild(left);
       this._viewport.appendChild(main);
       this._viewport.appendChild(right);
+      this._viewport.appendChild(bottom);
 
       return;
     }
@@ -1088,13 +1103,20 @@ namespace PRKR.Editor {
     ///// PROPERTIES PANEL /////
 
     private _initPropertiesPanel() {
-      // TODO.
 
       let props = new Components.PropertiesPanel(this);
 
       this._domLayout.right.appendChild(props.dom);
 
       this._propertiesPanel = props;
+    }
+
+    private _initStatusBar() {
+
+      let $statusBar = $('<div id="statusBar"></div>');
+      this._$statusBar = $statusBar;
+
+      this._domLayout.bottom.appendChild($statusBar[0]);
     }
 
     private _initThreeJs() {

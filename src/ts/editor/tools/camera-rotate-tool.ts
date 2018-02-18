@@ -23,6 +23,11 @@ namespace PRKR.Editor.Tools {
     get displayName() { return 'Rotate Camera'; }
     get enabled() { return true; }
 
+    public activate() {
+      this._editor.setPointer('-webkit-grab');
+      this._editor.setStatus('Click and drag to rotate camera');
+    }
+
     public notifyMouseDown(event: JQueryMouseEventObject): void {
 
       this._rotating = true;
@@ -31,11 +36,12 @@ namespace PRKR.Editor.Tools {
       this._originalElevation = rig.elevation;
       this._originalOrientation = rig.orientation;
 
-      console.debug(
-        'CameraRotate mouse down',
-        'elevation=', rig.elevation,
-        'orientation=', rig.orientation);
-      
+      // console.debug(
+      //   'CameraRotate mouse down',
+      //   'elevation=', rig.elevation,
+      //   'orientation=', rig.orientation);
+
+      this._editor.setPointer('-webkit-grabbing');
     }
 
     public notifyMouseMove(event: JQueryMouseEventObject): void {
@@ -64,6 +70,7 @@ namespace PRKR.Editor.Tools {
     public notifyMouseUp(event: JQueryMouseEventObject): void {
 
       this._rotating = false;
+      this._editor.setPointer('-webkit-grab');
 
     }
 

@@ -38,6 +38,7 @@ namespace PRKR.Editor.Tools {
       this._editor.addToScene(this._helper);
       this._helper.visible = false;
       this._editor.setPointer('crosshair');
+      this._editor.setStatus('Click on the floor near a wall to add a doorway');
     }
 
     deactivate(): void {
