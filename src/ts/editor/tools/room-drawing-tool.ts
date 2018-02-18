@@ -48,6 +48,9 @@ namespace PRKR.Editor.Tools {
     /** Drawn room (adjusted, final) size. */
     private _size: Vector3 = new Vector3();
 
+    /** Default status message. */
+    private static DEFAULT_STATUS: string = 'Click and drag to add a room by drawing a rectangle';
+
     /** The helper bounding box displayed when the user draws. */
     private _rawHelper: BoundingBoxHelper =
       new BoundingBoxHelper(M.Box3.Unit, {
@@ -81,6 +84,9 @@ namespace PRKR.Editor.Tools {
       this._drawing = false;  
       this._editor.addToScene(this._rawHelper);
       this._editor.addToScene(this._helper);
+
+      this._editor.setPointer('crosshair');
+      this._editor.setStatus(RoomDrawingTool.DEFAULT_STATUS);
     }
 
     public deactivate() {
@@ -101,6 +107,8 @@ namespace PRKR.Editor.Tools {
         this._validateDrawing();
         this._updateHelpers();
         this._editor.requestRender();
+
+        this._editor.setStatus('Release to add room');
       }
     }
 
@@ -132,6 +140,7 @@ namespace PRKR.Editor.Tools {
       
       this._drawing = false;
       this._updateHelpers();
+      this._editor.setStatus(RoomDrawingTool.DEFAULT_STATUS);
       this._editor.requestRender();
 
     }
