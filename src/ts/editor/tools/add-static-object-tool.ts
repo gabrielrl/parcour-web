@@ -16,6 +16,9 @@ namespace PRKR.Editor.Tools {
     /** Indicates if the user is currently drawing. */
     private _drawing: boolean = false;
 
+    /** The current drawing step. */
+    private _drawingStep: number = 0;
+
     /** Indicates if the current drawing is valid. */
     private _drawingValid: boolean = true;
 
@@ -71,8 +74,11 @@ namespace PRKR.Editor.Tools {
 
     public activate() {
       this._drawing = false;
+
       this._editor.addToScene(this._rawHelper);
       this._editor.addToScene(this._helper);
+      this._editor.setPointer('crosshair');
+      this._editor.setStatus(this._buildStatusMessage());
     }
 
     public deactivate() {
@@ -257,6 +263,19 @@ namespace PRKR.Editor.Tools {
         }        
       } 
       return null;      
+    }
+
+    /**
+     * Builds a message for the status bar from the current state.
+     */
+    private _buildStatusMessage() {
+
+      if (!this._drawing) {
+        return 'Click and drag inside an area to insert an object';
+      } else {
+        return 'TODO';
+      }
+
     }
     
   }
