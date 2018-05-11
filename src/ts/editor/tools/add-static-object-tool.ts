@@ -1,5 +1,6 @@
 namespace PRKR.Editor.Tools {
 
+  import Vector2 = THREE.Vector2;
   import Vector3 = THREE.Vector3;
   import Box3 = THREE.Box3;
   import RectangleHelper = PRKR.Helpers.RectangleHelper;
@@ -7,6 +8,7 @@ namespace PRKR.Editor.Tools {
   import AddObjectStep = EditSteps.AddObjectStep;
   import ResultLevel = PRKR.Validators.ResultLevel;
   import C = PRKR.Editor.Tools.Constants;
+  import EmbeddedRectanglesHelper = PRKR.Helpers.EmbeddedRectanglesHelper;
 
   /**
    * A Tool to insert new static objects by drawing shapes.
@@ -40,6 +42,9 @@ namespace PRKR.Editor.Tools {
     /** Drawn rectangle (adjusted, final) size. */
     private _size: Vector3 = new Vector3();
 
+    /** Rectangle on the floor helper. */
+    private _firstStepHelper: EmbeddedRectanglesHelper = new EmbeddedRectanglesHelper();
+
     /** The helper bounding box displayed when the user draws. */
     private _rawHelper: RectangleHelper =
       new RectangleHelper(M.Box2.Unit, {
@@ -55,8 +60,7 @@ namespace PRKR.Editor.Tools {
         useLines: false,
         faceMaterial: C.Materials.Faces.Valid
       });
-    
-    
+
     constructor(private _editor: ParcourEditor) {
       super();
 
@@ -77,14 +81,16 @@ namespace PRKR.Editor.Tools {
 
       this._editor.addToScene(this._rawHelper);
       this._editor.addToScene(this._helper);
+      this._editor.addToScene(this._firstStepHelper);
       this._editor.setPointer('crosshair');
       this._editor.setStatus(this._buildStatusMessage());
     }
 
     public deactivate() {
       this._drawing = false;
-      this._editor.removeFromScene(this._rawHelper);
+      this._editor.removeFromScene(this._firstStepHelper);
       this._editor.removeFromScene(this._helper);
+      this._editor.removeFromScene(this._rawHelper);
     }
 
 
@@ -95,28 +101,31 @@ namespace PRKR.Editor.Tools {
         this._start = position;
         this._end = position;
         this._drawing = true;
+        this._drawingStep = 0;
 
         this._computeLocationAndSize();
         this._validateDrawing();
-        this._updateHelpers();
+        this._updateHelpers(position);
         this._editor.requestRender();
       }
     }
 
     public notifyMouseMove(event: JQueryMouseEventObject): void {
-      
+
+      let position = this._getPosition(event);
+     
       if (this._drawing) {
 
-        let position = this._getPosition(event);
         if (position && position.areaId === this._start.areaId) {
           this._end = position;
 
           this._computeLocationAndSize();
           this._validateDrawing();
-          this._updateHelpers();
-          this._editor.requestRender();
         }
       }
+      
+      this._updateHelpers(position);
+      this._editor.requestRender();      
     }
 
     public notifyMouseUp(event: JQueryMouseEventObject): void {
@@ -130,7 +139,7 @@ namespace PRKR.Editor.Tools {
       }
       
       this._drawing = false;
-      this._updateHelpers();
+      this._updateHelpers(null);
       this._editor.requestRender();
 
     }
@@ -141,14 +150,50 @@ namespace PRKR.Editor.Tools {
      * `_computeLocationAndSize` must have been called prior to calling
      * this method.
      */
-    private _updateHelpers() {
+    private _updateHelpers(position: AreaLocation) {
       if (!this._drawing) {
 
-        // Hide the helpers
+        // Hide some helpers.
         this._rawHelper.visible = false;
         this._helper.visible = false;
 
-      } else {
+        // Show some helpers.
+        if (position && position.areaId) {
+          let box = this._getAreaFloorBox(position.areaId);
+          // let area = <PRKR.Model.Area>this._editor.getObjectById(position.areaId).model;
+          // let min = new Vector2(area.location.x, area.location.z);
+          // let max = new Vector2(area.location.x + area.size.x, area.location.z + area.size.z) 
+          // let box = new THREE.Box2(min, max);
+          this._firstStepHelper.setRect1(box);
+
+          let min = new Vector2(position.location.x, position.location.z);
+          let max = new Vector2(position.location.x, position.location.z);
+          box.set(min, max);
+          this._firstStepHelper.setRect2(box);    
+          this._firstStepHelper.visible = true;      
+
+        } else {
+          this._firstStepHelper.visible = false;
+        }
+
+      } else { // this._drawing == true
+
+        if (this._drawingStep === 0) {
+          // Drawing the floor-level shape (first step).
+
+          let box = this._getAreaFloorBox(this._start.areaId);
+          this._firstStepHelper.setRect1(box);
+
+          let minx = Math.min(this._start.location.x, this._end.location.x);
+          let maxx = Math.max(this._start.location.x, this._end.location.x);
+          let miny = Math.min(this._start.location.z, this._end.location.z);
+          let maxy = Math.max(this._start.location.z, this._end.location.z);
+          let min = new Vector2(minx, miny);
+          let max = new Vector2(maxx, maxy);
+          box.set(min, max);
+          this._firstStepHelper.setRect2(box);    
+          this._firstStepHelper.visible = true;      
+        }
 
         // Sets the helper's position and scale.
         this._rawHelper.position.copy(this._rawLocation);
@@ -176,6 +221,15 @@ namespace PRKR.Editor.Tools {
         this._helper.visible = true;
 
       } 
+    }
+
+    // Good candidate for a utility function.
+    private _getAreaFloorBox(areaId): THREE.Box2 {
+      let area = <PRKR.Model.Area>this._editor.getObjectById(areaId).model;
+      let min = new Vector2(area.location.x, area.location.z);
+      let max = new Vector2(area.location.x + area.size.x, area.location.z + area.size.z) 
+      let box = new THREE.Box2(min, max);
+      return box;
     }
 
     /**
