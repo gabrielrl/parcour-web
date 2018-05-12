@@ -96,27 +96,42 @@ namespace PRKR.Editor.Tools {
 
     public notifyMouseDown(event: JQueryMouseEventObject): void {
 
-      let position = this._getPosition(event);
-      if (position) {
-        this._start = position;
-        this._end = position;
-        this._drawing = true;
-        this._drawingStep = 0;
+      if (event.which === 3) { // right button.
 
-        this._computeLocationAndSize();
-        this._validateDrawing();
-        this._updateHelpers(position);
-        this._editor.requestRender();
+        if (this._drawing) {
+          // cancel drawing.
+          this._drawing = false;
+          this._drawingStep = 0;
+          event.preventDefault();
+        }
+
+      } else if (event.which === 1) { // left button.
+
+        if (!this._drawing) {
+
+          let position = this._getAreaLocation(event);
+          if (position && position.areaId) {
+            this._start = position;
+            this._end = position;
+            this._drawing = true;
+            this._drawingStep = 0;
+
+            this._computeLocationAndSize();
+            this._validateDrawing();
+            this._updateHelpers(position);
+            this._editor.requestRender();
+          }
+        }
       }
     }
 
     public notifyMouseMove(event: JQueryMouseEventObject): void {
 
-      let position = this._getPosition(event);
+      let position = this._getAreaLocation(event);
      
       if (this._drawing) {
 
-        if (position && position.areaId === this._start.areaId) {
+        if (position /* && position.areaId === this._start.areaId */) {
           this._end = position;
 
           this._computeLocationAndSize();
@@ -130,20 +145,32 @@ namespace PRKR.Editor.Tools {
 
     public notifyMouseUp(event: JQueryMouseEventObject): void {
 
-      if (this._drawing && this._drawingValid) {
-        let editStep = this._buildEditStep();
-        let result = this._editor.addEditStep(editStep);
-        if (result.dirtyIds.length > 0) {
-          this._editor.selectByIds(result.dirtyIds);
+      if (event.which === 1) { // left button
+
+        if (this._drawing) {
+          if (this._drawingStep === 0) {
+
+            // move to next step.
+            this._drawingStep = 1;
+
+          } else {
+
+            // TODO
+            // if (this._drawing && this._drawingValid) {
+            //   let editStep = this._buildEditStep();
+            //   let result = this._editor.addEditStep(editStep);
+            //   if (result.dirtyIds.length > 0) {
+            //     this._editor.selectByIds(result.dirtyIds);
+            //   }
+            // }
+            this._drawing = false;
+
+          }
+          this._updateHelpers(null);
+          this._editor.requestRender();          
         }
       }
-      
-      this._drawing = false;
-      this._updateHelpers(null);
-      this._editor.requestRender();
-
     }
-
 
     /**
      * Updates the helpers location, size and materials.
@@ -159,7 +186,7 @@ namespace PRKR.Editor.Tools {
 
         // Show some helpers.
         if (position && position.areaId) {
-          let box = this._getAreaFloorBox(position.areaId);
+          let box = this._getAreaFloorBox2(position.areaId);
           // let area = <PRKR.Model.Area>this._editor.getObjectById(position.areaId).model;
           // let min = new Vector2(area.location.x, area.location.z);
           // let max = new Vector2(area.location.x + area.size.x, area.location.z + area.size.z) 
@@ -181,16 +208,20 @@ namespace PRKR.Editor.Tools {
         if (this._drawingStep === 0) {
           // Drawing the floor-level shape (first step).
 
-          let box = this._getAreaFloorBox(this._start.areaId);
+          let box = this._getAreaFloorBox2(this._start.areaId);
           this._firstStepHelper.setRect1(box);
 
-          let minx = Math.min(this._start.location.x, this._end.location.x);
-          let maxx = Math.max(this._start.location.x, this._end.location.x);
-          let miny = Math.min(this._start.location.z, this._end.location.z);
-          let maxy = Math.max(this._start.location.z, this._end.location.z);
-          let min = new Vector2(minx, miny);
-          let max = new Vector2(maxx, maxy);
-          box.set(min, max);
+          // let minx = Math.min(this._start.location.x, this._end.location.x);
+          // let maxx = Math.max(this._start.location.x, this._end.location.x);
+          // let miny = Math.min(this._start.location.z, this._end.location.z);
+          // let maxy = Math.max(this._start.location.z, this._end.location.z);
+          // let min = new Vector2(minx, miny);
+          // let max = new Vector2(maxx, maxy);
+          // box.set(min, max);
+          box.setFromPoints([
+            new Vector2(this._location.x, this._location.z),
+            new Vector2(this._location.x + this._size.x, this._location.z + this._size.z)
+          ]);
           this._firstStepHelper.setRect2(box);    
           this._firstStepHelper.visible = true;      
         }
@@ -201,11 +232,17 @@ namespace PRKR.Editor.Tools {
         helperScale.copy(this._rawSize);        
         // Prevent scaling by zero.
         if (helperScale.x === 0) helperScale.x = 0.001;
+        if (helperScale.y === 0) helperScale.y = 0.001;
         if (helperScale.z === 0) helperScale.z = 0.001;
         
         // Set the adjusted helper's position and scale.
         this._helper.position.copy(this._location);
-        this._helper.scale.copy(this._size);
+        helperScale = this._helper.scale;
+        helperScale.copy(this._size);
+        // Prevent scaling by zero.
+        if (helperScale.x === 0) helperScale.x = 0.001;
+        if (helperScale.y === 0) helperScale.y = 0.001;
+        if (helperScale.z === 0) helperScale.z = 0.001;
 
         // // Set the helpers color according to drawing validity.
         // if (this._drawingValid) {
@@ -224,11 +261,20 @@ namespace PRKR.Editor.Tools {
     }
 
     // Good candidate for a utility function.
-    private _getAreaFloorBox(areaId): THREE.Box2 {
+    private _getAreaFloorBox2(areaId): THREE.Box2 {
       let area = <PRKR.Model.Area>this._editor.getObjectById(areaId).model;
       let min = new Vector2(area.location.x, area.location.z);
       let max = new Vector2(area.location.x + area.size.x, area.location.z + area.size.z) 
       let box = new THREE.Box2(min, max);
+      return box;
+    }
+
+    /** Gets a slim Box3 of just the floor of the specified area. */
+    private _getAreaFloorBox3(areaId): THREE.Box3 {
+      let area = <PRKR.Model.Area>this._editor.getObjectById(areaId).model;
+      let min = new Vector3(area.location.x, 0, area.location.z);
+      let max = new Vector3(area.location.x + area.size.x, 0, area.location.z + area.size.z) 
+      let box = new THREE.Box3(min, max);
       return box;
     }
 
@@ -249,19 +295,19 @@ namespace PRKR.Editor.Tools {
         1,
         Math.max(start.z, end.z)
       );
-      
-      // let min = new Vector3(
-      //   Math.floor(rawMin.x), rawMin.y, Math.floor(rawMin.z)
-      // );
-      // let max = new Vector3(
-      //   Math.ceil(rawMax.x), rawMax.y, Math.ceil(rawMax.z)
-      // );
+
+      // Clamp values inside start area's floor.
+      let floor = this._getAreaFloorBox3(this._start.areaId);
+      let min = new Vector3();
+      min.copy(rawMin).clamp(floor.min, floor.max);
+      let max = new Vector3();
+      max.copy(rawMax).clamp(floor.min, floor.max);
 
       this._rawLocation.copy(rawMin);
       this._rawSize.subVectors(rawMax, rawMin);
       
-      this._location.copy(rawMin);
-      this._size.subVectors(rawMax, rawMin);
+      this._location.copy(min);
+      this._size.subVectors(max, min);
   }
 
 
@@ -300,7 +346,7 @@ namespace PRKR.Editor.Tools {
     /**
      * Gets the current "area location" from mouse event.
      */
-    private _getPosition(mouseEvent: JQueryMouseEventObject): AreaLocation {
+    private _getAreaLocation(mouseEvent: JQueryMouseEventObject): AreaLocation {
 
       let intersect = this._editor.projectMouseOnFloor(
         new THREE.Vector2(mouseEvent.clientX, mouseEvent.clientY));
@@ -308,14 +354,11 @@ namespace PRKR.Editor.Tools {
       if (intersect) {
 
         let area = this._editor.getAreaAtLocation(intersect.point);
-        if (area) {
-
-          return {
-            areaId: area.id,
-            location: intersect.point
-          };
-        }        
-      } 
+        return {
+          location: intersect.point,
+          areaId: area ? area.id : null
+        };
+      }
       return null;      
     }
 
@@ -326,6 +369,8 @@ namespace PRKR.Editor.Tools {
 
       if (!this._drawing) {
         return 'Click and drag inside an area to insert an object';
+      } else if (this._drawingStep === 0) {
+        return 'Drag to draw the shape of the object on the floor';
       } else {
         return 'TODO';
       }
