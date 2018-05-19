@@ -504,6 +504,48 @@ namespace PRKR.Editor {
       return intersections[0] || null;
     }
 
+    /**
+     * 
+     * @param mouse Mouse coordinates.
+     * @param p A point in the plane.
+     * @param n The plane normal.
+     */
+    public projectMouseOnPlane(mouse: THREE.Vector2, p: THREE.Vector3, n: THREE.Vector3): THREE.Intersection {
+
+      // hijack the floor to use as any plane.
+      let oldPosition = new THREE.Vector3();
+      oldPosition.copy(this._floor.position);
+      let oldRotation = new THREE.Quaternion();
+      oldRotation.copy(this._floor.quaternion);
+
+      this._floor.position.copy(p);
+      this._floor.quaternion.setFromUnitVectors(M.Vector3.PositiveY, n);
+      this._floor.updateMatrixWorld(true);
+
+      let candidates: THREE.Object3D[] = [ this._floor ];
+      
+      // Adjust (x, y) to take account of the renderer's position relative to
+      // the windows' client area
+      // TODO ... better, this way doesn't take hierarchy into account. ;)
+      let domElement = this._domLayout.main;
+      let x = mouse.x - domElement.offsetLeft;
+      let y = mouse.y - domElement.offsetTop;
+
+      // Raycast.
+      this._raycaster.setFromCamera({
+        x: (x / domElement.clientWidth) * 2 - 1,
+        y: -((y / domElement.clientHeight) * 2 - 1)
+      }, this._activeCamera);
+      let intersections = this._raycaster.intersectObjects(candidates);
+
+      // Restore the floor.
+      this._floor.position.copy(oldPosition);
+      this._floor.quaternion.copy(oldRotation);
+      this._floor.updateMatrixWorld(true);
+
+      return intersections[0] || null;
+    }
+
     public projectMouseOnObjects(
       mouse: THREE.Vector2, objects: THREE.Object3D[]
     ): THREE.Intersection[] {
