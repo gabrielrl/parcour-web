@@ -127,9 +127,15 @@ namespace PRKR.Editor.Tools {
 
     public notifyMouseMove(event: JQueryMouseEventObject): void {
 
-      let position = this._getAreaLocation(event);
+      let position: AreaLocation = null;
      
       if (this._drawing) {
+
+        if (this._drawingStep === 0) {
+          position = this._getAreaLocation(event)
+        } else if (this._drawingStep === 1) {
+          position = this._getVerticalLocation(event);
+        }
 
         if (position /* && position.areaId === this._start.areaId */) {
           this._end = position;
@@ -187,10 +193,6 @@ namespace PRKR.Editor.Tools {
         // Show some helpers.
         if (position && position.areaId) {
           let box = this._getAreaFloorBox2(position.areaId);
-          // let area = <PRKR.Model.Area>this._editor.getObjectById(position.areaId).model;
-          // let min = new Vector2(area.location.x, area.location.z);
-          // let max = new Vector2(area.location.x + area.size.x, area.location.z + area.size.z) 
-          // let box = new THREE.Box2(min, max);
           this._firstStepHelper.setRect1(box);
 
           let min = new Vector2(position.location.x, position.location.z);
@@ -211,20 +213,13 @@ namespace PRKR.Editor.Tools {
           let box = this._getAreaFloorBox2(this._start.areaId);
           this._firstStepHelper.setRect1(box);
 
-          // let minx = Math.min(this._start.location.x, this._end.location.x);
-          // let maxx = Math.max(this._start.location.x, this._end.location.x);
-          // let miny = Math.min(this._start.location.z, this._end.location.z);
-          // let maxy = Math.max(this._start.location.z, this._end.location.z);
-          // let min = new Vector2(minx, miny);
-          // let max = new Vector2(maxx, maxy);
-          // box.set(min, max);
           box.setFromPoints([
             new Vector2(this._location.x, this._location.z),
             new Vector2(this._location.x + this._size.x, this._location.z + this._size.z)
           ]);
           this._firstStepHelper.setRect2(box);    
           this._firstStepHelper.visible = true;      
-        }
+        } 
 
         // Sets the helper's position and scale.
         this._rawHelper.position.copy(this._rawLocation);
@@ -278,6 +273,14 @@ namespace PRKR.Editor.Tools {
       return box;
     }
 
+    private _getAreaBox3(areaId) : THREE.Box3 {
+      let area = <PRKR.Model.Area>this._editor.getObjectById(areaId).model;
+      let min = new Vector3(area.location.x, area.location.y, area.location.z);
+      let max = new Vector3(area.location.x + area.size.x, area.location.y + area.size.y, area.location.z + area.size.z) 
+      let box = new THREE.Box3(min, max);
+      return box;
+    }
+
     /**
      * Computes `_location`, `_size`, `_rawLocation` and `_rawSize` from
      * `_start` and `_end` values.
@@ -287,17 +290,17 @@ namespace PRKR.Editor.Tools {
       let end = this._end.location;
       let rawMin = new Vector3(
         Math.min(start.x, end.x),
-        0,
+        Math.min(start.y, end.y),
         Math.min(start.z, end.z)
       );
       let rawMax = new Vector3(
         Math.max(start.x, end.x),
-        1,
+        Math.max(start.y, end.y),
         Math.max(start.z, end.z)
       );
 
-      // Clamp values inside start area's floor.
-      let floor = this._getAreaFloorBox3(this._start.areaId);
+      // Clamp values inside start area's box.
+      let floor = this._getAreaBox3(this._start.areaId);
       let min = new Vector3();
       min.copy(rawMin).clamp(floor.min, floor.max);
       let max = new Vector3();
@@ -360,6 +363,31 @@ namespace PRKR.Editor.Tools {
         };
       }
       return null;      
+    }
+
+    private _getVerticalLocation(mouseEvent: JQueryMouseEventObject): AreaLocation {
+
+      let camera = this._editor.getCameraRig().orthographicCamera;
+      let n = camera.getWorldDirection();
+      n.setY(0).normalize().negate();
+
+      let intersect = this._editor.projectMouseOnPlane(
+        new THREE.Vector2(mouseEvent.clientX, mouseEvent.clientY),
+        this._end.location,
+        n
+      );
+
+      if (intersect) {
+        return {
+          location: new THREE.Vector3(
+            this._end.location.x,
+            intersect.point.y,
+            this._end.location.z
+          ),
+          areaId: this._end.areaId
+        }
+      }
+      return null;
     }
 
     /**
