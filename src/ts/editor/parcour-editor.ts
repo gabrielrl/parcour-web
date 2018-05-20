@@ -1252,6 +1252,8 @@ namespace PRKR.Editor {
         o = new Objects.LocationObject(parcourObject, this._model);
       } else if (parcourObject instanceof PRKR.Model.Doorway) {
         o = new Objects.DoorwayObject(parcourObject, this._model);      
+      } else if (parcourObject instanceof PRKR.Model.StaticObject) {
+        o = new Objects.StaticObject(parcourObject, this._model);
       } else {
         // throw new Error(`Can not build an EditorObject for ${parcourObject}`);
         console.warn(`Can not build an EditorObject for ${parcourObject}`);

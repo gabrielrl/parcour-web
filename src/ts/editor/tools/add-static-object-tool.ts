@@ -343,8 +343,12 @@ namespace PRKR.Editor.Tools {
       // Here, location = min and size = (full) size.
       // For 'StaticObject', location = center and size = half extents
 
+      let area = <Model.Area>this._editor.getObjectById(this._start.areaId).model;
+
       let center = new Vector3();
-      center.copy(this._location).addScaledVector(this._size, 0.5);
+      center.copy(this._location)
+        .addScaledVector(this._size, 0.5)
+        .sub(area.location);
 
       let halfExtents = new Vector3();
       halfExtents.copy(this._size).multiplyScalar(0.5);      
