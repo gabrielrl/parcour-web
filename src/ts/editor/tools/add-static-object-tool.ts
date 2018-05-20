@@ -161,16 +161,16 @@ namespace PRKR.Editor.Tools {
 
           } else {
 
-            // TODO
-            // if (this._drawing && this._drawingValid) {
-            //   let editStep = this._buildEditStep();
-            //   let result = this._editor.addEditStep(editStep);
-            //   if (result.dirtyIds.length > 0) {
-            //     this._editor.selectByIds(result.dirtyIds);
-            //   }
-            // }
+            this._computeLocationAndSize();
+            if (this._validateDrawing()) {
+              let step = this._buildEditStep();
+              let result = this._editor.addEditStep(step);
+              if (result.dirtyIds.length > 0) {
+                this._editor.selectByIds(result.dirtyIds);
+              }
+            }            
             this._drawing = false;
-
+            
           }
           this._updateHelpers(null);
           this._editor.requestRender();          
@@ -339,11 +339,22 @@ namespace PRKR.Editor.Tools {
      * `_location` and `_size` must be up to date.
      */
     private _buildEditStep(): AddObjectStep {
+
+      // Here, location = min and size = (full) size.
+      // For 'StaticObject', location = center and size = half extents
+
+      let center = new Vector3();
+      center.copy(this._location).addScaledVector(this._size, 0.5);
+
+      let halfExtents = new Vector3();
+      halfExtents.copy(this._size).multiplyScalar(0.5);      
+
       return new AddObjectStep({
         $type: 'StaticObject',
-        location: this._location.toArray(),
-        size: this._size.toArray()
-      })
+        areaId: this._start.areaId,
+        location: center.toArray(),
+        size: halfExtents.toArray()
+      });
     }
 
     /**
