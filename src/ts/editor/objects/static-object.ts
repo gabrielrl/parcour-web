@@ -67,9 +67,9 @@ namespace PRKR.Editor.Objects {
       // TODO need to take rotation into account
       let staticModel = <StaticModel>this.model;
       let min = new Vector3();
-      min.copy(staticModel.size).multiplyScalar(-0.5);
+      min.copy(staticModel.size).multiplyScalar(-1);
       let max = new Vector3();
-      max.copy(staticModel.size).multiplyScalar(0.5);
+      max.copy(staticModel.size);
       let box = new THREE.Box3(min, max);
       return box;
     }
