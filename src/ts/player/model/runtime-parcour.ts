@@ -74,12 +74,23 @@ namespace PRKR.Player.Model {
         }
       });
 
+      // Process static objects
+      let staticObjects = <PRKR.Model.StaticObject[]>_.filter(
+        this._parcour.objects,
+        o => o instanceof PRKR.Model.StaticObject
+      );
+      staticObjects.forEach(staticObject => {
+        let rt = new Model.RuntimeStaticObject(staticObject, this);
+        rt.init(physics);
+
+        this._areaMap[rt.model.areaId].scene.add(rt.renderObject);
+      });
+
       // Process doorways.
       let doorways = <PRKR.Model.Doorway[]>_.filter(
         this._parcour.objects,
         o => o instanceof PRKR.Model.Doorway
       );
-      let doorwayMaterial = 
       this._doorways = [];
       doorways.forEach(doorway => {
 
@@ -142,7 +153,7 @@ namespace PRKR.Player.Model {
 
       } else {
         this._endLocation = null;
-      }      
+      }
 
       this._initialized = true;
 
