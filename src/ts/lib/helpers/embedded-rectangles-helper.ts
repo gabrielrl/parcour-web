@@ -24,10 +24,6 @@ namespace PRKR.Helpers {
     private _line1: RectangleLineHelper;
     private _line2: RectangleLineHelper;
     private _embeddingHelpers: RectangleLineHelper[];
-    // private _face1: RectangleFaceHelper;
-    // private _face2: RectangleFaceHelper;
-    // private _horizontalHelper: RectangleLineHelper;
-    // private _verticalHelper: RectangleLineHelper;
 
     constructor(
       r1?: Box2,
@@ -119,6 +115,14 @@ namespace PRKR.Helpers {
         }
         this._resizeHelpers();
       }
+    }
+
+    public setLineMaterial(material: THREE.Material) {
+      this._line1.material = material;
+      this._line2.material = material;
+      this._embeddingHelpers.forEach(helper => {
+        helper.material = material;
+      });
     }
 
     private _resizeHelpers() {

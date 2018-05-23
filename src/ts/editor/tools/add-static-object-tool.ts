@@ -193,6 +193,7 @@ namespace PRKR.Editor.Tools {
 
         // Show some helpers.
         if (position) {
+          this._firstStepHelper.visible = true;          
           if (position.areaId) {
             let box = this._getAreaFloorBox2(position.areaId);
             this._firstStepHelper.setRect1(box);
@@ -200,8 +201,8 @@ namespace PRKR.Editor.Tools {
             let min = new Vector2(position.location.x, position.location.z);
             let max = new Vector2(position.location.x, position.location.z);
             box.set(min, max);
-            this._firstStepHelper.setRect2(box);    
-            this._firstStepHelper.visible = true;      
+            this._firstStepHelper.setRect2(box);
+            this._firstStepHelper.setLineMaterial(C.Materials.Lines.Valid);
           } else {
             let box = this._getCellFloorBox2(position.location);
             this._firstStepHelper.setRect1(box);
@@ -209,6 +210,7 @@ namespace PRKR.Editor.Tools {
             let max = new Vector2(position.location.x + .001, position.location.z + .001);
             box.set(min, max);
             this._firstStepHelper.setRect2(box);
+            this._firstStepHelper.setLineMaterial(C.Materials.Lines.Invalid); // ...
           }
         } else {
           this._firstStepHelper.visible = false;
