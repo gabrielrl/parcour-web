@@ -129,8 +129,9 @@ namespace PRKR.Editor.Tools {
 
       let position: AreaLocation = null;
      
-      if (this._drawing) {
-
+      if (!this._drawing) {
+        position = this._getAreaLocation(event);
+      } else {
         if (this._drawingStep === 0) {
           position = this._getAreaLocation(event)
         } else if (this._drawingStep === 1) {
@@ -191,16 +192,24 @@ namespace PRKR.Editor.Tools {
         this._helper.visible = false;
 
         // Show some helpers.
-        if (position && position.areaId) {
-          let box = this._getAreaFloorBox2(position.areaId);
-          this._firstStepHelper.setRect1(box);
+        if (position) {
+          if (position.areaId) {
+            let box = this._getAreaFloorBox2(position.areaId);
+            this._firstStepHelper.setRect1(box);
 
-          let min = new Vector2(position.location.x, position.location.z);
-          let max = new Vector2(position.location.x, position.location.z);
-          box.set(min, max);
-          this._firstStepHelper.setRect2(box);    
-          this._firstStepHelper.visible = true;      
-
+            let min = new Vector2(position.location.x, position.location.z);
+            let max = new Vector2(position.location.x, position.location.z);
+            box.set(min, max);
+            this._firstStepHelper.setRect2(box);    
+            this._firstStepHelper.visible = true;      
+          } else {
+            let box = this._getCellFloorBox2(position.location);
+            this._firstStepHelper.setRect1(box);
+            let min = new Vector2(position.location.x, position.location.z);
+            let max = new Vector2(position.location.x + .001, position.location.z + .001);
+            box.set(min, max);
+            this._firstStepHelper.setRect2(box);
+          }
         } else {
           this._firstStepHelper.visible = false;
         }
@@ -261,6 +270,14 @@ namespace PRKR.Editor.Tools {
       let min = new Vector2(area.location.x, area.location.z);
       let max = new Vector2(area.location.x + area.size.x, area.location.z + area.size.z) 
       let box = new THREE.Box2(min, max);
+      return box;
+    }
+
+    private _getCellFloorBox2(position: Vector3): THREE.Box2 {
+      let box = new THREE.Box2(
+        new Vector2(Math.floor(position.x), Math.floor(position.z)),
+        new Vector2(Math.ceil(position.x), Math.ceil(position.z))
+      );
       return box;
     }
 
