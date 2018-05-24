@@ -31,6 +31,8 @@ namespace PRKR.Editor.Tools {
    */
   export class AddStaticObjectTool extends Tool {
 
+    public static GridStep = .25;
+
     /** Current drawing state. */
     private _state: DrawingState = DrawingState.NotStarted;
 
@@ -360,6 +362,12 @@ namespace PRKR.Editor.Tools {
       min.copy(rawMin).clamp(floor.min, floor.max);
       let max = new Vector3();
       max.copy(rawMax).clamp(floor.min, floor.max);
+
+      // Apply grid.
+      min.divideScalar(AddStaticObjectTool.GridStep).round()
+        .multiplyScalar(AddStaticObjectTool.GridStep);
+      max.divideScalar(AddStaticObjectTool.GridStep).round()
+        .multiplyScalar(AddStaticObjectTool.GridStep);
 
       this._rawLocation.copy(rawMin);
       this._rawSize.subVectors(rawMax, rawMin);
