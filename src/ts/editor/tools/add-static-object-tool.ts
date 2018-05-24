@@ -10,16 +10,29 @@ namespace PRKR.Editor.Tools {
   import C = PRKR.Editor.Tools.Constants;
   import EmbeddedRectanglesHelper = PRKR.Helpers.EmbeddedRectanglesHelper;
 
+  /** Possible drawing states. */
+  enum DrawingState {
+
+    /** Not yet started. Hovering over the floor level. */
+    NotStarted = 0,
+
+    /** Horizontally drawing a shape at the floor level. */
+    HorizontalDrawing = 1,
+
+    /** Relocating before drawing the vertical shape. */
+    Pause = 2,
+
+    /** Vertically drawing a shape. */
+    VerticalDrawing = 3
+  };
+
   /**
    * A Tool to insert new static objects by drawing shapes.
    */
   export class AddStaticObjectTool extends Tool {
 
-    /** Indicates if the user is currently drawing. */
-    private _drawing: boolean = false;
-
-    /** The current drawing step. */
-    private _drawingStep: number = 0;
+    /** Current drawing state. */
+    private _state: DrawingState = DrawingState.NotStarted;
 
     /** Indicates if the current drawing is valid. */
     private _drawingValid: boolean = true;
@@ -77,7 +90,7 @@ namespace PRKR.Editor.Tools {
     get name() { return 'add-static-object'; }
 
     public activate() {
-      this._drawing = false;
+      this._state = DrawingState.NotStarted;
 
       this._editor.addToScene(this._rawHelper);
       this._editor.addToScene(this._helper);
@@ -87,7 +100,7 @@ namespace PRKR.Editor.Tools {
     }
 
     public deactivate() {
-      this._drawing = false;
+      this._state = DrawingState.NotStarted;
       this._editor.removeFromScene(this._firstStepHelper);
       this._editor.removeFromScene(this._helper);
       this._editor.removeFromScene(this._rawHelper);
@@ -98,29 +111,38 @@ namespace PRKR.Editor.Tools {
 
       if (event.which === 3) { // right button.
 
-        if (this._drawing) {
-          // cancel drawing.
-          this._drawing = false;
-          this._drawingStep = 0;
-          event.preventDefault();
-        }
+        this._state = DrawingState.NotStarted;
+        event.preventDefault();
 
       } else if (event.which === 1) { // left button.
 
-        if (!this._drawing) {
+        if (this._state === DrawingState.NotStarted) {
 
           let position = this._getAreaLocation(event);
           if (position && position.areaId) {
             this._start = position;
             this._end = position;
-            this._drawing = true;
-            this._drawingStep = 0;
+            this._state = DrawingState.HorizontalDrawing;
 
             this._computeLocationAndSize();
             this._validateDrawing();
             this._updateHelpers(position);
             this._editor.requestRender();
           }
+        } else if (this._state === DrawingState.Pause) {
+
+          let position = this._getVerticalLocation(event);
+          if (position) {
+            this._start.location.setY(position.location.y);
+            this._end.location.setY(position.location.y);
+            this._state = DrawingState.VerticalDrawing;
+
+            this._computeLocationAndSize();
+            this._validateDrawing();
+            this._updateHelpers(position);
+            this._editor.requestRender();            
+          }
+
         }
       }
     }
@@ -128,22 +150,38 @@ namespace PRKR.Editor.Tools {
     public notifyMouseMove(event: JQueryMouseEventObject): void {
 
       let position: AreaLocation = null;
-     
-      if (!this._drawing) {
-        position = this._getAreaLocation(event);
-      } else {
-        if (this._drawingStep === 0) {
-          position = this._getAreaLocation(event)
-        } else if (this._drawingStep === 1) {
+
+      switch(this._state) {
+        case DrawingState.NotStarted:
+          position = this._getAreaLocation(event);
+          break;
+
+        case DrawingState.HorizontalDrawing:
+          position = this._getAreaLocation(event);
+          if (position != null) {
+            this._end = position;
+          }
+          break;
+
+        case DrawingState.Pause:
           position = this._getVerticalLocation(event);
-        }
+          if (position != null) {
+            this._start.location.setY(position.location.y);
+            this._end.location.setY(position.location.y);
+          }
+          break;
 
-        if (position /* && position.areaId === this._start.areaId */) {
-          this._end = position;
-
-          this._computeLocationAndSize();
-          this._validateDrawing();
-        }
+        case DrawingState.VerticalDrawing:
+          position = this._getVerticalLocation(event);
+          if (position != null) {
+            this._end = position;
+          }
+          break;        
+      }
+     
+      if (this._state !== DrawingState.NotStarted && position != null) {
+        this._computeLocationAndSize();
+        this._validateDrawing();
       }
       
       this._updateHelpers(position);
@@ -154,28 +192,26 @@ namespace PRKR.Editor.Tools {
 
       if (event.which === 1) { // left button
 
-        if (this._drawing) {
-          if (this._drawingStep === 0) {
+        if (this._state === DrawingState.HorizontalDrawing) {
 
-            // move to next step.
-            this._drawingStep = 1;
+          // move to next step.
+          this._state = DrawingState.Pause;
 
-          } else {
+        } else if (this._state === DrawingState.VerticalDrawing) {
 
-            this._computeLocationAndSize();
-            if (this._validateDrawing()) {
-              let step = this._buildEditStep();
-              let result = this._editor.addEditStep(step);
-              if (result.dirtyIds.length > 0) {
-                this._editor.selectByIds(result.dirtyIds);
-              }
-            }            
-            this._drawing = false;
-            
+          this._computeLocationAndSize();
+          if (this._validateDrawing()) {
+            let step = this._buildEditStep();
+            let result = this._editor.addEditStep(step);
+            if (result.dirtyIds.length > 0) {
+              this._editor.selectByIds(result.dirtyIds);
+            }
           }
-          this._updateHelpers(null);
-          this._editor.requestRender();          
+          this._state = DrawingState.NotStarted;
         }
+
+        this._updateHelpers(null);
+        this._editor.requestRender();        
       }
     }
 
@@ -185,7 +221,7 @@ namespace PRKR.Editor.Tools {
      * this method.
      */
     private _updateHelpers(position: AreaLocation) {
-      if (!this._drawing) {
+      if (this._state === DrawingState.NotStarted) {
 
         // Hide some helpers.
         this._rawHelper.visible = false;
@@ -216,9 +252,9 @@ namespace PRKR.Editor.Tools {
           this._firstStepHelper.visible = false;
         }
 
-      } else { // this._drawing == true
+      } else { // this._state !== DrawingState.NotStarted
 
-        if (this._drawingStep === 0) {
+        if (this._state === DrawingState.HorizontalDrawing) {
           // Drawing the floor-level shape (first step).
 
           let box = this._getAreaFloorBox2(this._start.areaId);
@@ -429,12 +465,17 @@ namespace PRKR.Editor.Tools {
      */
     private _buildStatusMessage() {
 
-      if (!this._drawing) {
-        return 'Click and drag inside an area to insert an object';
-      } else if (this._drawingStep === 0) {
-        return 'Drag to draw the shape of the object on the floor';
-      } else {
-        return 'TODO';
+      switch(this._state) {
+        case DrawingState.NotStarted:
+          return 'Click and drag inside an area to insert an object';
+        case DrawingState.HorizontalDrawing:
+          return 'Drag to draw the shape of the object on the floor';
+        case DrawingState.Pause:
+          return 'Click and drag to define vertical range of the object';
+        case DrawingState.VerticalDrawing:
+          return 'Drag to draw the vertical shape of the object';
+        default:
+          return 'TODO';
       }
 
     }
