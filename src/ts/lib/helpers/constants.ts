@@ -5,7 +5,8 @@ namespace PRKR.Helpers {
   export let Constants = {
 
     DefaultLineMaterial: new THREE.LineBasicMaterial({
-      color: 0x0000ff
+      color: 0x0000ff,
+      depthTest: false
     }),
 
     DefaultFaceMaterial: new THREE.MeshBasicMaterial({

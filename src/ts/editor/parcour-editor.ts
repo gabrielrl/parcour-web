@@ -20,6 +20,7 @@
 /// <reference path="./tools/camera-pan-tool.ts" />
 /// <reference path="./tools/camera-rotate-tool.ts" />
 /// <reference path="./tools/doorway-placement-tool.ts" />
+/// <reference path="./tools/add-static-object-tool.ts" />
 /// <reference path="./tools/delegation.ts" />
 
 namespace PRKR.Editor {
@@ -177,7 +178,8 @@ namespace PRKR.Editor {
         new PRKR.Editor.Tools.RoomDrawingTool(this),
         new PRKR.Editor.Tools.CameraPanTool(this),
         new PRKR.Editor.Tools.CameraRotateTool(this),
-        new PRKR.Editor.Tools.DoorwayPlacementTool(this)
+        new PRKR.Editor.Tools.DoorwayPlacementTool(this),
+        new PRKR.Editor.Tools.AddStaticObjectTool(this)
       ];
 
       // Build tool map.
@@ -498,6 +500,48 @@ namespace PRKR.Editor {
         y: -((y / domElement.clientHeight) * 2 - 1)
       }, this._activeCamera);
       let intersections = this._raycaster.intersectObjects(candidates);
+
+      return intersections[0] || null;
+    }
+
+    /**
+     * 
+     * @param mouse Mouse coordinates.
+     * @param p A point in the plane.
+     * @param n The plane normal.
+     */
+    public projectMouseOnPlane(mouse: THREE.Vector2, p: THREE.Vector3, n: THREE.Vector3): THREE.Intersection {
+
+      // hijack the floor to use as any plane.
+      let oldPosition = new THREE.Vector3();
+      oldPosition.copy(this._floor.position);
+      let oldRotation = new THREE.Quaternion();
+      oldRotation.copy(this._floor.quaternion);
+
+      this._floor.position.copy(p);
+      this._floor.quaternion.setFromUnitVectors(M.Vector3.PositiveY, n);
+      this._floor.updateMatrixWorld(true);
+
+      let candidates: THREE.Object3D[] = [ this._floor ];
+      
+      // Adjust (x, y) to take account of the renderer's position relative to
+      // the windows' client area
+      // TODO ... better, this way doesn't take hierarchy into account. ;)
+      let domElement = this._domLayout.main;
+      let x = mouse.x - domElement.offsetLeft;
+      let y = mouse.y - domElement.offsetTop;
+
+      // Raycast.
+      this._raycaster.setFromCamera({
+        x: (x / domElement.clientWidth) * 2 - 1,
+        y: -((y / domElement.clientHeight) * 2 - 1)
+      }, this._activeCamera);
+      let intersections = this._raycaster.intersectObjects(candidates);
+
+      // Restore the floor.
+      this._floor.position.copy(oldPosition);
+      this._floor.quaternion.copy(oldRotation);
+      this._floor.updateMatrixWorld(true);
 
       return intersections[0] || null;
     }
@@ -1055,6 +1099,11 @@ namespace PRKR.Editor {
             display: 'Doorways',
             image: 'fa-external-link-square',
             tool: this._toolMap['doorway-placement']
+          }, {
+            name: 'addStaticObject',
+            display: 'Static Object',
+            image: 'fa-cubes',
+            tool: this._toolMap['add-static-object']
           }]
         }, {
           name: 'locations',
@@ -1203,6 +1252,8 @@ namespace PRKR.Editor {
         o = new Objects.LocationObject(parcourObject, this._model);
       } else if (parcourObject instanceof PRKR.Model.Doorway) {
         o = new Objects.DoorwayObject(parcourObject, this._model);      
+      } else if (parcourObject instanceof PRKR.Model.StaticObject) {
+        o = new Objects.StaticObject(parcourObject, this._model);
       } else {
         // throw new Error(`Can not build an EditorObject for ${parcourObject}`);
         console.warn(`Can not build an EditorObject for ${parcourObject}`);
