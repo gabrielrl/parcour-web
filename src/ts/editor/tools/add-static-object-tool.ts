@@ -58,7 +58,7 @@ namespace PRKR.Editor.Tools {
     private _size: Vector3 = new Vector3();
 
     /** Rectangle on the floor helper. */
-    private _firstStepHelper: EmbeddedRectanglesHelper = new EmbeddedRectanglesHelper();
+    private _embeddedRectanglesHelper: EmbeddedRectanglesHelper = new EmbeddedRectanglesHelper();
 
     /** The helper bounding box displayed when the user draws. */
     private _rawHelper: RectangleHelper =
@@ -96,14 +96,14 @@ namespace PRKR.Editor.Tools {
 
       this._editor.addToScene(this._rawHelper);
       this._editor.addToScene(this._helper);
-      this._editor.addToScene(this._firstStepHelper);
+      this._editor.addToScene(this._embeddedRectanglesHelper);
       this._editor.setPointer('crosshair');
       this._editor.setStatus(this._buildStatusMessage());
     }
 
     public deactivate() {
       this._state = DrawingState.NotStarted;
-      this._editor.removeFromScene(this._firstStepHelper);
+      this._editor.removeFromScene(this._embeddedRectanglesHelper);
       this._editor.removeFromScene(this._helper);
       this._editor.removeFromScene(this._rawHelper);
     }
@@ -223,85 +223,94 @@ namespace PRKR.Editor.Tools {
      * this method.
      */
     private _updateHelpers(position: AreaLocation) {
-      if (this._state === DrawingState.NotStarted) {
 
-        // Hide some helpers.
-        this._rawHelper.visible = false;
-        this._helper.visible = false;
+      function setHelper(
+        helper: RectangleHelper | BoundingBoxHelper,
+        location: Vector3,
+        size: Vector3,
+        drawingValid: boolean
+      ) {
+        helper.position.copy(location);
+        let helperScale = helper.scale;
+        helperScale.copy(size);        
+        // Prevent scaling by zero.
+        if (helperScale.x === 0) helperScale.x = 0.001;
+        if (helperScale.y === 0) helperScale.y = 0.001;
+        if (helperScale.z === 0) helperScale.z = 0.001;
 
-        // Show some helpers.
-        if (position) {
-          this._firstStepHelper.visible = true;          
-          if (position.areaId) {
-            let box = this._getAreaFloorBox2(position.areaId);
-            this._firstStepHelper.setRect1(box);
-
-            let min = new Vector2(position.location.x, position.location.z);
-            let max = new Vector2(position.location.x, position.location.z);
-            box.set(min, max);
-            this._firstStepHelper.setRect2(box);
-            this._firstStepHelper.setLineMaterial(C.Materials.Lines.Valid);
-          } else {
-            let box = this._getCellFloorBox2(position.location);
-            this._firstStepHelper.setRect1(box);
-            let min = new Vector2(position.location.x, position.location.z);
-            let max = new Vector2(position.location.x + .001, position.location.z + .001);
-            box.set(min, max);
-            this._firstStepHelper.setRect2(box);
-            this._firstStepHelper.setLineMaterial(C.Materials.Lines.Invalid); // ...
-          }
+        // Set the helpers color according to drawing validity.
+        if (drawingValid) {
+          helper.setLineMaterial(C.Materials.Lines.Valid);
         } else {
-          this._firstStepHelper.visible = false;
+          helper.setLineMaterial(C.Materials.Lines.Invalid);
         }
 
-      } else { // this._state !== DrawingState.NotStarted
+        helper.visible = true;
+      }
 
-        if (this._state === DrawingState.HorizontalDrawing) {
+      switch (this._state) {
+
+        case DrawingState.NotStarted:
+
+          // Hide some helpers.
+          this._rawHelper.visible = false;
+          this._helper.visible = false;
+
+          // Show some helpers.
+          if (position) {
+            this._embeddedRectanglesHelper.visible = true;          
+            if (position.areaId) {
+              let box = this._getAreaFloorBox2(position.areaId);
+              this._embeddedRectanglesHelper.setRect1(box);
+
+              let min = new Vector2(position.location.x, position.location.z);
+              let max = new Vector2(position.location.x, position.location.z);
+              box.set(min, max);
+              this._embeddedRectanglesHelper.setRect2(box);
+              this._embeddedRectanglesHelper.setLineMaterial(C.Materials.Lines.Valid);
+            } else {
+              let box = this._getCellFloorBox2(position.location);
+              this._embeddedRectanglesHelper.setRect1(box);
+              let min = new Vector2(position.location.x, position.location.z);
+              let max = new Vector2(position.location.x + .001, position.location.z + .001);
+              box.set(min, max);
+              this._embeddedRectanglesHelper.setRect2(box);
+              this._embeddedRectanglesHelper.setLineMaterial(C.Materials.Lines.Invalid); // ...
+            }
+          } else {
+            this._embeddedRectanglesHelper.visible = false;
+          }
+        
+          break;
+
+        case DrawingState.HorizontalDrawing:
+
           // Drawing the floor-level shape (first step).
 
           let box = this._getAreaFloorBox2(this._start.areaId);
-          this._firstStepHelper.setRect1(box);
+          this._embeddedRectanglesHelper.setRect1(box);
 
           box.setFromPoints([
             new Vector2(this._location.x, this._location.z),
             new Vector2(this._location.x + this._size.x, this._location.z + this._size.z)
           ]);
-          this._firstStepHelper.setRect2(box);    
-          this._firstStepHelper.visible = true;      
-        } 
+          this._embeddedRectanglesHelper.setRect2(box);    
+          this._embeddedRectanglesHelper.visible = true;
 
-        // Sets the helper's position and scale.
-        this._rawHelper.position.copy(this._rawLocation);
-        let helperScale = this._rawHelper.scale;
-        helperScale.copy(this._rawSize);        
-        // Prevent scaling by zero.
-        if (helperScale.x === 0) helperScale.x = 0.001;
-        if (helperScale.y === 0) helperScale.y = 0.001;
-        if (helperScale.z === 0) helperScale.z = 0.001;
+          setHelper(this._rawHelper, this._rawLocation, this._rawSize, this._drawingValid);
+          setHelper(this._helper, this._location, this._size, this._drawingValid);
         
-        // Set the adjusted helper's position and scale.
-        this._helper.position.copy(this._location);
-        helperScale = this._helper.scale;
-        helperScale.copy(this._size);
-        // Prevent scaling by zero.
-        if (helperScale.x === 0) helperScale.x = 0.001;
-        if (helperScale.y === 0) helperScale.y = 0.001;
-        if (helperScale.z === 0) helperScale.z = 0.001;
+          break;
 
-        // // Set the helpers color according to drawing validity.
-        // if (this._drawingValid) {
-          this._helper.setFaceMaterial(C.Materials.Faces.Valid);
-          this._rawHelper.setLineMaterial(C.Materials.Lines.Valid);
-        // } else {
-        //   this._helper.setFaceMaterial(C.Materials.Faces.Invalid);
-        //   this._rawHelper.setLineMaterial(C.Materials.Lines.Invalid);
-        // }
+        default:
 
-        // Show the helpers.
-        this._rawHelper.visible = true;
-        this._helper.visible = true;
+          setHelper(this._rawHelper, this._rawLocation, this._rawSize, this._drawingValid);
+          setHelper(this._helper, this._location, this._size, this._drawingValid);
+       
+          break;
 
-      } 
+      }
+      
     }
 
     // Good candidate for a utility function.
