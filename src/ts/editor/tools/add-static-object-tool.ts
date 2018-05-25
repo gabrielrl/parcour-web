@@ -61,8 +61,8 @@ namespace PRKR.Editor.Tools {
     private _embeddedRectanglesHelper: EmbeddedRectanglesHelper = new EmbeddedRectanglesHelper();
 
     /** The helper bounding box displayed when the user draws. */
-    private _rawHelper: RectangleHelper =
-      new RectangleHelper(M.Box2.Unit, {
+    private _rawHelper: BoundingBoxHelper =
+      new BoundingBoxHelper(M.Box3.Unit, {
         useFaces: false,
         useLines: true,
         lineMaterial: C.Materials.Lines.Valid
@@ -147,6 +147,7 @@ namespace PRKR.Editor.Tools {
 
         }
       }
+      this._editor.setStatus(this._buildStatusMessage());      
     }
 
     public notifyMouseMove(event: JQueryMouseEventObject): void {
@@ -187,21 +188,34 @@ namespace PRKR.Editor.Tools {
       }
       
       this._updateHelpers(position);
-      this._editor.requestRender();      
+      this._editor.requestRender();
+      this._editor.setStatus(this._buildStatusMessage());      
     }
 
     public notifyMouseUp(event: JQueryMouseEventObject): void {
 
       if (event.which === 1) { // left button
 
+        this._computeLocationAndSize();
+        
         if (this._state === DrawingState.HorizontalDrawing) {
 
-          // move to next step.
-          this._state = DrawingState.Pause;
+          // Check if we have a non null area
+          let area = this._size.x * this._size.z;
+          if (Math.abs(area) > 0.001) {
+
+            // Move to next step.
+            this._state = DrawingState.Pause;
+
+          } else {
+
+            // Go back to original state.
+            this._state = DrawingState.NotStarted;
+
+          }
 
         } else if (this._state === DrawingState.VerticalDrawing) {
 
-          this._computeLocationAndSize();
           if (this._validateDrawing()) {
             let step = this._buildEditStep();
             let result = this._editor.addEditStep(step);
@@ -213,7 +227,8 @@ namespace PRKR.Editor.Tools {
         }
 
         this._updateHelpers(null);
-        this._editor.requestRender();        
+        this._editor.requestRender();
+        this._editor.setStatus(this._buildStatusMessage());  
       }
     }
 
@@ -241,8 +256,10 @@ namespace PRKR.Editor.Tools {
         // Set the helpers color according to drawing validity.
         if (drawingValid) {
           helper.setLineMaterial(C.Materials.Lines.Valid);
+          helper.setFaceMaterial(C.Materials.Faces.Valid)
         } else {
           helper.setLineMaterial(C.Materials.Lines.Invalid);
+          helper.setFaceMaterial(C.Materials.Faces.Invalid);
         }
 
         helper.visible = true;
@@ -284,9 +301,9 @@ namespace PRKR.Editor.Tools {
           break;
 
         case DrawingState.HorizontalDrawing:
+        case DrawingState.Pause:
 
           // Drawing the floor-level shape (first step).
-
           let box = this._getAreaFloorBox2(this._start.areaId);
           this._embeddedRectanglesHelper.setRect1(box);
 
@@ -294,11 +311,21 @@ namespace PRKR.Editor.Tools {
             new Vector2(this._location.x, this._location.z),
             new Vector2(this._location.x + this._size.x, this._location.z + this._size.z)
           ]);
-          this._embeddedRectanglesHelper.setRect2(box);    
+          this._embeddedRectanglesHelper.setRect2(box);
           this._embeddedRectanglesHelper.visible = true;
 
-          setHelper(this._rawHelper, this._rawLocation, this._rawSize, this._drawingValid);
-          setHelper(this._helper, this._location, this._size, this._drawingValid);
+          // At this stage, validity depends on having a non-empty area.
+          let area = this._size.x * this._size.z;
+          let valid = Math.abs(area) > 0.001;
+
+          if (valid) {
+            this._embeddedRectanglesHelper.setLineMaterial(C.Materials.Lines.Valid);
+          } else {
+            this._embeddedRectanglesHelper.setLineMaterial(C.Materials.Lines.Invalid);
+          }
+
+          setHelper(this._rawHelper, this._rawLocation, this._rawSize, valid);
+          setHelper(this._helper, this._location, this._size, valid);
         
           break;
 
@@ -393,6 +420,14 @@ namespace PRKR.Editor.Tools {
      */
     private _validateDrawing(): boolean {
       // Validate the drawing.
+
+      // It must have a volume.
+      let volume = this._size.x * this._size.y * this._size.z;
+      if (Math.abs(volume) < 0.001) {
+        this._drawingValid = false;
+        return this._drawingValid;
+      }
+
       let editStep = this._buildEditStep();
       let validation = this._editor.validateEditStep(editStep);
       
