@@ -165,7 +165,7 @@ namespace PRKR.Editor {
           }
         );
       } else {
-        this._model = this._buildDefaultModel();
+        this._model = this._buildStartupScene();
         this._modelIsNew = true;
         this._modelIsDirty = false;
       }
@@ -1341,22 +1341,16 @@ namespace PRKR.Editor {
       this._scene.add(ih);
     }
 
-    private _buildDefaultModel() {
-      let m = new Parcour();
-      m.name = 'New parcour';
-      let a = new RoomArea({
-        location: M.Vector3.Zero,
-        size: new THREE.Vector3(3, 2.54, 3)
-      });
-      a.name = 'Room 1';
-      m.objects.push(a);
-      a = new RoomArea({
-        location: new Vector3(0, 0, -2),
-        size: new Vector3(4, 2.54, 2)
-      });
-      a.name = 'Room 2';
-      m.objects.push(a);
-      return m;
+    private _buildStartupScene() {
+
+      const json = '{"name":"New parcour","objects":[' + 
+        '{"$type":"RoomArea","id":"04299e4b-b307-45c5-b94d-d8f88af34eae","name":"Room 1","location":[-6,0,-1],"size":[3,2.54,3],"light":{}},'+
+        '{"$type":"RoomArea","id":"915a69f6-6283-48e5-9f41-c4335fd043f9","name":"Room 2","location":[-3,0,-2],"size":[5,2.54,5],"light":{}},'+
+        '{"$type":"RoomArea","id":"397ea615-6d71-49a9-bbc1-67b06d0c7f1b","location":[2,0,-1],"size":[3,2.54,3],"light":{}},'+
+        '{"$type":"Doorway","id":"59a11f41-13cd-4696-be2e-eacbc18d67b4","areaId":"04299e4b-b307-45c5-b94d-d8f88af34eae","location":[3,0,1.5],"size":[0.7,1.6]},{"$type":"Doorway","id":"6b8838f6-eb71-4b16-b6e8-50ebf2202098","areaId":"397ea615-6d71-49a9-bbc1-67b06d0c7f1b","location":[0,0,1.5],"size":[0.7,1.6]},{"$type":"Location","id":"02c73a2e-da01-4d2f-897e-3a4ca54fcd11","areaId":"04299e4b-b307-45c5-b94d-d8f88af34eae","location":[1.5,0,1.5],"kind":1},{"$type":"Location","id":"7ef8ac6f-95ec-4237-bddc-861e5e3e5bef","areaId":"397ea615-6d71-49a9-bbc1-67b06d0c7f1b","location":[1.5,0,1.5],"kind":2}],"id":"76c8a942-1ca5-7574-6f7c-6d1f6ec24903"}';
+      let data = JSON.parse(json);
+      let parcour = new Parcour(data);
+      return parcour;
     }
 
     private _getDefaultViewport() {
