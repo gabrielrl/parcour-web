@@ -20,11 +20,6 @@ namespace PRKR.Editor.Objects {
       return <Area>this.parcour.getObjectById(this.doorway.areaId);
     }
 
-    /** Override. */
-    get selectionHotSpot() {
-      return this._frame;
-    }    
-
     /**
      * Gets the world position for the current object.
      * @param target Optional target for the world position.
@@ -64,6 +59,11 @@ namespace PRKR.Editor.Objects {
         Model.Constants.WallThickness + DoorwayObject.FRAME_OUTSET
       );
       return box;
+    }
+
+    /** Override. */
+    protected _buildSelectionHotSpot(): THREE.Object3D {
+      return this._frame;
     }
 
     private static FRAME_WIDTH = 0.1;
