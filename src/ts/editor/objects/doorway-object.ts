@@ -20,6 +20,11 @@ namespace PRKR.Editor.Objects {
       return <Area>this.parcour.getObjectById(this.doorway.areaId);
     }
 
+    /** Override. */
+    get selectionHotSpot() {
+      return this._frame;
+    }    
+
     /**
      * Gets the world position for the current object.
      * @param target Optional target for the world position.
