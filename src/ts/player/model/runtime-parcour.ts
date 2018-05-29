@@ -106,6 +106,19 @@ namespace PRKR.Player.Model {
 
       });
 
+      // Process dynamic objects
+      let dynamicObjects = <PRKR.Model.DynamicObject[]>_.filter(
+        this._parcour.objects,
+        o => o instanceof PRKR.Model.DynamicObject
+      );
+      dynamicObjects.forEach(dynamicObject => {
+        let rt = new Model.RuntimeDynamicObject(dynamicObject, this);
+        rt.init(physics);
+
+        this._areaMap[rt.model.areaId].scene.add(rt.renderObject);
+      });
+      
+
       // Process locations.
 
       // Look for the start location.
