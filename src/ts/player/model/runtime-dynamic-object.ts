@@ -56,7 +56,7 @@ namespace PRKR.Player.Model {
       size.multiplyScalar(2);
 
       let box = physics.createBox({
-        mass: 1,
+        mass: this._model.mass,
         size,
         position
       });
