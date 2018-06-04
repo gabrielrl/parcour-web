@@ -61,6 +61,38 @@ namespace PRKR.Editor.Objects {
       return target;
     }
 
+      /** Overrides getProperties to add some infos. */
+    public getProperties() {
+      let props = [].concat(this.model.getProperties(), [
+        {
+          name: 'volume',
+          display: 'Volume',
+          info: 'The object\'s volume',
+          type: 'string',
+          editor: 'display',
+          getValue: o => {
+            if (o instanceof DynamicModel) {
+              return o.volume.toPrecision(3) + ' m³'
+            }
+          }
+        },
+        {
+          name: 'mass',
+          display: 'Mass',
+          info: 'The object\'s mass',
+          type: 'string',
+          editor: 'display',
+          getValue: o => {
+            if (o instanceof DynamicModel) {
+              return o.mass.toPrecision(3) + ' kg'
+            }
+          }
+        }
+      ]);
+      return props;
+    }
+
+
     /** Override */
     protected _computeBoundingBox() {
 
@@ -101,7 +133,8 @@ namespace PRKR.Editor.Objects {
 
       return mesh;
     }
-  }
 
+
+  }
 }
 

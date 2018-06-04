@@ -47,6 +47,11 @@ namespace PRKR.Editor.Components {
                 case 'range':
                   editor = new RangePropertyEditor(this._editor, p);
                   break;
+
+                case 'Display':
+                case 'display':
+                  editor = new DisplayPropertyEditor(this._editor, p);
+                  break;
               }
             }
 
