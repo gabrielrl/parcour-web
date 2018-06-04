@@ -74,20 +74,31 @@ namespace PRKR.Editor.Objects {
       return box;
     }
 
+    /** Default material from which a new object material is cloned. */
     private static Material = new THREE.MeshPhongMaterial({
       color: 0xffff00
     });
 
+    /**
+     * Color of object that are the most dense. The default material has the color of the
+     * lightest possible object.
+     */
+    private static MaxDensityColor = new THREE.Color(0xff0000);
+
     private _buildMesh() {
 
-      let staticModel = <DynamicModel>this.model;
-      let area = <Model.Area>this.parcour.getObjectById(staticModel.areaId);
+      let dynamicModel = <DynamicModel>this.model;
+      let area = <Model.Area>this.parcour.getObjectById(dynamicModel.areaId);
       let g = new THREE.CubeGeometry(
-        staticModel.size.x * 2,
-        staticModel.size.y * 2,
-        staticModel.size.z * 2
+        dynamicModel.size.x * 2,
+        dynamicModel.size.y * 2,
+        dynamicModel.size.z * 2
       ); 
-      let mesh = new THREE.Mesh(g, DynamicObject.Material);
+
+      let material = DynamicObject.Material.clone();
+      material.color.lerp(DynamicObject.MaxDensityColor, DynamicModel.densityToLinear(dynamicModel.density))
+      let mesh = new THREE.Mesh(g, material);
+
       return mesh;
     }
   }

@@ -96,6 +96,21 @@ namespace PRKR.Model {
 
     private static DensityRange = DynamicObject.MaxDensity - DynamicObject.MinDensity;
 
+    private static ExponentialPower = 3;
+
+    /** Converts the specified density (in kg/m³) to its "linear" mapping (from 0 to 1). */
+    public static densityToLinear(density: number): number {
+      return Math.pow(
+        (density - DynamicObject.MinDensity) / DynamicObject.DensityRange,
+        1 / DynamicObject.ExponentialPower);      
+    }
+
+    /** Converts a "linear" mapping (from 0 to 1) of a density back to its actual value (kg/m³). */
+    public static linearToDensity(linear: number): number {
+      return DynamicObject.MinDensity +
+        Math.pow(linear, DynamicObject.ExponentialPower) * DynamicObject.DensityRange;
+    }
+
     private static Properties: Property[] = [{
       name: 'density',
       display: 'Density',
@@ -106,7 +121,7 @@ namespace PRKR.Model {
       max: DynamicObject.MaxDensity, // ! TODO logarithmic scale required
       getValue: o => {
         if (o instanceof DynamicObject) {
-          let v = (o.density - DynamicObject.MinDensity) / DynamicObject.DensityRange;
+          let v = DynamicObject.densityToLinear(o.density);
           return v;
         } else {
           return 0;
@@ -117,8 +132,7 @@ namespace PRKR.Model {
           if (v == null) {
             o._density = DynamicObject.DefaultDensity;
           } else {
-            // console.log('DynamicObject.setValue (v=', v, ', o=', o);
-            let value = DynamicObject.MinDensity + v * DynamicObject.DensityRange;
+            let value = DynamicObject.linearToDensity(v);
 
             if (value < DynamicObject.MinDensity) value = DynamicObject.MinDensity;
             if (value > DynamicObject.MaxDensity) value = DynamicObject.MaxDensity;
