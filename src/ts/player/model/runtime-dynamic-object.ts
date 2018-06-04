@@ -30,10 +30,14 @@ namespace PRKR.Player.Model {
       color: 0xffff00
     });
 
+    private static DenseColor = new THREE.Color(0xff0000);
+
     private _buildVisualRepresentation() {
       let model = this._model;
       let geometry = new THREE.BoxGeometry(model.size.x * 2, model.size.y * 2, model.size.z * 2);
-      let mesh = new THREE.Mesh(geometry, RuntimeDynamicObject.Material);
+      let material = RuntimeDynamicObject.Material.clone();
+      material.color.lerp(RuntimeDynamicObject.DenseColor, PRKR.Model.DynamicObject.densityToLinear(model.density));
+      let mesh = new THREE.Mesh(geometry, material);
       mesh.position.addVectors(
         this._parcour.getAreaById(model.areaId).location,
         model.location
