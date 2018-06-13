@@ -179,7 +179,8 @@ namespace PRKR.Editor {
         new PRKR.Editor.Tools.CameraPanTool(this),
         new PRKR.Editor.Tools.CameraRotateTool(this),
         new PRKR.Editor.Tools.DoorwayPlacementTool(this),
-        new PRKR.Editor.Tools.AddStaticObjectTool(this)
+        new PRKR.Editor.Tools.AddStaticObjectTool(this),
+        new PRKR.Editor.Tools.AddDynamicObjectTool(this)
       ];
 
       // Build tool map.
@@ -1104,6 +1105,11 @@ namespace PRKR.Editor {
             display: 'Static Object',
             image: 'fa-cubes',
             tool: this._toolMap['add-static-object']
+          }, {
+            name: 'addDynamicObject',
+            display: 'Dynamic Object',
+            image: 'fa-caret-square-o-down',
+            tool: this._toolMap['add-dynamic-object']
           }]
         }, {
           name: 'locations',
@@ -1254,6 +1260,8 @@ namespace PRKR.Editor {
         o = new Objects.DoorwayObject(parcourObject, this._model);      
       } else if (parcourObject instanceof PRKR.Model.StaticObject) {
         o = new Objects.StaticObject(parcourObject, this._model);
+      } else if (parcourObject instanceof PRKR.Model.DynamicObject) {
+        o = new Objects.DynamicObject(parcourObject, this._model);
       } else {
         // throw new Error(`Can not build an EditorObject for ${parcourObject}`);
         console.warn(`Can not build an EditorObject for ${parcourObject}`);

@@ -9,6 +9,11 @@ namespace PRKR.Player {
   /** Parcour player (run-time) main class. */
   export class ParcourPlayer {
 
+    /** Character mass in kilogram. */
+    public static CharacterMass = 70;
+
+
+
     constructor(configuration: PRKR.Configuration) {
       if (!configuration) {
         throw new Error('"configuration" is mandatory.');
@@ -39,7 +44,9 @@ namespace PRKR.Player {
     /** The physics component. */
     private _physics: Physics.ParcourPhysics;
 
+    /** The player character runtime object. */
     private _character: RuntimeObject;
+
     private _activeForce: Ammo.btVector3 = new Ammo.btVector3();
 
     /** The completion state of the current parcour. */
@@ -149,7 +156,7 @@ namespace PRKR.Player {
       return this;
     }
 
-    static JUMP_IMPULSE: Ammo.btVector3 = new Ammo.btVector3(0, 5, 0);
+    static JUMP_IMPULSE: Ammo.btVector3 = new Ammo.btVector3(0, 5 * ParcourPlayer.CharacterMass, 0);
     static AMMO_VECTOR_0: Ammo.btVector3 = new Ammo.btVector3(0, 0, 0);
     public jump() {
       this._character.physicBodies[0]
@@ -267,7 +274,7 @@ namespace PRKR.Player {
       if (this._actuator.length() > 0.001) {
         // Rotate actuator from camera orientation.
         this._actuator.applyAxisAngle(M.Vector3.PositiveY, this._cameras.orientation);
-        this.setDirection(this._actuator.normalize().multiplyScalar(5));
+        this.setDirection(this._actuator.normalize().multiplyScalar(5 * ParcourPlayer.CharacterMass));
       } else {
         this.setDirection(M.Vector3.Zero);
       }
@@ -515,7 +522,7 @@ namespace PRKR.Player {
       // capsuleMesh.add(hiddenMesh);
 
       let capsuleBody = this._physics.createCapsule({
-        mass: 1,
+        mass: ParcourPlayer.CharacterMass,
         radius: radius,
         height: height,
         position: capsuleMesh.position, 

@@ -42,9 +42,15 @@ namespace PRKR.Editor.Components {
             if (!editor) {
 
               switch(p.editor) {
+                // TODO Get rid of magic strings here!
                 case 'Range':
                 case 'range':
                   editor = new RangePropertyEditor(this._editor, p);
+                  break;
+
+                case 'Display':
+                case 'display':
+                  editor = new DisplayPropertyEditor(this._editor, p);
                   break;
               }
             }
