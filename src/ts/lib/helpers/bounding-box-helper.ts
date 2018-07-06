@@ -138,6 +138,7 @@ namespace PRKR.Helpers {
       let h = box.max.y - box.min.y;
       let d = box.max.z - box.min.z;
       let g = new THREE.BoxGeometry(w, h, d);
+      g.translate(box.min.x, box.min.y, box.min.z);
       let m = material || C.DefaultFaceMaterial;
 
       super(g, m);
