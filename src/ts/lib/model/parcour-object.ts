@@ -5,7 +5,10 @@ namespace PRKR.Model {
 
   export interface ParcourObjectData {
     /** Unique ID (GUID as a string). */
-    id?: string
+    id?: string,
+
+    /** Object name. */
+    name?: string
   }
 
   // Base class for all the objects / elements that compose a parcour.
@@ -13,8 +16,15 @@ namespace PRKR.Model {
 
     constructor(data?: ParcourObjectData) {
       if (data && data.id) {
-        this._id = data.id;
-      } else {
+        if (data.id) {
+          this._id = data.id;
+        }
+        if (data.name) {
+          this._name = data.name;
+        }
+      }
+
+      if (!this._id) {
         this._id = PRKR.Utils.uuid();
       }
     }
@@ -22,10 +32,8 @@ namespace PRKR.Model {
     private _id: string;
     get id() { return this._id; }
 
-    public name: string;
-
-    // private _location = new THREE.Vector3();
-    // get location() { return this._location; }
+    private _name: string;
+    get name() { return this._name; }
 
     // Override this one (make sure to call `_copy`), don't call super.
     public clone(): ParcourObject {
@@ -38,7 +46,8 @@ namespace PRKR.Model {
     public toObject(): any {
       return {
         $type: 'ParcourObject',
-        id: this._id
+        id: this._id,
+        name: this._name
       };
     }
 
@@ -53,7 +62,7 @@ namespace PRKR.Model {
       let typeName = data.$type;
       let type = PRKR.Model[typeName];
       if (!type) {
-        throw new Error(`Unrecognized type "${typeName}".`);
+        throw new Error(`Unrecognized type "${ typeName }".`);
       }
       
       let instance = new type(data);
@@ -96,10 +105,8 @@ namespace PRKR.Model {
     protected _copy(source: ParcourObject) {
       // Copy properties.
       this._id = source.id;
-      this.name = source.name;
-      // this.location.copy(source.location);
+      this._name = source.name;
     }
-    
     
   }
 }
