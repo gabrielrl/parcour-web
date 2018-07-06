@@ -6,6 +6,7 @@ namespace PRKR.Editor.Behaviors {
   import ResultLevel = PRKR.Validators.ResultLevel;
   import IValidationResult = PRKR.Validators.IValidationResult;
 
+  /** TODO I need more comments */
   export class MoveBehavior implements Behavior {
 
     static HelperColor = Colors.TOOL_SUCCESS_COLOR;
@@ -86,11 +87,19 @@ namespace PRKR.Editor.Behaviors {
     }
 
     down(e: JQueryMouseEventObject) {
-      console.log('move behavior: mouse down');
-
       if (this._moving) return;
 
-      let movables = this._getMovables();
+      // Pick the objects we will be moving around.
+      // From all the movable objects (selected & movable), pick those that are of the same category
+      // as the current target (object under the pointer).
+      let targetCategory = this.getCategory(this._target);
+      let movables: Objects.EditorObject[];
+      if (targetCategory !== MoveCategory.Unclassified) {
+        movables = _.filter(this._getMovables(), m => this.getCategory(m) === targetCategory);
+      } else {
+        movables = [ this._target ];
+      }
+
       let current = this._getPosition(e);
 
       if (movables.length > 0 && current != null) {
@@ -112,9 +121,6 @@ namespace PRKR.Editor.Behaviors {
         this._targetAdjustedHelpers = this._buildTargetHelpers({
           useLines: false,
           useFaces: true,
-          // lineMaterial: new THREE.LineBasicMaterial({
-          //   color: MoveTool.HelperColor
-          // }),
           faceMaterial: new THREE.MeshBasicMaterial({
             color: MoveBehavior.HelperColor,
             transparent: true,
@@ -122,7 +128,6 @@ namespace PRKR.Editor.Behaviors {
           })
         });
 
-        this._sceneObject = new THREE.Object3D();
         let link = (o: THREE.Object3D) => { this._sceneObject.add(o); };
         this._targetHelpers.forEach(link);
         this._targetAdjustedHelpers.forEach(link);
@@ -261,6 +266,16 @@ namespace PRKR.Editor.Behaviors {
       this._editor.removeFromScene(this._sceneObject);
       this._editor.requestRender();
 
+    }
+
+    public getCategory(o: Objects.EditorObject) {
+      if (o.model instanceof Model.Area) {
+        return MoveCategory.Area;
+      } else if (o.model instanceof Model.AreaElement) {
+        return MoveCategory.AreaElement;
+      } else {
+        return MoveCategory.Unclassified;
+      }
     }
 
     private _getMovables() {
