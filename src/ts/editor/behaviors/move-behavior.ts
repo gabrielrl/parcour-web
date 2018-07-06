@@ -183,7 +183,7 @@ namespace PRKR.Editor.Behaviors {
           let targetWorldPosition = target.getWorldPosition();
 
           exact.addVectors(targetWorldPosition, this._movement);
-          adjusted.addVectors(targetWorldPosition, adjustedMovement)
+          adjusted.addVectors(targetWorldPosition, adjustedMovement);
 
           this._targetMovements[index].subVectors(adjusted, targetWorldPosition);
           this._targetHelpers[index].position.copy(exact);
