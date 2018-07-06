@@ -162,7 +162,7 @@ namespace PRKR.Editor.Behaviors {
             } else {
               let s = steps.x;
               adjustedMovement.setX(
-                Math.round(this._movement.x * s) / s
+                Math.round(this._movement.x / s) * s
               );
             }
 
@@ -171,7 +171,7 @@ namespace PRKR.Editor.Behaviors {
             } else {
               let s = steps.y;
               adjustedMovement.setY(
-                Math.round(this._movement.y * s) / s
+                Math.round(this._movement.y / s) * s
               );
             }
 
@@ -180,7 +180,7 @@ namespace PRKR.Editor.Behaviors {
             } else {
               let s = steps.z;
               adjustedMovement.setZ(
-                Math.round(this._movement.z * s) / s
+                Math.round(this._movement.z / s) * s
               );
             }
           }
