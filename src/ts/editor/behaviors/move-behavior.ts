@@ -293,13 +293,33 @@ namespace PRKR.Editor.Behaviors {
      * Builds the current edit step from `_targetMovements` values.
      */
     private _buildEditStep(): EditSteps.EditStep {
-      let targetSteps: EditSteps.MoveStep[] = [];
+      let targetSteps: EditSteps.EditStep[] = [];
       this._targets.forEach((target, index) => {
-        targetSteps.push(
-          new EditSteps.MoveStep(
-            this._targetMovements[index], [target.id]
-          )
-        );
+        let category = this.getCategory(target);
+        if (category === MoveCategory.Area) {
+          targetSteps.push(
+            new EditSteps.MoveStep(
+              this._targetMovements[index], [target.id]
+            )
+          );
+        } else if (category === MoveCategory.AreaElement) {
+          let dest = target.getWorldPosition().add(this._targetMovements[index]);
+          let destArea = this._editor.getAreaAtLocation(dest);
+          if (!destArea || destArea.id === (<Model.AreaElement>target.model).areaId) {
+            targetSteps.push(
+              new EditSteps.MoveStep(
+                this._targetMovements[index], [target.id]
+              )
+            );
+          } else {
+            let areaLocation = new Vector3();
+            areaLocation.subVectors(dest, destArea.location);
+            targetSteps.push(
+              new EditSteps.MoveToStep(target.id, destArea.id, areaLocation)
+            );
+          }
+          
+        }
       });
 
       let editStep = new EditSteps.ComposedStep(targetSteps);
