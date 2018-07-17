@@ -489,8 +489,7 @@ namespace PRKR.Editor.Tools {
 
     private _getVerticalLocation(mouseEvent: JQueryMouseEventObject): AreaLocation {
 
-      let camera = this._editor.getCameraRig().orthographicCamera;
-      let n = camera.getWorldDirection();
+      let n = this._editor.getCameraRig().getWorldDirection();
       n.setY(0).normalize().negate();
 
       let intersect = this._editor.projectMouseOnPlane(

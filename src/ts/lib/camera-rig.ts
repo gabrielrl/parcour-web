@@ -137,6 +137,11 @@ namespace PRKR {
       }
     }
 
+    /** Returns the world direction of the camera. */
+    public getWorldDirection() {
+      return this.orthographicCamera.getWorldDirection();
+    }
+
     private _updateCameras() {
 
       // TODO drop the zoom...
