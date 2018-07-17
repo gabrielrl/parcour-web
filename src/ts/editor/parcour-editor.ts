@@ -222,7 +222,10 @@ namespace PRKR.Editor {
       // Set-up other listeners.
       window.addEventListener('beforeunload', e => this._onBeforeUnload(e), false);
       window.addEventListener('resize', (e) => this._onWindowResize(e), false);
-      window.addEventListener('keydown', e => this._onKeyDown(e), false);
+      // window.addEventListener('keydown', e => this._onKeyDown(e), false);
+
+      let $window = $(window);
+      $window.on('keydown', e => this._onKeyDown(e));
 
       this._render();
     }
@@ -875,9 +878,9 @@ namespace PRKR.Editor {
       // this._updateAssetPalette();
     }
 
-    private _onKeyDown(e: KeyboardEvent) {
-      console.log('keydown', e);
-      // TODO.
+    private _onKeyDown(e: JQueryKeyEventObject) {
+      // console.log('keydown', e);
+      this._activeTool.notifyKeyDown(e);
     }
 
     private _checkDelegationQuit(e: JQueryMouseEventObject) {

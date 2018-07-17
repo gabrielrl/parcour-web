@@ -135,6 +135,12 @@ namespace PRKR.Editor.Tools {
 
     public notifyClick(e: JQueryMouseEventObject) { }
 
+    public notifyKeyDown(e: JQueryKeyEventObject) {
+      if (this._moving) {
+        this._moveBehavior.keyDown(e);
+      }
+    }
+
     /**
      * Updates the `_target` property with the closet object under the mouse
      *  using the specified mouse event, `e`.

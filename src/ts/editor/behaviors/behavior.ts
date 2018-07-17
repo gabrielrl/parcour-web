@@ -25,9 +25,16 @@ namespace PRKR.Editor.Behaviors {
      * Notifies this behavior that a button has been pressed. After a call to down, the behavior 
      * knows that:
      * - there migth be 0 to n call to `move`,
-     * - there will be one call to either a `up` or `cancel`.
+     * - there might bo 0 to n call to `keyDown`,
+     * - there will be exactly one call to either `up` or `cancel`.
      */
     down(event: JQueryMouseEventObject);
+
+    /**
+     * Notifies this behavior that a key has been pressed. 
+     * @param event jQuery keyboard event.
+     */
+    keyDown(event: JQueryKeyEventObject);
 
     /** Notifies this behavior that the pointer has moved. `down` will have been called before. */
     move(event: JQueryMouseEventObject);

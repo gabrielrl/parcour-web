@@ -26,5 +26,7 @@ namespace PRKR.Editor.Tools {
     notifyMouseUp(event: JQueryMouseEventObject): void { }
     
     notifyClick(event: JQueryMouseEventObject): void { }
+
+    notifyKeyDown(event: JQueryKeyEventObject): void { }
   }
 }
