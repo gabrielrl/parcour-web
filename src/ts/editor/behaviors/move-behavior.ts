@@ -37,16 +37,19 @@ namespace PRKR.Editor.Behaviors {
     /** Current behavior state. */
     private _state: MovingState = MovingState.Idle;
 
-    /** Current main movement. */
-    private _movement: Vector3 = new Vector3();
+    // /** Current main movement. */
+    // private _movement: Vector3 = new Vector3();
 
     /**
      * Indicates if the current movement is valid.
      */
     private _movementValid: boolean = false;
 
-    /** Movement origin. */
+    /** Movement origin. It is the point at which the user started to move from.*/
     private _origin: Vector3 = new Vector3();
+
+    /** Movement destination. It is the point in the workd at which the user moved to. */
+    private _destination: Vector3 = new Vector3();
 
     /** Adjusted movement for each target in `_targets`. */
     private _targetMovements: Vector3[] = [];
@@ -131,8 +134,8 @@ namespace PRKR.Editor.Behaviors {
       if (movables.length > 0 && current != null) {
         this._targets = movables;
         this._origin.copy(current);
-        this._targetMovements = [];
-        this._targets.forEach(t => this._targetMovements.push(new Vector3()));
+        this._destination.copy(current);
+        this._targetMovements = this._targets.map(() => new Vector3());
         if (e.ctrlKey) {
           this._state = MovingState.VerticalMoving;
         } else {
@@ -169,41 +172,30 @@ namespace PRKR.Editor.Behaviors {
 
     }
 
-    keyDown(e: JQueryKeyEventObject) {
-      if (e.ctrlKey && this._state === MovingState.HorizontalMoving) {
-        console.log('Switching mode to vertical moving');
-        // TODO
+    // keyDown(e: JQueryKeyEventObject) {
+    //   if (e.ctrlKey && this._state === MovingState.HorizontalMoving) {
+    //     console.log('Switching mode to vertical moving');
+    //     this._state = MovingState.VerticalMoving;
 
-        this._verticalOrigin = new Vector3();
-        current.addVectors(this._origin, this._movement);
-
-        this._state = MovingState.VerticalMoving;
-        //
-
-      } else if (!e.ctrlKey && this._state === MovingState.VerticalMoving) {
-        console.log('Switching mode to horizontal moving');
-        // TODO
-
-        this._state = MovingState.HorizontalMoving;
-      }
-    }
+    //   } else if (!e.ctrlKey && this._state === MovingState.VerticalMoving) {
+    //     console.log('Switching mode to horizontal moving');
+    //     this._state = MovingState.HorizontalMoving;
+    //   }
+    // }
 
     move(e: JQueryMouseEventObject) {
       let current = this._getPosition(e);
-      if (!current) {
-        this._movement.set(0, 0, 0);
-        // this._moveHelper.visible = false;
-      } else {
-        this._movement.subVectors(current, this._origin);
-        // this._moveHelper.visible = true;
-        // this._moveHelper.update(this._origin, current);
+      if (current) {
+        this._destination.copy(current);
+        let delta = new Vector3();
+        delta.subVectors(this._destination, this._origin);
 
         // compute each target's destination.
         let adjustedMovement = new Vector3();
         let exact = new Vector3();
         let adjusted = new Vector3();
         this._targets.forEach((target, index) => {
-          adjustedMovement.copy(this._movement);
+          adjustedMovement.copy(delta);
           if (target.moveConstraints) {
             let steps = target.moveConstraints.steps;
 
@@ -212,7 +204,7 @@ namespace PRKR.Editor.Behaviors {
             } else {
               let s = steps.x;
               adjustedMovement.setX(
-                Math.round(this._movement.x / s) * s
+                Math.round(delta.x / s) * s
               );
             }
 
@@ -221,7 +213,7 @@ namespace PRKR.Editor.Behaviors {
             } else {
               let s = steps.y;
               adjustedMovement.setY(
-                Math.round(this._movement.y / s) * s
+                Math.round(delta.y / s) * s
               );
             }
 
@@ -230,14 +222,14 @@ namespace PRKR.Editor.Behaviors {
             } else {
               let s = steps.z;
               adjustedMovement.setZ(
-                Math.round(this._movement.z / s) * s
+                Math.round(delta.z / s) * s
               );
             }
           }
 
           let targetWorldPosition = target.getWorldPosition();
 
-          exact.addVectors(targetWorldPosition, this._movement);
+          exact.addVectors(targetWorldPosition, delta);
           adjusted.addVectors(targetWorldPosition, adjustedMovement);
 
           this._targetMovements[index].subVectors(adjusted, targetWorldPosition);
@@ -309,9 +301,9 @@ namespace PRKR.Editor.Behaviors {
       this._targetMovements = [];
       this._targetHelpers = null;
       this._targetAdjustedHelpers = null;
-      this._origin.set(0, 0, 0);
+      this._origin.copy(M.Vector3.Zero);
+      this._destination.copy(M.Vector3.Zero);
       this._state = MovingState.Idle;
-      this._movement.copy(M.Vector3.Zero);
 
       this._editor.removeFromScene(this._sceneObject);
       this._editor.requestRender();
@@ -333,8 +325,27 @@ namespace PRKR.Editor.Behaviors {
     }
 
     private _getPosition(e: JQueryMouseEventObject) {
-      let intersect = this._editor.projectMouseOnFloor(
-        new THREE.Vector2(e.clientX, e.clientY));
+
+      let mouse = new THREE.Vector2(e.clientX, e.clientY);
+      let intersect: THREE.Intersection;
+
+      if (this._state === MovingState.Idle) {
+        intersect = this._editor.projectMouseOnFloor(mouse);
+      } else if (!e.ctrlKey) {
+        intersect = this._editor.projectMouseOnPlane(
+          mouse,
+          this._destination,
+          M.Vector3.PositiveY
+        );
+      } else /* e.ctrlKey */ {
+        let n = this._editor.getCameraRig().getWorldDirection();        
+        n.setY(0).normalize().negate();
+        intersect = this._editor.projectMouseOnPlane(
+          mouse,
+          this._destination,
+          n
+        );
+      }
     
       return intersect ? intersect.point : null;
     }
