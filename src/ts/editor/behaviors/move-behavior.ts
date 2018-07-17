@@ -6,6 +6,20 @@ namespace PRKR.Editor.Behaviors {
   import ResultLevel = PRKR.Validators.ResultLevel;
   import IValidationResult = PRKR.Validators.IValidationResult;
 
+  /** Possible behavior's state. */
+  enum MovingState {
+
+    /** Moving nothing yet. */
+    Idle = 0,
+
+    /** Moving objects parallel to the floor level. */
+    HorizontalMoving = 1,
+
+    /** Moving objects vertically (Y only). */
+    VerticalMoving = 2
+
+  }
+
   /** TODO I need more comments */
   export class MoveBehavior implements Behavior {
 
@@ -20,8 +34,10 @@ namespace PRKR.Editor.Behaviors {
     /** Objects being moved. */
     private _targets: Objects.EditorObject[] = [];
 
-    private _moving: boolean = false;
+    /** Current behavior state. */
+    private _state: MovingState = MovingState.Idle;
 
+    /** Current main movement. */
     private _movement: Vector3 = new Vector3();
 
     /**
@@ -29,7 +45,10 @@ namespace PRKR.Editor.Behaviors {
      */
     private _movementValid: boolean = false;
 
+    /** Movement origin. */
     private _origin: Vector3 = new Vector3();
+
+    /** Adjusted movement for each target in `_targets`. */
     private _targetMovements: Vector3[] = [];
 
     /** Root object of all the helpers. */
@@ -77,17 +96,24 @@ namespace PRKR.Editor.Behaviors {
     }
 
     get pointer(): string {
-      return this._moving ? '-webkit-grabbing' : '-webkit-grab';
+      return (this._state === MovingState.Idle)
+        ? '-webkit-grab'
+        : '-webkit-grabbing';
+      // return this._moving ? '-webkit-grabbing' : '-webkit-grab';
     }
 
     get statusMessage(): string {
-      return this._moving
-        ? `Release to move ${ this._buildObjectsString() }`
-        : 'TODO ;-)';
+      return (this._state === MovingState.Idle)
+        ? `Click and drag to move ${ this._buildObjectsString() }`
+        : `Release to move ${ this._buildObjectsString() }`;
+
+      // return this._moving
+      //   ? `Release to move ${ this._buildObjectsString() }`
+      //   : 'TODO ;-)';
     }
 
     down(e: JQueryMouseEventObject) {
-      if (this._moving) return;
+      if (this._state !== MovingState.Idle) return;
 
       // Pick the objects we will be moving around.
       // From all the movable objects (selected & movable), pick those that are of the same category
@@ -107,7 +133,12 @@ namespace PRKR.Editor.Behaviors {
         this._origin.copy(current);
         this._targetMovements = [];
         this._targets.forEach(t => this._targetMovements.push(new Vector3()));
-        this._moving = true;
+        if (e.ctrlKey) {
+          this._state = MovingState.VerticalMoving;
+        } else {
+          this._state = MovingState.HorizontalMoving;
+        }
+        // this._moving = true;
 
         this._targetHelpers = this._buildTargetHelpers({
           useLines: true,
@@ -136,6 +167,25 @@ namespace PRKR.Editor.Behaviors {
 
       }
 
+    }
+
+    keyDown(e: JQueryKeyEventObject) {
+      if (e.ctrlKey && this._state === MovingState.HorizontalMoving) {
+        console.log('Switching mode to vertical moving');
+        // TODO
+
+        this._verticalOrigin = new Vector3();
+        current.addVectors(this._origin, this._movement);
+
+        this._state = MovingState.VerticalMoving;
+        //
+
+      } else if (!e.ctrlKey && this._state === MovingState.VerticalMoving) {
+        console.log('Switching mode to horizontal moving');
+        // TODO
+
+        this._state = MovingState.HorizontalMoving;
+      }
     }
 
     move(e: JQueryMouseEventObject) {
@@ -226,7 +276,7 @@ namespace PRKR.Editor.Behaviors {
     /** Notifies this behavior that the button has been released, completing the move action. */
     up(e: JQueryMouseEventObject) {
 
-      if (this._moving) {
+      if (this._state !== MovingState.Idle) {
 
         if (this._movementValid) {
           // Apply the edit step.
@@ -241,7 +291,7 @@ namespace PRKR.Editor.Behaviors {
 
     cancel(e: JQueryInputEventObject) {
 
-      if (this._moving) {
+      if (this._state !== MovingState.Idle) {
         this._cleanUp();
       }
 
@@ -260,7 +310,7 @@ namespace PRKR.Editor.Behaviors {
       this._targetHelpers = null;
       this._targetAdjustedHelpers = null;
       this._origin.set(0, 0, 0);
-      this._moving = false;
+      this._state = MovingState.Idle;
       this._movement.copy(M.Vector3.Zero);
 
       this._editor.removeFromScene(this._sceneObject);
