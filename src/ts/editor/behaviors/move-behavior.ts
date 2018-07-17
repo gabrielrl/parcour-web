@@ -172,16 +172,16 @@ namespace PRKR.Editor.Behaviors {
 
     }
 
-    // keyDown(e: JQueryKeyEventObject) {
-    //   if (e.ctrlKey && this._state === MovingState.HorizontalMoving) {
-    //     console.log('Switching mode to vertical moving');
-    //     this._state = MovingState.VerticalMoving;
+    keyDown(e: JQueryKeyEventObject) {
+      // if (e.ctrlKey && this._state === MovingState.HorizontalMoving) {
+      //   console.log('Switching mode to vertical moving');
+      //   this._state = MovingState.VerticalMoving;
 
-    //   } else if (!e.ctrlKey && this._state === MovingState.VerticalMoving) {
-    //     console.log('Switching mode to horizontal moving');
-    //     this._state = MovingState.HorizontalMoving;
-    //   }
-    // }
+      // } else if (!e.ctrlKey && this._state === MovingState.VerticalMoving) {
+      //   console.log('Switching mode to horizontal moving');
+      //   this._state = MovingState.HorizontalMoving;
+      // }
+    }
 
     move(e: JQueryMouseEventObject) {
       let current = this._getPosition(e);
