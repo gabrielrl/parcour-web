@@ -10,9 +10,11 @@ namespace PRKR.Editor.Tools {
   import WallDefinition = PRKR.Model.WallDefinition;
   import Area = PRKR.Model.Area;
 
-  export class DoorwayPlacementTool implements Tool {
+  export class DoorwayPlacementTool extends Tool {
 
-    constructor(private _editor: ParcourEditor) { }
+    constructor(private _editor: ParcourEditor) {
+      super();
+    }
 
     get name(): string { return 'doorway-placement'; }
 
