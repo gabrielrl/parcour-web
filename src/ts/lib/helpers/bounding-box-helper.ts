@@ -9,16 +9,6 @@ namespace PRKR.Helpers {
   import Vector3 = THREE.Vector3;
   import C = Helpers.Constants;
 
-  export interface BoundingBoxHelperOptions {
-    useLines?: boolean;
-    useFaces?: boolean;
-    lineMaterial?: THREE.LineBasicMaterial | THREE.LineDashedMaterial;
-    faceMaterial?: THREE.Material;
-
-    /** Optional render order value (see THREE.Object3D.renderOrder) */
-    renderOrder?: number;
-  }
-
   export class BoundingBoxHelper extends Object3D {
 
     private _useLines: boolean = true;
@@ -27,7 +17,7 @@ namespace PRKR.Helpers {
     private _lines: BoxLineHelper;
     private _faces: BoxFaceHelper;
 
-    constructor(box: Box3, options?: BoundingBoxHelperOptions) {
+    constructor(box: Box3, options?: HelperOptions) {
 
       super();
 
