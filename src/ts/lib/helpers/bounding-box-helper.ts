@@ -10,10 +10,13 @@ namespace PRKR.Helpers {
   import C = Helpers.Constants;
 
   export interface BoundingBoxHelperOptions {
-    useLines?: boolean,
-    useFaces?: boolean,
-    lineMaterial?: THREE.LineBasicMaterial | THREE.LineDashedMaterial,
-    faceMaterial?: THREE.Material
+    useLines?: boolean;
+    useFaces?: boolean;
+    lineMaterial?: THREE.LineBasicMaterial | THREE.LineDashedMaterial;
+    faceMaterial?: THREE.Material;
+
+    /** Optional render order value (see THREE.Object3D.renderOrder) */
+    renderOrder?: number;
   }
 
   export class BoundingBoxHelper extends Object3D {
@@ -32,6 +35,7 @@ namespace PRKR.Helpers {
       if (options) {
         if (options.useLines !== undefined) this._useLines = !!options.useLines;
         if (options.useFaces !== undefined) this._useFaces = !!options.useFaces;
+        if (options.renderOrder !== undefined) this.renderOrder = options.renderOrder;
       }
 
       // Setup lines.
