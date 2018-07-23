@@ -2,6 +2,8 @@ namespace PRKR.Editor.Behaviors {
 
   // Convinience imports.
   import Vector3 = THREE.Vector3;
+  import LineDashedMaterial = THREE.LineDashedMaterial;
+  import MeshBasicMaterial = THREE.MeshBasicMaterial;
   import BoundingBoxHelper = PRKR.Helpers.BoundingBoxHelper;
   import ResultLevel = PRKR.Validators.ResultLevel;
   import IValidationResult = PRKR.Validators.IValidationResult;
@@ -23,8 +25,32 @@ namespace PRKR.Editor.Behaviors {
   /** TODO I need more comments */
   export class MoveBehavior implements Behavior {
 
-    static HelperColor = Colors.TOOL_SUCCESS_COLOR;
-    static HelperErrorColor = Colors.TOOL_ERROR_COLOR;
+    static SuccessColor = Colors.TOOL_SUCCESS_COLOR;
+    static SuccessColorDim = Colors.TOOL_SUCCESS_COLOR_DIM;
+    static ErrorColor = Colors.TOOL_ERROR_COLOR;
+    static ErrorColorDim = Colors.TOOL_ERROR_COLOR_DIM;
+
+    static HelperLineMaterial = new LineDashedMaterial({
+      color: MoveBehavior.SuccessColor,
+      dashSize: 0.25,
+      gapSize: 0.125,
+      depthTest: false,
+      depthWrite: false
+    });
+
+    static AdjustedHelperFaceMaterial = new MeshBasicMaterial({
+      color: MoveBehavior.SuccessColor,
+      transparent: true,
+      opacity: 0.333
+    });
+
+    static VerticalHelperLineMaterial = new LineDashedMaterial({
+      color: MoveBehavior.SuccessColorDim,
+      dashSize: 0.125,
+      gapSize: 0.075,
+      depthTest: false,
+      depthWrite: false
+    });
 
     private _editor: ParcourEditor;
 
@@ -36,9 +62,6 @@ namespace PRKR.Editor.Behaviors {
 
     /** Current behavior state. */
     private _state: MovingState = MovingState.Idle;
-
-    // /** Current main movement. */
-    // private _movement: Vector3 = new Vector3();
 
     /**
      * Indicates if the current movement is valid.
@@ -56,8 +79,11 @@ namespace PRKR.Editor.Behaviors {
 
     /** Root object of all the helpers. */
     private _sceneObject: THREE.Object3D = new THREE.Object3D();
+
+    // TODO rename that mess...s
     private _targetHelpers: BoundingBoxHelper[] = [];
     private _targetAdjustedHelpers: BoundingBoxHelper[] = [];
+    private _targetVerticalHelpers: BoundingBoxHelper[] = [];
 
     constructor(editor: ParcourEditor) {
       if (!editor) throw new Error('editor can not be null or undefined');
@@ -146,25 +172,25 @@ namespace PRKR.Editor.Behaviors {
         this._targetHelpers = this._buildTargetHelpers({
           useLines: true,
           useFaces: false,
-          lineMaterial: new THREE.LineDashedMaterial({
-            color: MoveBehavior.HelperColor,
-            dashSize: 0.25,
-            gapSize: 0.125
-          })
+          lineMaterial: MoveBehavior.HelperLineMaterial,
+          renderOrder: 10000 // TODO Extract
         });
         this._targetAdjustedHelpers = this._buildTargetHelpers({
           useLines: false,
           useFaces: true,
-          faceMaterial: new THREE.MeshBasicMaterial({
-            color: MoveBehavior.HelperColor,
-            transparent: true,
-            opacity: 0.333
-          })
+          faceMaterial: MoveBehavior.AdjustedHelperFaceMaterial
+        });
+        this._targetVerticalHelpers = this._buildTargetVerticalHelpers({
+          useLines: true,
+          useFaces: false,
+          lineMaterial: MoveBehavior.VerticalHelperLineMaterial,
+          renderOrder: 9999 // TODO Extract.
         });
 
-        let link = (o: THREE.Object3D) => { this._sceneObject.add(o); };
+        let link = (o: THREE.Object3D) => { if(o) this._sceneObject.add(o); };
         this._targetHelpers.forEach(link);
-        this._targetAdjustedHelpers.forEach(link);
+        this._targetAdjustedHelpers.forEach(link);        
+        this._targetVerticalHelpers.forEach(link);
 
         this._editor.addToScene(this._sceneObject);
 
@@ -233,8 +259,15 @@ namespace PRKR.Editor.Behaviors {
           adjusted.addVectors(targetWorldPosition, adjustedMovement);
 
           this._targetMovements[index].subVectors(adjusted, targetWorldPosition);
+
           this._targetHelpers[index].position.copy(exact);
           this._targetAdjustedHelpers[index].position.copy(adjusted);
+
+          let vertical = this._targetVerticalHelpers[index];
+          if (vertical) {
+            vertical.position.copy(adjusted).setY(0);
+          }
+          
         });
 
         // Build the corresponding edit step.
@@ -253,12 +286,18 @@ namespace PRKR.Editor.Behaviors {
         // Determine movement validity and update helpers.
         if (errors.length) {
           this._movementValid = false;
-          this._targetHelpers.forEach((h) => { h.setColor(MoveBehavior.HelperErrorColor); });
-          this._targetAdjustedHelpers.forEach((h) => { h.setColor(MoveBehavior.HelperErrorColor); });
+
+          MoveBehavior.HelperLineMaterial.color.set(MoveBehavior.ErrorColor);
+          MoveBehavior.AdjustedHelperFaceMaterial.color.set(MoveBehavior.ErrorColor);
+          MoveBehavior.VerticalHelperLineMaterial.color.set(MoveBehavior.ErrorColorDim);
+
         } else {
           this._movementValid = true;
-          this._targetHelpers.forEach((h) => { h.setColor(MoveBehavior.HelperColor); });
-          this._targetAdjustedHelpers.forEach((h) => { h.setColor(MoveBehavior.HelperColor); });
+
+          MoveBehavior.HelperLineMaterial.color.set(MoveBehavior.SuccessColor);
+          MoveBehavior.AdjustedHelperFaceMaterial.color.set(MoveBehavior.SuccessColor);
+          MoveBehavior.VerticalHelperLineMaterial.color.set(MoveBehavior.SuccessColorDim);
+
         }
 
       }
@@ -281,6 +320,7 @@ namespace PRKR.Editor.Behaviors {
 
     }
 
+    /** Notifies this behavior that the current action has been cancelled. */
     cancel(e: JQueryInputEventObject) {
 
       if (this._state !== MovingState.Idle) {
@@ -296,11 +336,14 @@ namespace PRKR.Editor.Behaviors {
       let unlink = (o: THREE.Object3D) => { this._sceneObject.remove(o); };
       this._targetHelpers.forEach(unlink);
       this._targetAdjustedHelpers.forEach(unlink);
+      this._targetVerticalHelpers.forEach(unlink);
+
       // Reset state.
       this._targets = [];
       this._targetMovements = [];
-      this._targetHelpers = null;
-      this._targetAdjustedHelpers = null;
+      this._targetHelpers = [];
+      this._targetAdjustedHelpers = [];
+      this._targetVerticalHelpers = [];
       this._origin.copy(M.Vector3.Zero);
       this._destination.copy(M.Vector3.Zero);
       this._state = MovingState.Idle;
@@ -311,6 +354,7 @@ namespace PRKR.Editor.Behaviors {
     }
 
     public getCategory(o: Objects.EditorObject) {
+      // TODO Make static?
       if (o.model instanceof Model.Area) {
         return MoveCategory.Area;
       } else if (o.model instanceof Model.AreaElement) {
@@ -345,6 +389,10 @@ namespace PRKR.Editor.Behaviors {
           this._destination,
           n
         );
+        if (intersect) {
+          // only consider the Y component of the movement when moving vertically.
+          intersect.point.setX(this._destination.x).setZ(this._destination.z);
+        }
       }
     
       return intersect ? intersect.point : null;
@@ -404,18 +452,49 @@ namespace PRKR.Editor.Behaviors {
     }
 
     private _buildTargetHelpers(
-      options: PRKR.Helpers.BoundingBoxHelperOptions
+      options: PRKR.Helpers.HelperOptions
     ): BoundingBoxHelper[] {
 
       let helpers: BoundingBoxHelper[] = [];
 
-      this._targets.forEach((target) => {
+      this._targets.forEach(target => {
 
         let bbox = target.boundingBox;
         let helper = new BoundingBoxHelper(bbox, options);
         helpers.push(helper);
 
         target.getWorldPosition(helper.position);
+        
+      });
+
+      return helpers;
+    }
+
+    private _buildTargetVerticalHelpers(
+      options: PRKR.Helpers.HelperOptions
+    ): BoundingBoxHelper[] {
+
+      let helpers: BoundingBoxHelper[] = [];
+
+      this._targets.forEach(target => {
+
+        // let helper: THREE.Object3D = null;
+        let model = target.model;
+
+        if (model instanceof PRKR.Model.AreaElement) {
+
+          let area =<Model.Area>this._editor.getObjectById(model.areaId).model;
+          let bbox = target.boundingBox;
+          let box = new THREE.Box3(
+            new Vector3(bbox.min.x, area.location.y, bbox.min.z),
+            new Vector3(bbox.max.x, area.location.y + area.size.y, bbox.max.z)
+          );
+          let helper = new BoundingBoxHelper(box, options);
+          helpers.push(helper);
+
+        } else {
+          helpers.push(null);
+        }
 
       });
 
