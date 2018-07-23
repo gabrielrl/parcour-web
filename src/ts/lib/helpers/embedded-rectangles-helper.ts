@@ -58,8 +58,8 @@ namespace PRKR.Helpers {
         this.add(this._line2);
 
         this._embeddingHelpers = [
-          new RectangleLineHelper(M.Box2.Unit, plane),
-          new RectangleLineHelper(M.Box2.Unit, plane)
+          new RectangleLineHelper(M.Box2.Unit, plane, lineMaterial),
+          new RectangleLineHelper(M.Box2.Unit, plane, lineMaterial)
         ];
 
         this.add(this._embeddingHelpers[0]);
