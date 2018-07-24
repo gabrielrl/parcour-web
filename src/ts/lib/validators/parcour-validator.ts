@@ -104,8 +104,21 @@ namespace PRKR.Validators {
           break;
         }
 
+        // Element box must be inside its containing area. (not all elements impelement the bounding box).
+        let elementBox = parcour.getAreaElementBoundingBox(element); // element.getBoundingBox();
+        if (elementBox) {
+          let areaBox = area.getBoundingBox();
+          if (!areaBox.containsBox(elementBox)) {
+            results.push(
+              new ValidationResult(ResultLevel.Error,
+              'element-box-outside-of-area-box',
+              `AreaElement ${ element.id }'s bounding box is not enclosed in its containing area's box`
+            ));
+          }
+        }
+
         // Element location must be within its containing area's size.
-        let areaSize = (<Area>area).size;
+        let areaSize = area.size;
         let location = element.location;
         if (location.x < 0 || location.y < 0 || location.z < 0 ||
             location.x > areaSize.x || location.y > areaSize.y ||
