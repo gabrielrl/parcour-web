@@ -192,7 +192,7 @@ namespace PRKR.Editor.Tools {
 
         if (this._selectionTarget) {
           if (this._target && this._selectionTarget === this._target) {
-            return `Release to select '${ this._target.name }'`;
+            return `Release to select '${ SelectTool.getObjectName(this._target) }'`;
           } else {
             return 'Release to cancel selection';
           }
@@ -206,7 +206,7 @@ namespace PRKR.Editor.Tools {
         let sel = this._editor.selectedObjects;
         if (sel.length === 0) {
           if (this._target) {
-            return `Click to select '${ this._target.name }'`;
+            return `Click to select '${ SelectTool.getObjectName(this._target) }'`;
           } else {
             return 'Click an object to select it';
           }
@@ -214,15 +214,21 @@ namespace PRKR.Editor.Tools {
         } else {          
           if (this._target) {
             if (sel.indexOf(this._target) !== -1) {
-              return `Click and drag to move '${ this._target.name }'`
+              return `Click and drag to move '${ SelectTool.getObjectName(this._target) }'`
             } else {
-              return `Click to select '${ this._target.name }'. CTRL to multi-select`;
+              return `Click to select '${ SelectTool.getObjectName(this._target) }'. CTRL to multi-select`;
             }
           } else {
             return 'Click to clear selection';
           }          
         }      
       } 
+    }
+
+    // TODO Extract
+    public static getObjectName(object: EditorObject) {
+      if (object.name) { return object.name; }
+      return `unnamed ${ object.model.toObject().$type }`;
     }
   }
 }
