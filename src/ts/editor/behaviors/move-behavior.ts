@@ -60,6 +60,9 @@ namespace PRKR.Editor.Behaviors {
     /** Objects being moved. */
     private _targets: Objects.EditorObject[] = [];
 
+    /** Indicates if vertical movement is enabled. Set in `down` and valid until `up` or `cancel`. */
+    private _verticalityEnabled: boolean = false;
+
     /** Current behavior state. */
     private _state: MovingState = MovingState.Idle;
 
@@ -141,6 +144,10 @@ namespace PRKR.Editor.Behaviors {
       //   : 'TODO ;-)';
     }
 
+    /**
+     * Starts moving operation. Sets `_targets` and `_origin`.
+     * @param e 
+     */
     down(e: JQueryMouseEventObject) {
       if (this._state !== MovingState.Idle) return;
 
@@ -159,6 +166,16 @@ namespace PRKR.Editor.Behaviors {
 
       if (movables.length > 0 && current != null) {
         this._targets = movables;
+
+        // Determine if verticality is enabled.
+        this._verticalityEnabled = false;
+        for (let i = 0; i < movables.length; i++) {
+          let movable = movables[i];
+          if (movable.moveConstraints && movable.moveConstraints.steps && movable.moveConstraints.steps.y !== 0) {
+            this._verticalityEnabled = true;
+            break;
+          }
+        }
         this._origin.copy(current);
         this._destination.copy(current);
         this._targetMovements = this._targets.map(() => new Vector3());
@@ -167,7 +184,6 @@ namespace PRKR.Editor.Behaviors {
         } else {
           this._state = MovingState.HorizontalMoving;
         }
-        // this._moving = true;
 
         this._targetHelpers = this._buildTargetHelpers({
           useLines: true,
@@ -180,12 +196,16 @@ namespace PRKR.Editor.Behaviors {
           useFaces: true,
           faceMaterial: MoveBehavior.AdjustedHelperFaceMaterial
         });
-        this._targetVerticalHelpers = this._buildTargetVerticalHelpers({
-          useLines: true,
-          useFaces: false,
-          lineMaterial: MoveBehavior.VerticalHelperLineMaterial,
-          renderOrder: 9999 // TODO Extract.
-        });
+        if (this._verticalityEnabled) {
+          this._targetVerticalHelpers = this._buildTargetVerticalHelpers({
+            useLines: true,
+            useFaces: false,
+            lineMaterial: MoveBehavior.VerticalHelperLineMaterial,
+            renderOrder: 9999 // TODO Extract.
+          });
+        } else {
+          this._targetVerticalHelpers = [];
+        }
 
         let link = (o: THREE.Object3D) => { if(o) this._sceneObject.add(o); };
         this._targetHelpers.forEach(link);
@@ -198,16 +218,7 @@ namespace PRKR.Editor.Behaviors {
 
     }
 
-    keyDown(e: JQueryKeyEventObject) {
-      // if (e.ctrlKey && this._state === MovingState.HorizontalMoving) {
-      //   console.log('Switching mode to vertical moving');
-      //   this._state = MovingState.VerticalMoving;
-
-      // } else if (!e.ctrlKey && this._state === MovingState.VerticalMoving) {
-      //   console.log('Switching mode to horizontal moving');
-      //   this._state = MovingState.HorizontalMoving;
-      // }
-    }
+    keyDown(e: JQueryKeyEventObject) { }
 
     move(e: JQueryMouseEventObject) {
       let current = this._getPosition(e);
@@ -216,7 +227,7 @@ namespace PRKR.Editor.Behaviors {
         let delta = new Vector3();
         delta.subVectors(this._destination, this._origin);
 
-        // compute each target's destination.
+        // compute each target's adjusted destination.
         let adjustedMovement = new Vector3();
         let exact = new Vector3();
         let adjusted = new Vector3();
@@ -340,6 +351,7 @@ namespace PRKR.Editor.Behaviors {
 
       // Reset state.
       this._targets = [];
+      this._verticalityEnabled = false;
       this._targetMovements = [];
       this._targetHelpers = [];
       this._targetAdjustedHelpers = [];
@@ -371,17 +383,18 @@ namespace PRKR.Editor.Behaviors {
     private _getPosition(e: JQueryMouseEventObject) {
 
       let mouse = new THREE.Vector2(e.clientX, e.clientY);
+      let vertical = this._verticalityEnabled && e.ctrlKey;
       let intersect: THREE.Intersection;
 
       if (this._state === MovingState.Idle) {
         intersect = this._editor.projectMouseOnFloor(mouse);
-      } else if (!e.ctrlKey) {
+      } else if (!vertical) {
         intersect = this._editor.projectMouseOnPlane(
           mouse,
           this._destination,
           M.Vector3.PositiveY
         );
-      } else /* e.ctrlKey */ {
+      } else /* vertical */ {
         let n = this._editor.getCameraRig().getWorldDirection();        
         n.setY(0).normalize().negate();
         intersect = this._editor.projectMouseOnPlane(
@@ -478,7 +491,6 @@ namespace PRKR.Editor.Behaviors {
 
       this._targets.forEach(target => {
 
-        // let helper: THREE.Object3D = null;
         let model = target.model;
 
         if (model instanceof PRKR.Model.AreaElement) {
