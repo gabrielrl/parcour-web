@@ -20,6 +20,21 @@ namespace PRKR.Editor.Objects {
       return <Area>this.parcour.getObjectById(this.doorway.areaId);
     }
 
+    get movable() {
+      return true;
+    }
+
+    get moveConstraints() {
+      let steps = new Vector3();
+      let wall = this._getWall();
+      if (wall) {
+        steps.copy(wall.orientation.direction).round;
+      } else {
+        steps.set(1, 0, 1);
+      }
+      return { steps: steps };
+    }
+
     /**
      * Gets the world position for the current object.
      * @param target Optional target for the world position.
@@ -32,6 +47,7 @@ namespace PRKR.Editor.Objects {
     }
 
     public update() {
+      super.invalidateAll();
       this._updateSceneObject();
     }
 
@@ -40,30 +56,62 @@ namespace PRKR.Editor.Objects {
         this.sceneObject.remove(this._frame);
       }
       this._frame = this._buildFrame();
+      // temp debug
+      this._frame.add(this.selectionHotSpot);
       this.sceneObject.add(this._frame);
       this.getWorldPosition(this.sceneObject.position);
-      this._frame;
     }
 
-    /** Compute the current object's bounding box. */
+    /** Compute the current object's bounding box. Coordinates are relative to the object's location. */
     protected _computeBoundingBox(): Box3 {
       let box = new THREE.Box3();
       let doorway = this.doorway;
-      box.min.set(
-        doorway.width * -.5 - DoorwayObject.FRAME_WIDTH,
-        0,
-        -Model.Constants.WallThickness - DoorwayObject.FRAME_OUTSET);
-      box.max.set(
-        doorway.width * .5 + DoorwayObject.FRAME_WIDTH,
-        doorway.height + DoorwayObject.FRAME_WIDTH - DoorwayObject.FRAME_OUTSET,
-        Model.Constants.WallThickness + DoorwayObject.FRAME_OUTSET
-      );
+
+      let wall = this._getWall();
+      if (wall && wall.orientation.normal.x !== 0.0) {
+
+        box.min.set(
+          -Model.Constants.WallThickness - DoorwayObject.FRAME_OUTSET,
+          0,
+          doorway.width * -.5 - DoorwayObject.FRAME_WIDTH
+        );
+        box.max.set(
+          Model.Constants.WallThickness + DoorwayObject.FRAME_OUTSET,
+          doorway.height + DoorwayObject.FRAME_WIDTH - DoorwayObject.FRAME_OUTSET,
+          doorway.width * .5 + DoorwayObject.FRAME_WIDTH
+        );
+
+      } else {
+      
+        box.min.set(
+          doorway.width * -.5 - DoorwayObject.FRAME_WIDTH,
+          0,
+          -Model.Constants.WallThickness - DoorwayObject.FRAME_OUTSET
+        );
+        box.max.set(
+          doorway.width * .5 + DoorwayObject.FRAME_WIDTH,
+          doorway.height + DoorwayObject.FRAME_WIDTH - DoorwayObject.FRAME_OUTSET,
+          Model.Constants.WallThickness + DoorwayObject.FRAME_OUTSET
+        );
+
+      }
+
       return box;
     }
 
+    static SelectionMaterial: THREE.Material = new THREE.MeshBasicMaterial({
+      visible: false,
+      side: THREE.DoubleSide,
+      wireframe: false,
+      transparent: false,
+      color: 0xffffff
+    });
+
     /** Override. */
     protected _buildSelectionHotSpot(): THREE.Object3D {
-      return this._frame;
+      let box = this._computeBoundingBox();
+      let helper = new Helpers.BoxFaceHelper(box, DoorwayObject.SelectionMaterial);
+      return helper;
     }
 
     private static FRAME_WIDTH = 0.1;
@@ -124,12 +172,12 @@ namespace PRKR.Editor.Objects {
       return frame;
     }
 
+    /** Compute the doorway's normal axis. */
     private _computeNormal(target?: Vector3): Vector3 {
       if (!target) target = new Vector3();
 
       // find the wall we're on.
-      let walls = this.area.getWallDefinitions();
-      let wall = _.filter(walls, w => w.contains(this.doorway.location))[0];
+      let wall = this._getWall();
       if (wall) {
         target.copy(wall.orientation.normal);
       } else {
@@ -137,6 +185,15 @@ namespace PRKR.Editor.Objects {
         target.copy(M.Vector3.Zero);
       }
       return target;
+    }
+
+    /** Gets the wall definition the current doorway is part of. */
+    private _getWall() {
+      let wall = _.filter(
+        this.area.getWallDefinitions(),
+        w => w.contains(this.doorway.location)
+      )[0];
+      return wall;
     }
 
   }
