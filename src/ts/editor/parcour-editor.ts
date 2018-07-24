@@ -577,8 +577,10 @@ namespace PRKR.Editor {
       // Accumulates "selection" meshes (hot spot) for all of the objects.
       let candidates: THREE.Object3D[] = [];
       for (let obj of this._objects) {
-        if (obj.selectionHotSpot)
-          candidates.push(obj.selectionHotSpot);
+        let hotSpot = obj.selectionHotSpot;
+        if (hotSpot) {
+          candidates.push(hotSpot);
+        }
       }
 
       // Adjust (x, y) to take account of the renderer's position relative to
