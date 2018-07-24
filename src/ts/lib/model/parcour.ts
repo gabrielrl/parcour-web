@@ -244,6 +244,26 @@ namespace PRKR.Model {
       }
     }
 
+    /**
+     * Gets an orthogonal (axis aligned) bounding box in world coordinates for the specified area element.
+     * @param element An AreaElement for which we want a world relative bounding box.
+     */
+    // TODO Make a smart version that workd for every object
+    public getAreaElementBoundingBox(element: AreaElement): THREE.Box3 {      
+      let elementBox = element.getBoundingBox();
+      if (elementBox == null) {
+        return null;
+      } else {
+        let area = this.getAreaById(element.areaId);
+        let min = new Vector3();
+        min.addVectors(area.location, elementBox.min);
+        let max = new Vector3();
+        max.addVectors(area.location, elementBox.max);
+        return new THREE.Box3(min, max);
+      }
+      
+    }
+
   }
 
 }
