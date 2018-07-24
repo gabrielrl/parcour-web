@@ -38,6 +38,15 @@ namespace PRKR.Model {
       let clone = new StaticObject();
       clone._copy(this);
       return clone;
+    }    
+
+    // Override
+    public getBoundingBox(): THREE.Box3 {
+      let box = new THREE.Box3(
+        new Vector3().copy(this.location).addScaledVector(this.size, -1),
+        new Vector3().copy(this.location).addScaledVector(this.size, 1),
+      );
+      return box;
     }
 
     // Override.

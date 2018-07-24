@@ -50,6 +50,15 @@ namespace PRKR.Model {
       return clone;
     }
 
+    /**
+     * Gets the object's orthogonal bounding box (area relative). Test before using return value as not all
+     * subclasses implements this method and the defulat implementation returns null.
+     */
+    // Override.
+    public getBoundingBox(): THREE.Box3 {
+      return null;
+    }
+
     // Override.
     protected _copy(source: AreaElement) {
       super._copy(source);
