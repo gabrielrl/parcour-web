@@ -10,6 +10,19 @@ namespace PRKR.Model {
     End = 2
   }
 
+  export function locationKindToString(kind: LocationKind) {
+    switch (kind) {
+      case LocationKind.Start:
+        return 'Start';
+
+      case LocationKind.End:
+        return 'End';
+
+      default:
+        return '';
+    }
+  }
+
   export interface LocationOptions extends AreaElementData {
     kind?: LocationKind;
   }
