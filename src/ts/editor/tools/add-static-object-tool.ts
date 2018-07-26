@@ -31,7 +31,7 @@ namespace PRKR.Editor.Tools {
    */
   export class AddStaticObjectTool extends Tool {
 
-    public static GridStep = .25;
+    public static GridStep = Model.StaticObject.GridSize;
 
     /** Current drawing state. */
     private _state: DrawingState = DrawingState.NotStarted;
