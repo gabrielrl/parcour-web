@@ -15,6 +15,12 @@ namespace PRKR.Model {
 
   export class DynamicObject extends AreaElement {
 
+    /**
+     * Constant grid size for dynamic objects.
+     */
+    public static GridSize = 0.25;
+
+    /** Object's half extents. */
     private _size = new Vector3();
 
     private _density: number = DynamicObject.DefaultDensity;
