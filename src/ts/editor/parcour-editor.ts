@@ -700,6 +700,9 @@ namespace PRKR.Editor {
       this._modelIsDirty = true;
       this._sanitizeSelection();
 
+      // Invalidates the doorway placer that was built with the previous parcour.
+      this._doorwayPlacer = null;
+
       this._ribbon.update();
       this._propertiesPanel.update();
 
@@ -786,6 +789,21 @@ namespace PRKR.Editor {
       // this._orthographicCamera.position.copy(position);
 
       this.requestRender();
+    }
+
+    /**
+     * Currently valid doorway placer or null. Use `getDoorwayPlacer`.
+     */
+    private _doorwayPlacer: Behaviors.DoorwayPlacer;
+
+    /**
+     * Gets a doorway placer valid for the currnet parcour at its current state.
+     */
+    public getDoorwayPlacer() {
+      if (!this._doorwayPlacer) {
+        this._doorwayPlacer = new Behaviors.DoorwayPlacer(this._model);
+      }
+      return this._doorwayPlacer;
     }
 
     public save() {

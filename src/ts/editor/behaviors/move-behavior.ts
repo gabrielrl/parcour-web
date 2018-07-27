@@ -269,6 +269,10 @@ namespace PRKR.Editor.Behaviors {
           exact.addVectors(targetWorldPosition, delta);
           adjusted.addVectors(targetWorldPosition, adjustedMovement);
 
+          if (target.moveConstraints.constrain) {
+            target.moveConstraints.constrain(adjusted);
+          }
+
           this._targetMovements[index].subVectors(adjusted, targetWorldPosition);
 
           this._targetHelpers[index].position.copy(exact);

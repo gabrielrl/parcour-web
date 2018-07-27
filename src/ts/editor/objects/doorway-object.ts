@@ -25,14 +25,17 @@ namespace PRKR.Editor.Objects {
     }
 
     get moveConstraints() {
-      let steps = new Vector3();
-      let wall = this._getWall();
-      if (wall) {
-        steps.copy(wall.orientation.direction).round;
-      } else {
-        steps.set(1, 0, 1);
+
+      let placer = new Behaviors.DoorwayPlacer(this.parcour);
+
+      let constraints: MoveConstraints = {
+        steps: new Vector3(.5, 0, .5),
+        constrain(v) {
+          return placer.constrain(v);
+        }
       }
-      return { steps: steps };
+      return constraints;
+
     }
 
     /**
