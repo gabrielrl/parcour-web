@@ -11,13 +11,6 @@ namespace PRKR.Helpers {
   import Vector3 = THREE.Vector3;
   import Mesh = THREE.Mesh;
   import C = PRKR.Helpers.Constants;
-  
-  export interface RectangleHelperOptions {
-    useLines?: boolean,
-    useFaces?: boolean,
-    lineMaterial?: THREE.LineBasicMaterial | THREE.LineDashedMaterial,
-    faceMaterial?: THREE.Material
-  }
 
   export class RectangleHelper extends Object3D {
 
@@ -29,7 +22,7 @@ namespace PRKR.Helpers {
 
     constructor(
       rect: Box2,
-      options?: RectangleHelperOptions,
+      options?: HelperOptions,
       plane?: OrthoPlane
     ) {
       super();
@@ -38,6 +31,7 @@ namespace PRKR.Helpers {
       if (options) {
         if (options.useLines !== undefined) this._useLines = !!options.useLines;
         if (options.useFaces !== undefined) this._useFaces = !!options.useFaces;
+        if (options.renderOrder !== undefined) this.renderOrder = options.renderOrder;
       }
 
       // Setup lines.

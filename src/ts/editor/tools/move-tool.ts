@@ -238,7 +238,7 @@ namespace PRKR.Editor.Tools {
     }
 
     private _buildTargetHelpers(
-      options: PRKR.Helpers.BoundingBoxHelperOptions
+      options: PRKR.Helpers.HelperOptions
     ): BoundingBoxHelper[] {
 
       let helpers: BoundingBoxHelper[] = [];

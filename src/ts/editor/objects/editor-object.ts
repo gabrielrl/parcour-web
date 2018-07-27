@@ -66,6 +66,18 @@ namespace PRKR.Editor.Objects {
     }
 
     /**
+     * Gets if the current object can be moved.
+     * Override.
+     */
+    get movable(): boolean { return false; }
+
+    /**
+     * Gets the current object's move constraints.
+     * Override if `movable` returns true.
+     */
+    get moveConstraints(): MoveConstraints { return undefined; }
+
+    /**
      * Gets if the current object can be resized.
      * Override.
      */

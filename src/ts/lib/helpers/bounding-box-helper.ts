@@ -9,13 +9,6 @@ namespace PRKR.Helpers {
   import Vector3 = THREE.Vector3;
   import C = Helpers.Constants;
 
-  export interface BoundingBoxHelperOptions {
-    useLines?: boolean,
-    useFaces?: boolean,
-    lineMaterial?: THREE.LineBasicMaterial | THREE.LineDashedMaterial,
-    faceMaterial?: THREE.Material
-  }
-
   export class BoundingBoxHelper extends Object3D {
 
     private _useLines: boolean = true;
@@ -24,7 +17,7 @@ namespace PRKR.Helpers {
     private _lines: BoxLineHelper;
     private _faces: BoxFaceHelper;
 
-    constructor(box: Box3, options?: BoundingBoxHelperOptions) {
+    constructor(box: Box3, options?: HelperOptions) {
 
       super();
 
@@ -32,6 +25,7 @@ namespace PRKR.Helpers {
       if (options) {
         if (options.useLines !== undefined) this._useLines = !!options.useLines;
         if (options.useFaces !== undefined) this._useFaces = !!options.useFaces;
+        if (options.renderOrder !== undefined) this.renderOrder = options.renderOrder;
       }
 
       // Setup lines.
@@ -138,6 +132,7 @@ namespace PRKR.Helpers {
       let h = box.max.y - box.min.y;
       let d = box.max.z - box.min.z;
       let g = new THREE.BoxGeometry(w, h, d);
+      g.translate(box.min.x, box.min.y, box.min.z);
       let m = material || C.DefaultFaceMaterial;
 
       super(g, m);

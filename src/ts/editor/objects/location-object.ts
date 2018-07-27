@@ -21,6 +21,28 @@ namespace PRKR.Editor.Objects {
       this.update();
     }
 
+    get location() { return <Location>this.model; }
+
+    get name() {
+      return this.model.name || `${ Model.locationKindToString(this.location.kind) } location`;
+    }
+
+    /**
+     * Gets true because locations can be moved.
+     * Override.
+     */
+    get movable(): true { return true; }
+
+    /**
+     * Gets the current object's move constraints.
+     * Override if `movable` returns true.
+     */
+    get moveConstraints(): MoveConstraints {
+      return {
+        steps: new THREE.Vector3(1, 0, 1) 
+      };
+    }
+
     /** Override. */
     get resizable(): boolean { return false; }
 

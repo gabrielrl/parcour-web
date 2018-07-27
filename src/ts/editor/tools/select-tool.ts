@@ -28,27 +28,31 @@ namespace PRKR.Editor.Tools {
     private _selectionTarget: EditorObject = null;
 
     /**
-     * The "mouse down" event that triggered the "selecting" mode.
+     * Move behavior instance; since the select tool can be used to move objects as well as
+     * select them.
      */
-    private _mouseDownEvent: JQueryMouseEventObject = null;
+    private _moveBehavior: Behaviors.MoveBehavior = null;
 
     /**
      * Indicates if in "moving" mode, where mouse events are passed to the move
-     * tool.
+     * behavior.
      */
     private _moving: boolean = false;
 
+    /** Gets the internal name of the tool. */
     get name() { return 'select'; }
     
+    /** Gets a display name for the tool. */
     get displayName() { return 'Select'; }
 
-    constructor(editorApi: ParcourEditor) {
+    constructor(editor: ParcourEditor) {
       super();
-      this._editor = editorApi;
+      this._editor = editor;
+      this._moveBehavior = new Behaviors.MoveBehavior(editor);
     }
 
-    get enabled() {
-      // Select is always enabled.
+    /** Gets true (select is always enabled). */
+    get enabled(): true {
       return true;
     }
 
@@ -58,40 +62,37 @@ namespace PRKR.Editor.Tools {
 
     public notifyMouseDown(e: JQueryMouseEventObject) {
 
-      // Switch to "selecting" mode.
-      this._selecting = true;
-      this._selectionTarget = this._target;
-      this._mouseDownEvent = e;
+      // Give priority to the move behavior
+      if (
+        this._moveBehavior.enabled &&
+        this._moveBehavior.ready &&
+        this._target.selected
+      ) {
 
-      this._update();
+        this._moveBehavior.down(e);
+        this._moving = true;
+
+      } else {
+
+        // Switch to "selecting" mode.
+        this._selecting = true;
+        this._selectionTarget = this._target;
+        
+      }
+
+      this._updateEditor();
     }
     
     public notifyMouseMove(e: JQueryMouseEventObject) {
 
       if (this._moving) {
-        this._getMoveTool().notifyMouseMove(e);
-        return;
-      } 
+        this._moveBehavior.move(e);
+      } else {
+        this._moveBehavior.hover(e);
+      }
       
       this._updateTarget(e);
-
-      if (this._selecting) {
-        if (this._selectionTarget && this._selectionTarget.selected) {
-
-          // Moving the mouse after having clicked a selected object...
-          // Switch to "move mode".
-          this._moving = true;
-          let moveTool = this._getMoveTool();
-          moveTool.activate();
-          moveTool.notifyMouseDown(this._mouseDownEvent);
-          this._selecting = false;
-          this._selectionTarget = null;
-          
-          return;
-        }
-      }
-
-      this._update();
+      this._updateEditor();
     }
 
     public notifyMouseUp(e: JQueryMouseEventObject) {
@@ -120,18 +121,25 @@ namespace PRKR.Editor.Tools {
 
       } else if (this._moving) {
 
-        let moveTool = this._getMoveTool();        
-        moveTool.notifyMouseUp(e);
-        moveTool.deactivate();
+        let behavior = this._moveBehavior;
+        behavior.up(e);
+
+        // moveTool.deactivate();
         this._moving = false;   
 
       }
 
-      this._update();
+      this._updateEditor();
 
     }
 
     public notifyClick(e: JQueryMouseEventObject) { }
+
+    public notifyKeyDown(e: JQueryKeyEventObject) {
+      if (this._moving) {
+        this._moveBehavior.keyDown(e);
+      }
+    }
 
     /**
      * Updates the `_target` property with the closet object under the mouse
@@ -149,21 +157,27 @@ namespace PRKR.Editor.Tools {
     }
 
     /**
-     * Sets the editor  based on the current state.
+     * Sets the editor state (pointer and status message) based on the current state.
      */
-    private _update(): void {
-      // In "moving" mode, we let the move tool set the .
-      if (!this._moving) {
-        let pointer: string = null;        
-        if (this._target != null) {
-          if (this._target.selected) {
+    private _updateEditor(): void {
+      if (this._moving) {
+
+        this._editor.setPointer(this._moveBehavior.pointer);
+        this._editor.setStatus(this._moveBehavior.statusMessage);
+
+      } else {
+
+        let pointer: string = null;      
+        if (this._target == null) {
+          pointer = 'crosshair';
+        } else if (this._target.selected && this._moveBehavior.ready) {
             pointer = '-webkit-grab'; // says "you can move that".
-          } else {
-            pointer = 'pointer'; // says "you can select that".
-          }
+        } else {
+          pointer = 'pointer'; // says "you can select that".
         }
         this._editor.setPointer(pointer);
         this._setStatusMessage();
+
       }
     }
 
@@ -178,7 +192,7 @@ namespace PRKR.Editor.Tools {
 
         if (this._selectionTarget) {
           if (this._target && this._selectionTarget === this._target) {
-            return `Release to select '${ this._target.name }'`;
+            return `Release to select '${ SelectTool.getObjectName(this._target) }'`;
           } else {
             return 'Release to cancel selection';
           }
@@ -192,7 +206,7 @@ namespace PRKR.Editor.Tools {
         let sel = this._editor.selectedObjects;
         if (sel.length === 0) {
           if (this._target) {
-            return `Click to select '${ this._target.name }'`;
+            return `Click to select '${ SelectTool.getObjectName(this._target) }'`;
           } else {
             return 'Click an object to select it';
           }
@@ -200,9 +214,9 @@ namespace PRKR.Editor.Tools {
         } else {          
           if (this._target) {
             if (sel.indexOf(this._target) !== -1) {
-              return `Click and drag to move '${ this._target.name }'`
+              return `Click and drag to move '${ SelectTool.getObjectName(this._target) }'`
             } else {
-              return `Click to select '${ this._target.name }'. CTRL to multi-select`;
+              return `Click to select '${ SelectTool.getObjectName(this._target) }'. CTRL to multi-select`;
             }
           } else {
             return 'Click to clear selection';
@@ -211,12 +225,10 @@ namespace PRKR.Editor.Tools {
       } 
     }
 
-    private _moveTool: MoveTool = null;
-    private _getMoveTool() {
-      if (!this._moveTool) {
-        this._moveTool = <MoveTool> this._editor.getToolByName('move');
-      }
-      return this._moveTool;
+    // TODO Extract
+    public static getObjectName(object: EditorObject) {
+      if (object.name) { return object.name; }
+      return `unnamed ${ object.model.toObject().$type }`;
     }
   }
 }

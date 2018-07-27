@@ -222,7 +222,10 @@ namespace PRKR.Editor {
       // Set-up other listeners.
       window.addEventListener('beforeunload', e => this._onBeforeUnload(e), false);
       window.addEventListener('resize', (e) => this._onWindowResize(e), false);
-      window.addEventListener('keydown', e => this._onKeyDown(e), false);
+      // window.addEventListener('keydown', e => this._onKeyDown(e), false);
+
+      let $window = $(window);
+      $window.on('keydown', e => this._onKeyDown(e));
 
       this._render();
     }
@@ -574,8 +577,10 @@ namespace PRKR.Editor {
       // Accumulates "selection" meshes (hot spot) for all of the objects.
       let candidates: THREE.Object3D[] = [];
       for (let obj of this._objects) {
-        if (obj.selectionHotSpot)
-          candidates.push(obj.selectionHotSpot);
+        let hotSpot = obj.selectionHotSpot;
+        if (hotSpot) {
+          candidates.push(hotSpot);
+        }
       }
 
       // Adjust (x, y) to take account of the renderer's position relative to
@@ -695,6 +700,9 @@ namespace PRKR.Editor {
       this._modelIsDirty = true;
       this._sanitizeSelection();
 
+      // Invalidates the doorway placer that was built with the previous parcour.
+      this._doorwayPlacer = null;
+
       this._ribbon.update();
       this._propertiesPanel.update();
 
@@ -781,6 +789,21 @@ namespace PRKR.Editor {
       // this._orthographicCamera.position.copy(position);
 
       this.requestRender();
+    }
+
+    /**
+     * Currently valid doorway placer or null. Use `getDoorwayPlacer`.
+     */
+    private _doorwayPlacer: Behaviors.DoorwayPlacer;
+
+    /**
+     * Gets a doorway placer valid for the currnet parcour at its current state.
+     */
+    public getDoorwayPlacer() {
+      if (!this._doorwayPlacer) {
+        this._doorwayPlacer = new Behaviors.DoorwayPlacer(this._model);
+      }
+      return this._doorwayPlacer;
     }
 
     public save() {
@@ -875,9 +898,9 @@ namespace PRKR.Editor {
       // this._updateAssetPalette();
     }
 
-    private _onKeyDown(e: KeyboardEvent) {
-      console.log('keydown', e);
-      // TODO.
+    private _onKeyDown(e: JQueryKeyEventObject) {
+      // console.log('keydown', e);
+      this._activeTool.notifyKeyDown(e);
     }
 
     private _checkDelegationQuit(e: JQueryMouseEventObject) {

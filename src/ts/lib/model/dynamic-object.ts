@@ -15,6 +15,12 @@ namespace PRKR.Model {
 
   export class DynamicObject extends AreaElement {
 
+    /**
+     * Constant grid size for dynamic objects.
+     */
+    public static GridSize = 0.25;
+
+    /** Object's half extents. */
     private _size = new Vector3();
 
     private _density: number = DynamicObject.DefaultDensity;
@@ -59,6 +65,15 @@ namespace PRKR.Model {
       let clone = new DynamicObject();
       clone._copy(this);
       return clone;
+    }
+
+    // Override.
+    public getBoundingBox(): THREE.Box3 {
+      let box = new THREE.Box3(
+        new Vector3().copy(this.location).addScaledVector(this.size, -1),
+        new Vector3().copy(this.location).addScaledVector(this.size, 1),
+      );
+      return box;
     }
 
     // Override.

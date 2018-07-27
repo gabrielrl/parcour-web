@@ -28,7 +28,7 @@ namespace PRKR.Helpers {
     constructor(
       r1?: Box2,
       r2?: Box2,
-      options?: RectangleHelperOptions,
+      options?: HelperOptions,
       plane?: OrthoPlane
     ) {
       super();
@@ -43,6 +43,7 @@ namespace PRKR.Helpers {
       if (options) {
         if (options.useLines !== undefined) this._useLines = !!options.useLines;
         if (options.useFaces !== undefined) this._useFaces = !!options.useFaces;
+        if (options.renderOrder !== undefined) this.renderOrder = options.renderOrder;
       }
 
       // Setup rectangle lines.
@@ -57,8 +58,8 @@ namespace PRKR.Helpers {
         this.add(this._line2);
 
         this._embeddingHelpers = [
-          new RectangleLineHelper(M.Box2.Unit, plane),
-          new RectangleLineHelper(M.Box2.Unit, plane)
+          new RectangleLineHelper(M.Box2.Unit, plane, lineMaterial),
+          new RectangleLineHelper(M.Box2.Unit, plane, lineMaterial)
         ];
 
         this.add(this._embeddingHelpers[0]);

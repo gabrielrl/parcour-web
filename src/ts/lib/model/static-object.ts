@@ -12,6 +12,12 @@ namespace PRKR.Model {
 
   export class StaticObject extends AreaElement {
 
+    /**
+     * Constant grid size for static objects.
+     */
+    public static GridSize = 0.25;
+
+    /** Object's half extents. */
     private _size = new Vector3();
 
     constructor(data?: StaticObjectData) {
@@ -30,7 +36,9 @@ namespace PRKR.Model {
 
     }
 
-    /** Gets the size of the current static object. */
+    /**
+     * Gets the size of the current static object. Represent the "half extents" of the object.
+     */
     get size() { return this._size; }
 
     // Override.
@@ -38,6 +46,15 @@ namespace PRKR.Model {
       let clone = new StaticObject();
       clone._copy(this);
       return clone;
+    }    
+
+    // Override
+    public getBoundingBox(): THREE.Box3 {
+      let box = new THREE.Box3(
+        new Vector3().copy(this.location).addScaledVector(this.size, -1),
+        new Vector3().copy(this.location).addScaledVector(this.size, 1),
+      );
+      return box;
     }
 
     // Override.

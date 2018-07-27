@@ -17,8 +17,19 @@ namespace PRKR.Editor.Objects {
       this.update();
     }
 
+    /** Gets true because static objects area movables. */
+    get movable(): true { return true; }
+
+    get moveConstraints(): MoveConstraints {
+      return { steps: new THREE.Vector3(
+        StaticModel.GridSize,
+        StaticModel.GridSize,
+        StaticModel.GridSize
+      )};
+    }
+
     /** Override. */
-    get resizable(): boolean { return true;}
+    get resizable(): boolean { return true; }
 
     public update() {
       this._updateSceneObject();

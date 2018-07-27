@@ -31,7 +31,7 @@ namespace PRKR.Editor.Tools {
    */
   export class AddDynamicObjectTool extends Tool {
 
-    public static GridStep = .25;
+    public static GridStep = Model.DynamicObject.GridSize;
 
     /** Current drawing state. */
     private _state: DrawingState = DrawingState.NotStarted;
@@ -489,8 +489,7 @@ namespace PRKR.Editor.Tools {
 
     private _getVerticalLocation(mouseEvent: JQueryMouseEventObject): AreaLocation {
 
-      let camera = this._editor.getCameraRig().orthographicCamera;
-      let n = camera.getWorldDirection();
+      let n = this._editor.getCameraRig().getWorldDirection();
       n.setY(0).normalize().negate();
 
       let intersect = this._editor.projectMouseOnPlane(

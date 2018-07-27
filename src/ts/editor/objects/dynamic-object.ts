@@ -138,6 +138,18 @@ namespace PRKR.Editor.Objects {
       return props;
     }
 
+    get movable() { return true; }
+
+    get moveConstraints() {
+      return {
+        steps: new Vector3(
+          DynamicModel.GridSize,
+          DynamicModel.GridSize,
+          DynamicModel.GridSize
+        )
+      };      
+    }
+
     /** Override */
     protected _computeBoundingBox() {
 
