@@ -117,9 +117,9 @@ declare namespace Ammo {
     constructor(startTrans?: /*[Ref] optional*/ btTransform, centerOfMassOffset?: /*[Ref] optional*/ btTransform);    
   }
 
-  // Collision
+  // Collision 
 
-  interface btCollisionObject {
+  class btCollisionObject {
     setAnisotropicFriction(anisotropicFriction: btVector3, frictionMode: number): void;
     getCollisionShape(): btCollisionShape;
     setContactProcessingThreshold(contactProcessingThreshold: number): btCollisionShape;
@@ -142,6 +142,8 @@ declare namespace Ammo {
     setUserIndex(index: number): void;
     getUserPointer(): /*VoidPtr*/ any;
     setUserPointer(userPointer: /*VoidPtr*/ any): void;
+
+    ptr: number /* emscripten */
   }
 
   /*[NoDelete]*/
@@ -152,12 +154,24 @@ declare namespace Ammo {
    * [Prefix="btCollisionWorld::"]
    * abstract base class, no constructor
    */
-  interface RayResultCallback {
+  abstract class RayResultCallback {
     hasHit(): boolean;
-    /*attribute*/ m_collisionFilterGroup: number;
-    /*attribute*/ m_collisionFilterMask: number;
-    /*[Const] attribute*/ m_collisionObject: btCollisionObject;
-  }  
+    /* attribute */ get_m_collisionFilterGroup(): number;
+    /* attribute */ get_m_collisionFilterMask(): number;
+    /* [Const] attribute */ get_m_collisionObject(): btCollisionObject;
+  }
+  
+  class ClosestRayResultCallback extends RayResultCallback {
+    constructor(
+      /* [Const, Ref] */ from: btVector3,
+      /* [Const, Ref] */ to: btVector3
+    );
+  
+    /* [Value] attribute btVector3 */ get_m_rayFromWorld(): btVector3;
+    /* [Value] attribute btVector3 */ get_m_rayToWorld(): btVector3;
+    /* [Value] attribute btVector3 */ get_m_hitNormalWorld(): btVector3;
+    /* [Value] attribute btVector3 */ get_m_hitPointWorld(): btVector3;
+  }
 
   interface btCollisionShape {
     setLocalScaling(scaling: /*[Const, Ref]*/ btVector3): void;
@@ -239,7 +253,7 @@ declare namespace Ammo {
     /*attribute*/ m_collisionFilterGroup: number;
     /*attribute*/ m_collisionFilterMask: number;
     /*attribute*/ m_closestHitFraction: number;
-  }
+  } 
 
   /*[Prefix="btCollisionWorld::"]*/
   interface ContactResultCallback {
@@ -352,7 +366,8 @@ declare namespace Ammo {
     constructor(mass: number, motionState: btMotionState, collisionShape: btCollisionShape, localInertia?: /*[Ref]*/ btVector3);
   }
 
-  interface btRigidBody extends btCollisionObject {
+  class btRigidBody extends btCollisionObject {
+    constructor(constructionInfo: /*[Const, Ref]*/ btRigidBodyConstructionInfo);
     getCenterOfMassTransform(): /*[Const, Ref]*/ btTransform;
     setCenterOfMassTransform(xform: /*[Const, Ref]*/ btTransform): void;
     setSleepingThresholds(linear: number, angular: number): void;
@@ -376,9 +391,6 @@ declare namespace Ammo {
     setMotionState(motionState: btMotionState): void;
     setAngularFactor(angularFactor: /*[Const, Ref]*/ btVector3): void;
     upcast(colObj: /*[Const]*/ btCollisionObject): btRigidBody;
-  }
-  class btRigidBody implements btRigidBody {
-    constructor(constructionInfo: /*[Const, Ref]*/ btRigidBodyConstructionInfo);    
   }
 
   interface btDynamicsWorld extends btCollisionWorld {
