@@ -1,18 +1,16 @@
 /// <reference path="../defs/prkr.bundle.d.ts" />
 /// <reference path="../defs/ammo.d.ts" />
+/// <reference path="./constants.ts" />
+
 
 namespace PRKR.Player {
 
   import Vector3 = THREE.Vector3;
   import RuntimeObject = Model.RuntimeObject;
+  import C = Player.Constants;
 
   /** Parcour player (run-time) main class. */
   export class ParcourPlayer {
-
-    /** Character mass in kilogram. */
-    public static CharacterMass = 70;
-
-
 
     constructor(configuration: PRKR.Configuration) {
       if (!configuration) {
@@ -47,6 +45,7 @@ namespace PRKR.Player {
     /** The player character runtime object. */
     private _character: RuntimeObject;
 
+    /** Current force applied from player input. */
     private _activeForce: Ammo.btVector3 = new Ammo.btVector3();
 
     /** The completion state of the current parcour. */
@@ -134,7 +133,12 @@ namespace PRKR.Player {
       this._parcour.init(this._scene, this._physics);
 
       // Set start location.
-      let start = this._parcour.startLocation;
+      let start = this._parcour.startLocation.clone();
+      let minHeight = C.Character.CapsuleHeight * .5 + C.Character.LegGap;
+      if (start.y < minHeight) {
+        start.setY(minHeight);
+      }
+
       this._character.renderObject.position.copy(start);
       this._physics.setBodyPosition(this._character.physicBodies[0], start);
 
@@ -156,7 +160,7 @@ namespace PRKR.Player {
       return this;
     }
 
-    static JUMP_IMPULSE: Ammo.btVector3 = new Ammo.btVector3(0, 5 * ParcourPlayer.CharacterMass, 0);
+    static JUMP_IMPULSE: Ammo.btVector3 = new Ammo.btVector3(0, C.Character.JumpImpulse, 0);
     static AMMO_VECTOR_0: Ammo.btVector3 = new Ammo.btVector3(0, 0, 0);
     public jump() {
       this._character.physicBodies[0]
@@ -274,7 +278,7 @@ namespace PRKR.Player {
       if (this._actuator.length() > 0.001) {
         // Rotate actuator from camera orientation.
         this._actuator.applyAxisAngle(M.Vector3.PositiveY, this._cameras.orientation);
-        this.setDirection(this._actuator.normalize().multiplyScalar(5 * ParcourPlayer.CharacterMass));
+        this.setDirection(this._actuator.normalize().multiplyScalar(C.Character.DirectionMagnitude));
       } else {
         this.setDirection(M.Vector3.Zero);
       }
@@ -349,8 +353,13 @@ namespace PRKR.Player {
       requestAnimationFrame(() => this._render());
     }
 
-    private static __simulate_v = new THREE.Vector3();
+    private static __simulate_springForce = new Ammo.btVector3();
+    private static __simulate_relativePosition = new Ammo.btVector3();
+    private static __simulate_force = new Ammo.btVector3();
+    private static __simulate_v2 = new THREE.Vector3();
     private _simulate() {
+
+      // Time keeping.
       let now = performance.now() / 1000;
       let delta = now - this._lastSimulate;
       if (this._shouldLog) {
@@ -358,8 +367,72 @@ namespace PRKR.Player {
         console.log(`# [${clock.toFixed(3)}] simulate`, 'delta=', delta);
       }
 
+      // Apply character forces.
+      const characterForce = ParcourPlayer.__simulate_force;
+
+      // Compute legs component.
+      let legRayResult = this._castLegRays();
+      if (legRayResult == null) {
+        characterForce.setValue(0, 0, 0);
+      } else {
+        const legGap = C.Character.LegGap;
+        const currentLegGap = legRayResult.currentLegGap;
+        if (currentLegGap < legGap) {
+          let springForce = ParcourPlayer.__simulate_springForce;
+          characterForce.setValue(
+            0,
+            (legGap - currentLegGap) * C.Character.MaxLegForce / legGap
+              + C.Character.Mass * C.World.Gravity,
+            0
+          );
+
+          // this._character.physicBodies[0].applyCentralForce(springForce);
+          // this._character.physicBodies[0].activate();
+
+          // if (legRayResult.object) {
+          //   if (legRayResult.object instanceof Model.RuntimeDynamicObject) {
+          //   }
+          // }
+
+          // console.log(
+          //   'Applying leg force.',
+          //   'currentLegGap=', legRayResult.toFixed(3)
+          // );
+        }
+      }
+
+      characterForce.op_add(this._activeForce);
+
       // Apply control effects on character.
-      this._character.physicBodies[0].applyCentralForce(this._activeForce);
+      this._character.physicBodies[0].applyCentralForce(characterForce);
+      this._character.physicBodies[0].activate();
+
+      // Apply the character's counter-force on the object on which the character stands (if it is dynamic).
+      if (legRayResult && legRayResult.object instanceof Model.RuntimeDynamicObject) {
+
+        // Negates to get counter force.
+        characterForce.setValue(-characterForce.x(), -characterForce.y(), -characterForce.z());
+
+        let legLocation = legRayResult.location;
+        let body = legRayResult.object.physicBodies[0];
+        let origin = body.getWorldTransform().getOrigin();
+        let characterPosition = this._character.renderObject.position;
+        let relativePosition = ParcourPlayer.__simulate_relativePosition;
+
+        // NOTE This is not ideal. The approximation is made from the character's location (in X, Z) which might be
+        // outside of the object (impossible). TODO Fix
+        relativePosition.setValue(
+          characterPosition.x - origin.x(),
+          legLocation.y - origin.y(),
+          characterPosition.z - origin.z()
+        );
+        body.applyForce(
+          characterForce,
+          relativePosition
+        )
+        body.activate();
+      }
+
       // Step physic simulation.
       this._physics.simulate(delta);
       this._lastSimulate = now;
@@ -369,7 +442,7 @@ namespace PRKR.Player {
         let destination = this._parcour.endLocation;
         // Is the parcour completed?
         if (destination) {
-          let v = ParcourPlayer.__simulate_v;
+          let v = ParcourPlayer.__simulate_v2;
           v.subVectors(
             destination,
             // assumes it is updated during simulation above!
@@ -382,6 +455,78 @@ namespace PRKR.Player {
       }
 
       setTimeout(() => this._simulate());
+    }
+
+    private static __ray0 = new Vector3();
+    private static __ray1 = new Vector3();
+
+    /** Cast leg rays for the character and return current "leg gap" value. */
+    private _castLegRays() {
+      const v1 = ParcourPlayer.__ray0;
+      const v2 = ParcourPlayer.__ray1;
+      const halfCapsuleHeight = C.Character.CapsuleHeight * .5;
+      const radius = C.Character.CapsuleRadius;
+      const legGap = C.Character.LegGap;
+      let rays = [{
+        x: 0, z: 0
+      }, {
+        x: radius - .05, z: 0
+      }, {
+        x: -(radius - .05), z: 0
+      }, {
+        x: 0, z: radius - .05
+      }, {
+        x: 0, z: -(radius - .05)
+      }];
+
+      let highest: Vector3 = null;
+      let object: RuntimeObject = null;
+
+      rays.forEach(ray => {
+
+        v1.copy(this._character.renderObject.position);
+        v1.setX(v1.x + ray.x).setZ(v1.z + ray.z);
+        v1.setY(v1.y - halfCapsuleHeight + radius);
+
+        v2.copy(v1).addScaledVector(M.Vector3.NegativeY, legGap + radius);
+
+        let hit = this._physics.rayCast(v1, v2);
+  
+        if (
+          hit
+          && (
+            !highest
+            || (
+              hit.position.y > highest.y
+              && hit.normal.y < .5
+            )
+          )
+        ) {
+
+          if (!highest) highest = new Vector3();
+
+          highest.copy(hit.position);
+          object = hit.object;
+        }
+  
+      });
+
+      if (!highest) return null;
+
+      // determine leg gap.
+      let currentLegGap = 
+        this._character.renderObject.position.y
+        - C.Character.CapsuleHeight * .5
+        - highest.y;
+
+      // console.log('_castLegRays: Found a highest hit. Its position is', highest, 'Determined legGap is', legGap);
+
+      return {
+        currentLegGap,
+        location: highest,
+        object
+      };
+
     }
 
     private _setCompleted() {
@@ -504,11 +649,11 @@ namespace PRKR.Player {
       this._physics.init();
 
       // Add a character capsule.
-      let radius = 0.2;
-      let height = .75;
+      let radius = C.Character.CapsuleRadius;
+      let height = C.Character.CapsuleHeight - radius * 2;
       let capsuleMaterial = new THREE.MeshPhongMaterial({ color: 0x0000ff });
       let capsuleMesh = this._buildCapsuleMesh(radius, height, capsuleMaterial);
-      capsuleMesh.position.set(0, 1.25, 0);
+      capsuleMesh.position.set(0, C.Character.Height - height, 0);
 
       // HIDDEN mesh does not display that well... :( needs more work.
       // IT'S because of the composition of meshes.
@@ -522,7 +667,7 @@ namespace PRKR.Player {
       // capsuleMesh.add(hiddenMesh);
 
       let capsuleBody = this._physics.createCapsule({
-        mass: ParcourPlayer.CharacterMass,
+        mass: C.Character.Mass,
         radius: radius,
         height: height,
         position: capsuleMesh.position, 

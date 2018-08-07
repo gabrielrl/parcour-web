@@ -26,7 +26,7 @@ namespace PRKR.Player.Physics {
       this._solver = new Ammo.btSequentialImpulseConstraintSolver();
       this._dynamicsWorld = new Ammo.btDiscreteDynamicsWorld(this._dispatcher, this._overlappingPairCache, this._solver, this._collisionConfiguration);
 
-      this._dynamicsWorld.setGravity(new Ammo.btVector3(0, -10, 0));
+      this._dynamicsWorld.setGravity(new Ammo.btVector3(0, -Constants.World.Gravity, 0));
 
     }
 
@@ -86,6 +86,8 @@ namespace PRKR.Player.Physics {
 
     private static __transform = new Ammo.btTransform();
     private static __origin = new Ammo.btVector3();
+
+    /** Sets a rigid body's position in the world. */
     public setBodyPosition(body: Ammo.btRigidBody, position: THREE.Vector3) {
       let t = ParcourPhysics.__transform;
       let o = ParcourPhysics.__origin;
@@ -99,6 +101,62 @@ namespace PRKR.Player.Physics {
       t.setOrigin(o);
       body.setWorldTransform(t);
       ms.setWorldTransform(t);
+    }
+
+    private static __castOrigin = new Ammo.btVector3();
+    private static __castDestination = new Ammo.btVector3();
+
+    /** Casts a ray. */
+    public rayCast(from: THREE.Vector3, to: THREE.Vector3, optionalResult?: RayResult): RayResult {
+      const o = ParcourPhysics.__castOrigin;
+      const d = ParcourPhysics.__castDestination;
+
+      o.setValue(from.x, from.y, from.z);
+      d.setValue(to.x, to.y, to.z);
+      
+      let callback = new Ammo.ClosestRayResultCallback(o, d);
+      this._dynamicsWorld.rayTest(o, d, callback);
+
+      if (!callback.hasHit()) return null;
+
+      let result = optionalResult || new RayResult();
+
+      let hitPointWorld = callback.get_m_hitPointWorld();
+      result.position.set(hitPointWorld.x(), hitPointWorld.y(),hitPointWorld.z());
+
+      let hitNormalWorld = callback.get_m_hitNormalWorld();
+      result.normal.set(hitNormalWorld.x(), hitNormalWorld.y(), hitNormalWorld.z());
+
+      let target = callback.get_m_collisionObject();
+    
+      
+      // Map the collision object to a parcour object.
+      let runtimeObject = this.getRuntimeObjectFromCollisionObject(target);
+
+      result.object = runtimeObject;
+
+      // TODO ...
+
+      return result;      
+    }
+
+    public getRuntimeObjectFromCollisionObject(object: Ammo.btCollisionObject) {
+
+      // TODO this is ugly. Make it better. Keep a reverse map ready.
+      for (var i = 0; i < this._objects.length; i++) {
+        let o = this._objects[i];
+
+        if (o.physicBodies && o.physicBodies.length > 0) {
+          for (var j = 0; j < o.physicBodies.length; j++) {
+            if (o.physicBodies[j].ptr === object.ptr) {
+              // Found it!
+              return o;
+            }
+          }
+        }
+      }
+
+      return null;
     }
 
     private _addRigidBody(body: Ammo.btRigidBody) {
