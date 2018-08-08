@@ -7,7 +7,10 @@ namespace PRKR.Player {
     World: {
 
       /** World gravity (in m/s²). */
-      Gravity: 10
+      Gravity: 10,
+
+      /** Default friction coefficient for any rigid body. */
+      DefaultFriction: .75
     },
 
     /** All character related constants. */
@@ -27,6 +30,9 @@ namespace PRKR.Player {
 
       /** Character mass (in kilogram). */
       Mass: 70,
+
+      /** Character friction coefficient. */
+      Friction: 0.2,
 
       /**
        * Gets the basic (rest) "leg gap", which is the distance between the character's capsule and the ground
@@ -56,9 +62,20 @@ namespace PRKR.Player {
         return 5 * this.Mass;
       }
       
+    },
+
+    StaticObjects: {
+
+      /** Static objects' default friction coefficient. */
+      DefaultFriction: 1.0
+
+    },
+
+    DynamicObjects: {
+
+      /** Dynamic objects' default friction coefficient. */
+      DefaultFriction: 0.8
     }
-
-
 
 
   }
