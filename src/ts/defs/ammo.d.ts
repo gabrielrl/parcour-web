@@ -349,18 +349,30 @@ declare namespace Ammo {
 
   /*[Prefix="btRigidBody::"]*/
   interface btRigidBodyConstructionInfo {
-    /*attribute*/ m_linearDamping: number;
-    /*attribute*/ m_angularDamping: number;
-    /*attribute*/ m_friction: number;
-    /*attribute*/ m_rollingFriction: number;
-    /*attribute*/ m_restitution: number;
-    /*attribute*/ m_linearSleepingThreshold: number;
-    /*attribute*/ m_angularSleepingThreshold: number;
-    /*attribute*/ m_additionalDamping: boolean;
-    /*attribute*/ m_additionalDampingFactor: number;
-    /*attribute*/ m_additionalLinearDampingThresholdSqr: number;
-    /*attribute*/ m_additionalAngularDampingThresholdSqr: number;
-    /*attribute*/ m_additionalAngularDampingFactor: number;
+    /*attribute*/ get_m_linearDamping(): number;
+    /*attribute*/ set_m_linearDamping(v: number);
+    /*attribute*/ get_m_angularDamping(): number;
+    /*attribute*/ set_m_angularDamping(v: number);
+    /*attribute*/ get_m_friction(): number;
+    /*attribute*/ set_m_friction(v: number);
+    /*attribute*/ get_m_rollingFriction(): number;
+    /*attribute*/ set_m_rollingFriction(v: number);
+    /*attribute*/ get_m_restitution(): number;
+    /*attribute*/ set_m_restitution(v: number);
+    /*attribute*/ get_m_linearSleepingThreshold(): number;
+    /*attribute*/ set_m_linearSleepingThreshold(v: number);
+    /*attribute*/ get_m_angularSleepingThreshold(): number;
+    /*attribute*/ set_m_angularSleepingThreshold(v: number);
+    /*attribute*/ get_m_additionalDamping(): boolean;
+    /*attribute*/ set_m_additionalDamping(v: boolean);
+    /*attribute*/ get_m_additionalDampingFactor(): number;
+    /*attribute*/ set_m_additionalDampingFactor(v: number);
+    /*attribute*/ get_m_additionalLinearDampingThresholdSqr(): number;
+    /*attribute*/ set_m_additionalLinearDampingThresholdSqr(v: number);
+    /*attribute*/ get_m_additionalAngularDampingThresholdSqr(): number;
+    /*attribute*/ set_m_additionalAngularDampingThresholdSqr(v: number);
+    /*attribute*/ get_m_additionalAngularDampingFactor(): number;
+    /*attribute*/ set_m_additionalAngularDampingFactor(v: number);
   }
   class btRigidBodyConstructionInfo {
     constructor(mass: number, motionState: btMotionState, collisionShape: btCollisionShape, localInertia?: /*[Ref]*/ btVector3);
