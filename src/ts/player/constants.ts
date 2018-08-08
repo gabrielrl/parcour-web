@@ -47,15 +47,20 @@ namespace PRKR.Player {
        * ground. *Computed*
        */
       get MaxLegForce() {
-        return 8 * this.Mass;
+        return 16 * this.Mass;
       },
+
+      /** Character leg force damping coefficient. */
+      LegDamping: 500,
 
       /**
        * Magnitude (in Newton) of the direction (walk) force. *Computed*
        */
       get DirectionMagnitude() {
-        return 2 * this.Mass; 
+        return 8 * this.Mass; 
       },
+
+      DirectionDamping: 300,
 
       /** Magnitude (in Newton) of the jump impulse. *Computed* */
       get JumpImpulse() {

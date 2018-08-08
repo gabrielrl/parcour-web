@@ -168,15 +168,9 @@ namespace PRKR.Player {
       this._character.physicBodies[0].activate();
     }
 
+    /** Sets the current character direction. */
     public setDirection(v: THREE.Vector3) {
       this._activeForce.setValue(v.x, v.y, v.z);
-
-      if (this._activeForce.length() > 0.001) {
-        this._character.physicBodies[0].activate();
-        this._character.physicBodies[0].setDamping(0.2, 0);
-      } else {
-        this._character.physicBodies[0].setDamping(0.75, 0.75);
-      }
     }
 
     private _reset() {
@@ -369,20 +363,27 @@ namespace PRKR.Player {
 
       // Apply character forces.
       const characterForce = ParcourPlayer.__simulate_force;
+      const velocity = this._character.physicBodies[0].getLinearVelocity();
 
       // Compute legs component.
-      let legRayResult = this._castLegRays();
+      const legRayResult = this._castLegRays();
       if (legRayResult == null) {
+
+        // The character isn't standing on anything (free falling).
         characterForce.setValue(0, 0, 0);
+        
       } else {
+
+        // The character is standing on something.
         const legGap = C.Character.LegGap;
         const currentLegGap = legRayResult.currentLegGap;
+
         if (currentLegGap < legGap) {
-          let springForce = ParcourPlayer.__simulate_springForce;
           characterForce.setValue(
             0,
             (legGap - currentLegGap) * C.Character.MaxLegForce / legGap
-              + C.Character.Mass * C.World.Gravity,
+              + C.Character.Mass * C.World.Gravity
+              - C.Character.LegDamping * velocity.y(),
             0
           );
 
@@ -399,38 +400,42 @@ namespace PRKR.Player {
           //   'currentLegGap=', legRayResult.toFixed(3)
           // );
         }
-      }
 
-      characterForce.op_add(this._activeForce);
+        characterForce.op_add(this._activeForce);
 
-      // Apply control effects on character.
-      this._character.physicBodies[0].applyCentralForce(characterForce);
-      this._character.physicBodies[0].activate();
+        characterForce.setX(characterForce.x() - velocity.x() * C.Character.DirectionDamping);
+        characterForce.setZ(characterForce.z() - velocity.z() * C.Character.DirectionDamping);
+  
+        // Apply control + leg forces on character.
+        this._character.physicBodies[0].activate();
+        this._character.physicBodies[0].applyCentralForce(characterForce);
 
-      // Apply the character's counter-force on the object on which the character stands (if it is dynamic).
-      if (legRayResult && legRayResult.object instanceof Model.RuntimeDynamicObject) {
+        // Apply the character's counter-force on the object on which the character stands (if it is dynamic).
+        if (legRayResult && legRayResult.object instanceof Model.RuntimeDynamicObject) {
 
-        // Negates to get counter force.
-        characterForce.setValue(-characterForce.x(), -characterForce.y(), -characterForce.z());
+          // Negates to get counter force.
+          characterForce.setValue(-characterForce.x(), -characterForce.y(), -characterForce.z());
 
-        let legLocation = legRayResult.location;
-        let body = legRayResult.object.physicBodies[0];
-        let origin = body.getWorldTransform().getOrigin();
-        let characterPosition = this._character.renderObject.position;
-        let relativePosition = ParcourPlayer.__simulate_relativePosition;
+          let legLocation = legRayResult.location;
+          let body = legRayResult.object.physicBodies[0];
+          let origin = body.getWorldTransform().getOrigin();
+          let characterPosition = this._character.renderObject.position;
+          let relativePosition = ParcourPlayer.__simulate_relativePosition;
 
-        // NOTE This is not ideal. The approximation is made from the character's location (in X, Z) which might be
-        // outside of the object (impossible). TODO Fix
-        relativePosition.setValue(
-          characterPosition.x - origin.x(),
-          legLocation.y - origin.y(),
-          characterPosition.z - origin.z()
-        );
-        body.applyForce(
-          characterForce,
-          relativePosition
-        )
-        body.activate();
+          // NOTE This is not ideal. The approximation is made from the character's location (in X, Z) which might be
+          // outside of the object (impossible). TODO Fix
+          relativePosition.setValue(
+            characterPosition.x - origin.x(),
+            legLocation.y - origin.y(),
+            characterPosition.z - origin.z()
+          );
+          body.applyForce(
+            characterForce,
+            relativePosition
+          )
+          body.activate();
+        }
+
       }
 
       // Step physic simulation.
