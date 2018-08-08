@@ -204,6 +204,12 @@ namespace PRKR.Player.Physics {
 
       let motionState = new Ammo.btDefaultMotionState(transform)
       let rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, motionState, shape, localInertia);
+      if (data.friction != null) {
+        rbInfo.set_m_friction(data.friction);
+      } else {
+        rbInfo.set_m_friction(Constants.World.DefaultFriction);
+      }
+
       let body = new Ammo.btRigidBody(rbInfo);
 
       return body;
