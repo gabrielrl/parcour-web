@@ -668,6 +668,7 @@ namespace PRKR.Player {
 
       let capsuleBody = this._physics.createCapsule({
         mass: C.Character.Mass,
+        friction: C.Character.Friction,
         radius: radius,
         height: height,
         position: capsuleMesh.position, 
