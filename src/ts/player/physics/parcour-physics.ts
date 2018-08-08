@@ -165,7 +165,7 @@ namespace PRKR.Player.Physics {
     }
 
     public simulate(delta: number) {
-      this._dynamicsWorld.stepSimulation(delta, 10);
+      this._dynamicsWorld.stepSimulation(delta, 10, 1 / 500);
       var t = ParcourPhysics.__transform;
       this._objects.forEach(o =>  {
         if (o.updateRenderObject && o.physicBodies.length === 1 && o.renderObject) {
