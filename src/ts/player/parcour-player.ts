@@ -243,6 +243,7 @@ namespace PRKR.Player {
     }
 
     private _actuator: THREE.Vector3 = new THREE.Vector3();
+    private _running: boolean = false;
     private _processInput() {
 
       this._actuator.set(0, 0, 0);
@@ -268,6 +269,8 @@ namespace PRKR.Player {
         this._actuator.add(M.Vector3.NegativeZ);
 
       }
+
+      this._running = this._keyboard.isKeyDown(16); // SHIFT (left or right)
 
       if (this._actuator.length() > 0.001) {
         // Rotate actuator from camera orientation.
@@ -402,6 +405,9 @@ namespace PRKR.Player {
         }
 
         characterForce.op_add(this._activeForce);
+        if (this._running) {
+          characterForce.op_add(this._activeForce);
+        }
 
         characterForce.setX(characterForce.x() - velocity.x() * C.Character.DirectionDamping);
         characterForce.setZ(characterForce.z() - velocity.z() * C.Character.DirectionDamping);
@@ -423,7 +429,7 @@ namespace PRKR.Player {
           let relativePosition = ParcourPlayer.__simulate_relativePosition;
 
           // NOTE This is not ideal. The approximation is made from the character's location (in X, Z) which might be
-          // outside of the object (impossible). TODO Fix
+          // outside of the object (impossible). TODO Fix. Probably when "precise" feet location comes by.
           relativePosition.setValue(
             characterPosition.x - origin.x(),
             legLocation.y - origin.y(),
@@ -499,12 +505,10 @@ namespace PRKR.Player {
   
         if (
           hit
+          && hit.normal.y > .7071
           && (
             !highest
-            || (
-              hit.position.y > highest.y
-              && hit.normal.y < .5
-            )
+            || hit.position.y > highest.y
           )
         ) {
 
