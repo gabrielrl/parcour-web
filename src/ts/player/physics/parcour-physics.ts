@@ -164,8 +164,28 @@ namespace PRKR.Player.Physics {
       this._dynamicsWorld.addRigidBody(body);
     }
 
+    private static MaxSimulationSubSteps = 12;
+
+    /** (in seconds). */
+    private static FixedSimulationTimeStep = 1 / 480;
+
+    /**
+     * Step the physic simulation.
+     * @param delta Elapsed time (in seconds).
+     */
     public simulate(delta: number) {
-      this._dynamicsWorld.stepSimulation(delta, 10, 1 / 500);
+
+      this._dynamicsWorld.stepSimulation(
+        delta,
+        ParcourPhysics.MaxSimulationSubSteps, ParcourPhysics.FixedSimulationTimeStep
+      );
+
+      // // TEMP DEBUG are we loosing time?
+      // if (delta > ParcourPhysics.MaxSimulationSubSteps * ParcourPhysics.FixedSimulationTimeStep) {
+      //   console.warn('ParcourPhysics.simulate() loosing time.', 'delta =', delta,
+      //     ' > ', ParcourPhysics.MaxSimulationSubSteps * ParcourPhysics.FixedSimulationTimeStep);
+      // }
+
       var t = ParcourPhysics.__transform;
       this._objects.forEach(o =>  {
         if (o.updateRenderObject && o.physicBodies.length === 1 && o.renderObject) {
