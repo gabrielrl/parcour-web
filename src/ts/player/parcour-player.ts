@@ -244,6 +244,7 @@ namespace PRKR.Player {
 
     private _actuator: THREE.Vector3 = new THREE.Vector3();
     private _running: boolean = false;
+    private _crouching: boolean = false;
     private _processInput() {
 
       this._actuator.set(0, 0, 0);
@@ -271,6 +272,7 @@ namespace PRKR.Player {
       }
 
       this._running = this._keyboard.isKeyDown(16); // SHIFT (left or right)
+      this._crouching = this._keyboard.isKeyDown(67); // C
 
       if (this._actuator.length() > 0.001) {
         // Rotate actuator from camera orientation.
@@ -381,10 +383,12 @@ namespace PRKR.Player {
         const legGap = C.Character.LegGap;
         const currentLegGap = legRayResult.currentLegGap;
 
+        const factor = this._crouching ? 0.1 : 1;
+
         if (currentLegGap < legGap) {
           characterForce.setValue(
             0,
-            (legGap - currentLegGap) * C.Character.MaxLegForce / legGap
+            (legGap * factor - currentLegGap) * C.Character.MaxLegForce / legGap
               + C.Character.Mass * C.World.Gravity
               - C.Character.LegDamping * velocity.y(),
             0
@@ -425,16 +429,14 @@ namespace PRKR.Player {
           let legLocation = legRayResult.location;
           let body = legRayResult.object.physicBodies[0];
           let origin = body.getWorldTransform().getOrigin();
-          let characterPosition = this._character.renderObject.position;
           let relativePosition = ParcourPlayer.__simulate_relativePosition;
 
-          // NOTE This is not ideal. The approximation is made from the character's location (in X, Z) which might be
-          // outside of the object (impossible). TODO Fix. Probably when "precise" feet location comes by.
           relativePosition.setValue(
-            characterPosition.x - origin.x(),
+            legLocation.x - origin.x(),
             legLocation.y - origin.y(),
-            characterPosition.z - origin.z()
+            legLocation.z - origin.z()
           );
+
           body.applyForce(
             characterForce,
             relativePosition
