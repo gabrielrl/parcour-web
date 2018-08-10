@@ -348,7 +348,6 @@ namespace PRKR.Player {
       requestAnimationFrame(() => this._render());
     }
 
-    private static __simulate_springForce = new Ammo.btVector3();
     private static __simulate_relativePosition = new Ammo.btVector3();
     private static __simulate_force = new Ammo.btVector3();
     private static __simulate_v2 = new THREE.Vector3();
