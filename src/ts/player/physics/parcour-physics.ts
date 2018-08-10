@@ -15,6 +15,9 @@ namespace PRKR.Player.Physics {
     private _bodies: Ammo.btRigidBody[] = [];
 
     private _objects: Model.RuntimeObject[] = [];
+    
+    /** Maps of physical bodies' `ptr` values (from emscripten) to their corresponding `RuntimeObject`s. */
+    private _bodyToObjectMap: { [ptr: number]: Model.RuntimeObject } = {};
 
     public init() {
 
@@ -79,7 +82,10 @@ namespace PRKR.Player.Physics {
 
     public add(obj: Model.RuntimeObject) {
       if (obj && obj.physicBodies) {
-        obj.physicBodies.forEach(b => this._addRigidBody(b));
+        obj.physicBodies.forEach(b => {
+          this._addRigidBody(b);
+          this._bodyToObjectMap[b.ptr] = obj;
+        });
       }
       this._objects.push(obj);
     }
@@ -142,21 +148,8 @@ namespace PRKR.Player.Physics {
 
     public getRuntimeObjectFromCollisionObject(object: Ammo.btCollisionObject) {
 
-      // TODO this is ugly. Make it better. Keep a reverse map ready.
-      for (var i = 0; i < this._objects.length; i++) {
-        let o = this._objects[i];
+      return this._bodyToObjectMap[object.ptr];
 
-        if (o.physicBodies && o.physicBodies.length > 0) {
-          for (var j = 0; j < o.physicBodies.length; j++) {
-            if (o.physicBodies[j].ptr === object.ptr) {
-              // Found it!
-              return o;
-            }
-          }
-        }
-      }
-
-      return null;
     }
 
     private _addRigidBody(body: Ammo.btRigidBody) {
