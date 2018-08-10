@@ -64,7 +64,7 @@ namespace PRKR.Player {
 
       /** Magnitude (in Newton) of the jump impulse. *Computed* */
       get JumpImpulse() {
-        return 5 * this.Mass;
+        return 4 * this.Mass;
       }
       
     },

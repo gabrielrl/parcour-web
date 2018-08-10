@@ -195,7 +195,7 @@ namespace PRKR.Player {
 
       } else if (e.which === 32 /* Space */) {
         
-        this.jump();
+        this._jumpTriggered = true;
 
         handled = true;
 
@@ -245,6 +245,7 @@ namespace PRKR.Player {
     private _actuator: THREE.Vector3 = new THREE.Vector3();
     private _running: boolean = false;
     private _crouching: boolean = false;
+    private _jumpTriggered: boolean = false;
     private _processInput() {
 
       this._actuator.set(0, 0, 0);
@@ -368,7 +369,8 @@ namespace PRKR.Player {
 
       // Apply character forces.
       const characterForce = ParcourPlayer.__simulate_force;
-      const velocity = this._character.physicBodies[0].getLinearVelocity();
+      const characterBody = this._character.physicBodies[0];
+      const velocity = characterBody.getLinearVelocity();
 
       // Compute legs component.
       const legRayResult = this._castLegRays();
@@ -417,8 +419,17 @@ namespace PRKR.Player {
         characterForce.setZ(characterForce.z() - velocity.z() * C.Character.DirectionDamping);
   
         // Apply control + leg forces on character.
-        this._character.physicBodies[0].activate();
-        this._character.physicBodies[0].applyCentralForce(characterForce);
+        characterBody.activate();
+        characterBody.applyCentralForce(characterForce);
+
+        const jumpImpulse = ParcourPlayer.JUMP_IMPULSE;
+
+        if (this._jumpTriggered) {
+
+          characterBody.applyImpulse(
+            jumpImpulse, ParcourPlayer.AMMO_VECTOR_0
+          );
+        }
 
         // Apply the character's counter-force on the object on which the character stands (if it is dynamic).
         if (legRayResult && legRayResult.object instanceof Model.RuntimeDynamicObject) {
@@ -442,9 +453,24 @@ namespace PRKR.Player {
             relativePosition
           )
           body.activate();
+
+          if (this._jumpTriggered) {
+
+            let y = jumpImpulse.y();
+            jumpImpulse.setY(-y);
+
+            body.applyImpulse(
+              jumpImpulse,
+              relativePosition
+            );
+
+            jumpImpulse.setY(y);  
+  
+          }
         }
 
       }
+      this._jumpTriggered = false;
 
       // Step physic simulation.
       this._physics.simulate(delta);
