@@ -384,22 +384,22 @@ namespace PRKR.Player {
       } else {
 
         // The character is standing on something.
-        const legGap = C.Character.LegGap;
+        const targetLegGap = C.Character.LegGap;
         const currentLegGap = legRayResult.currentLegGap;
 
-        const factor = this._crouching ? C.Character.CrouchingLegGapCoefficient : 1;
+        let coeff = this._crouching ? C.Character.CrouchingLegGapCoefficient : 1;
 
-        if (currentLegGap < legGap) {
+        if (currentLegGap < targetLegGap) {
           characterForce.setValue(
             0,
-            (legGap * factor - currentLegGap) * C.Character.MaxLegForce / legGap
+            (targetLegGap * coeff - currentLegGap) * C.Character.MaxLegForce / targetLegGap
               + C.Character.Mass * C.World.Gravity
               - C.Character.LegDamping * velocity.y(),
             0
           );
         }
 
-        let coeff = C.Character.CrouchingDirectionCoefficient;
+        coeff = C.Character.CrouchingDirectionCoefficient;
         characterForce.op_add(this._activeForce);
         if (this._running) {
           characterForce.op_add(this._activeForce);
@@ -427,7 +427,7 @@ namespace PRKR.Player {
         }
 
         // Apply the character's counter-force on the object on which the character stands (if it is dynamic).
-        if (legRayResult && legRayResult.object instanceof Model.RuntimeDynamicObject) {
+        if (legRayResult && legRayResult.object && legRayResult.object.updateRenderObject) {
 
           // Negates to get counter force.
           characterForce.setValue(-characterForce.x(), -characterForce.y(), -characterForce.z());
@@ -764,7 +764,7 @@ namespace PRKR.Player {
 
       sphereMesh.position.copy(position);
       let sphereBody = this._physics.createSphere({
-        mass: 1,
+        mass: 50,
         radius: radius,
         position: sphereMesh.position, 
       });
@@ -801,7 +801,7 @@ namespace PRKR.Player {
 
       boxMesh.position.copy(position);
       let boxBody = this._physics.createBox({
-        mass: 1,
+        mass: 50,
         size: new Vector3(size, size, size),
         position: boxMesh.position
       });
