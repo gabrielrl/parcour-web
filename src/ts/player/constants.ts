@@ -60,6 +60,15 @@ namespace PRKR.Player {
         return 8 * this.Mass; 
       },
 
+      /** Reduction of the direction force when the character is free falling. */
+      FreeFallingDirectionCoefficient: .5,
+
+      /** Reduction of the direction force when the character is crouched. */
+      CrouchingDirectionCoefficient: .5,
+
+      /** Reduction of the leg gap when the character is crouched. */
+      CrouchingLegGapCoefficient: .1,
+
       DirectionDamping: 300,
 
       /** Magnitude (in Newton) of the jump impulse. *Computed* */

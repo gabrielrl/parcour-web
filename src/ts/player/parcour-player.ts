@@ -374,10 +374,11 @@ namespace PRKR.Player {
         // The character isn't standing on anything (free falling).
         // Applies a fraction of the active force so the player still has "some" control.
         // Though it is physically incorrect, it yields more interesting gameplay.
+        const coeff = C.Character.FreeFallingDirectionCoefficient;
         characterForce.setValue(
-          this._activeForce.x() * .5,
-          this._activeForce.y() * .5,
-          this._activeForce.z() * .5
+          this._activeForce.x() * coeff,
+          this._activeForce.y() * coeff,
+          this._activeForce.z() * coeff
         );
         characterBody.applyCentralForce(characterForce);
         
@@ -387,7 +388,7 @@ namespace PRKR.Player {
         const legGap = C.Character.LegGap;
         const currentLegGap = legRayResult.currentLegGap;
 
-        const factor = this._crouching ? 0.1 : 1;
+        const factor = this._crouching ? C.Character.CrouchingLegGapCoefficient : 1;
 
         if (currentLegGap < legGap) {
           characterForce.setValue(
@@ -397,24 +398,19 @@ namespace PRKR.Player {
               - C.Character.LegDamping * velocity.y(),
             0
           );
-
-          // this._character.physicBodies[0].applyCentralForce(springForce);
-          // this._character.physicBodies[0].activate();
-
-          // if (legRayResult.object) {
-          //   if (legRayResult.object instanceof Model.RuntimeDynamicObject) {
-          //   }
-          // }
-
-          // console.log(
-          //   'Applying leg force.',
-          //   'currentLegGap=', legRayResult.toFixed(3)
-          // );
         }
 
+        let coeff = C.Character.CrouchingDirectionCoefficient;
         characterForce.op_add(this._activeForce);
         if (this._running) {
           characterForce.op_add(this._activeForce);
+        }
+        if (this._crouching) {
+          characterForce.setValue(
+            characterForce.x() * coeff,
+            characterForce.y() * coeff,
+            characterForce.z() * coeff,
+          )
         }
 
         characterForce.setX(characterForce.x() - velocity.x() * C.Character.DirectionDamping);
