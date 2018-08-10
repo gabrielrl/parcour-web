@@ -372,7 +372,14 @@ namespace PRKR.Player {
       if (legRayResult == null) {
 
         // The character isn't standing on anything (free falling).
-        characterForce.setValue(0, 0, 0);
+        // Applies a fraction of the active force so the player still has "some" control.
+        // Though it is physically incorrect, it yields more interesting gameplay.
+        characterForce.setValue(
+          this._activeForce.x() * .5,
+          this._activeForce.y() * .5,
+          this._activeForce.z() * .5
+        );
+        characterBody.applyCentralForce(characterForce);
         
       } else {
 
