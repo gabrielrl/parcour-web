@@ -75,6 +75,9 @@ namespace PRKR.Player {
     /** The number of render passes that will be logged to the console. */
     private _shouldLog: number = 0;
 
+    private static JumpImpulse: Ammo.btVector3 = new Ammo.btVector3(0, C.Character.JumpImpulse, 0);
+    private static AmmoVector0: Ammo.btVector3 = new Ammo.btVector3(0, 0, 0);
+
     /**
      * Initializes the player.
      * @returns Itself.
@@ -158,14 +161,6 @@ namespace PRKR.Player {
       this._startLoop();
       
       return this;
-    }
-
-    static JUMP_IMPULSE: Ammo.btVector3 = new Ammo.btVector3(0, C.Character.JumpImpulse, 0);
-    static AMMO_VECTOR_0: Ammo.btVector3 = new Ammo.btVector3(0, 0, 0);
-    public jump() {
-      this._character.physicBodies[0]
-        .applyImpulse(ParcourPlayer.JUMP_IMPULSE, ParcourPlayer.AMMO_VECTOR_0);
-      this._character.physicBodies[0].activate();
     }
 
     /** Sets the current character direction. */
@@ -422,13 +417,11 @@ namespace PRKR.Player {
         characterBody.activate();
         characterBody.applyCentralForce(characterForce);
 
-        const jumpImpulse = ParcourPlayer.JUMP_IMPULSE;
+        const jumpImpulse = ParcourPlayer.JumpImpulse;
 
         if (this._jumpTriggered) {
 
-          characterBody.applyImpulse(
-            jumpImpulse, ParcourPlayer.AMMO_VECTOR_0
-          );
+          characterBody.applyImpulse(jumpImpulse, ParcourPlayer.AmmoVector0);
         }
 
         // Apply the character's counter-force on the object on which the character stands (if it is dynamic).
