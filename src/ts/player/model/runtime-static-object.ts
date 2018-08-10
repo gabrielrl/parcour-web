@@ -57,6 +57,7 @@ namespace PRKR.Player.Model {
 
       let box = physics.createBox({
         mass: 0,
+        friction: Constants.StaticObjects.DefaultFriction,
         size,
         position
       });

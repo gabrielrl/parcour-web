@@ -1,9 +1,12 @@
 namespace PRKR.Player.Physics {
   export interface BodyDescription {
-    /** Body mass. If zero, body will be considered static. */
+    /** Mass (in kilogram). If zero, body will be considered static. */
     mass: number;
 
-    /** Initial body position in the physical world. Optional. */
+    /** Friction coefficient (see Bullet Physics). */
+    friction?: number;
+
+    /** Initial body position in the physical world. */
     position?: THREE.Vector3;
 
     /** Render object. Optional. */

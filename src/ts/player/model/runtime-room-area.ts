@@ -138,6 +138,7 @@ namespace PRKR.Player.Model {
       // Use the same boxSize as the floor (just above).
       box = physics.createBox({
         mass: 0,
+        friction: Constants.StaticObjects.DefaultFriction,
         position: boxLocation,
         size: boxSize
       });
@@ -152,6 +153,7 @@ namespace PRKR.Player.Model {
         wall.box.getSize(boxSize);
         box = physics.createBox({
           mass: 0,
+          friction: Constants.StaticObjects.DefaultFriction,
           position: boxLocation,
           size: boxSize
         });
