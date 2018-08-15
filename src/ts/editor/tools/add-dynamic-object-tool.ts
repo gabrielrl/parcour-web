@@ -120,7 +120,7 @@ namespace PRKR.Editor.Tools {
 
         if (this._state === DrawingState.NotStarted) {
 
-          let position = this._getAreaLocation(event);
+          let position = this._editor.projectMouseOnAreas(event);
           if (position && position.areaId) {
             this._start = position;
             this._end = position;
@@ -135,8 +135,8 @@ namespace PRKR.Editor.Tools {
 
           let position = this._getVerticalLocation(event);
           if (position) {
-            this._start.location.setY(position.location.y);
-            this._end.location.setY(position.location.y);
+            this._start.worldLocation.setY(position.worldLocation.y);
+            this._end.worldLocation.setY(position.worldLocation.y);
             this._state = DrawingState.VerticalDrawing;
 
             this._computeLocationAndSize();
@@ -156,11 +156,11 @@ namespace PRKR.Editor.Tools {
 
       switch(this._state) {
         case DrawingState.NotStarted:
-          position = this._getAreaLocation(event);
+          position = this._editor.projectMouseOnAreas(event);
           break;
 
         case DrawingState.HorizontalDrawing:
-          position = this._getAreaLocation(event);
+          position = this._editor.projectMouseOnAreas(event);
           if (position != null) {
             this._end = position;
           }
@@ -169,8 +169,8 @@ namespace PRKR.Editor.Tools {
         case DrawingState.Pause:
           position = this._getVerticalLocation(event);
           if (position != null) {
-            this._start.location.setY(position.location.y);
-            this._end.location.setY(position.location.y);
+            this._start.worldLocation.setY(position.worldLocation.y);
+            this._end.worldLocation.setY(position.worldLocation.y);
           }
           break;
 
@@ -280,16 +280,16 @@ namespace PRKR.Editor.Tools {
               let box = this._getAreaFloorBox2(position.areaId);
               this._embeddedRectanglesHelper.setRect1(box);
 
-              let min = new Vector2(position.location.x, position.location.z);
-              let max = new Vector2(position.location.x, position.location.z);
+              let min = new Vector2(position.worldLocation.x, position.worldLocation.z);
+              let max = new Vector2(position.worldLocation.x, position.worldLocation.z);
               box.set(min, max);
               this._embeddedRectanglesHelper.setRect2(box);
               this._embeddedRectanglesHelper.setLineMaterial(C.Materials.Lines.Valid);
             } else {
-              let box = this._getCellFloorBox2(position.location);
+              let box = this._getCellFloorBox2(position.worldLocation);
               this._embeddedRectanglesHelper.setRect1(box);
-              let min = new Vector2(position.location.x, position.location.z);
-              let max = new Vector2(position.location.x + .001, position.location.z + .001);
+              let min = new Vector2(position.worldLocation.x, position.worldLocation.z);
+              let max = new Vector2(position.worldLocation.x + .001, position.worldLocation.z + .001);
               box.set(min, max);
               this._embeddedRectanglesHelper.setRect2(box);
               this._embeddedRectanglesHelper.setLineMaterial(C.Materials.Lines.Invalid); // ...
@@ -379,8 +379,8 @@ namespace PRKR.Editor.Tools {
      * `_start` and `_end` values.
      */
     private _computeLocationAndSize() {
-      let start = this._start.location;
-      let end = this._end.location;
+      let start = this._start.worldLocation;
+      let end = this._end.worldLocation;
       let rawMin = new Vector3(
         Math.min(start.x, end.x),
         Math.min(start.y, end.y),
@@ -468,25 +468,6 @@ namespace PRKR.Editor.Tools {
       });
     }
 
-    /**
-     * Gets the current "area location" from mouse event.
-     */
-    private _getAreaLocation(mouseEvent: JQueryMouseEventObject): AreaLocation {
-
-      let intersect = this._editor.projectMouseOnFloor(
-        new THREE.Vector2(mouseEvent.clientX, mouseEvent.clientY));
-
-      if (intersect) {
-
-        let area = this._editor.getAreaAtLocation(intersect.point);
-        return {
-          location: intersect.point,
-          areaId: area ? area.id : null
-        };
-      }
-      return null;      
-    }
-
     private _getVerticalLocation(mouseEvent: JQueryMouseEventObject): AreaLocation {
 
       let n = this._editor.getCameraRig().getWorldDirection();
@@ -494,19 +475,28 @@ namespace PRKR.Editor.Tools {
 
       let intersect = this._editor.projectMouseOnPlane(
         new THREE.Vector2(mouseEvent.clientX, mouseEvent.clientY),
-        this._end.location,
+        this._end.worldLocation,
         n
       );
 
+      let worldLocation = new THREE.Vector3(
+        this._end.worldLocation.x,
+        intersect.point.y,
+        this._end.worldLocation.z
+      );
+
+      let relativeLocation = new Vector3();
+      let area = <Objects.RoomObject>this._editor.getObjectById(this._end.areaId);
+      if (area) {
+        relativeLocation.subVectors(worldLocation, area.roomArea.location);
+      }
+
       if (intersect) {
         return {
-          location: new THREE.Vector3(
-            this._end.location.x,
-            intersect.point.y,
-            this._end.location.z
-          ),
-          areaId: this._end.areaId
-        }
+          worldLocation,
+          areaId: this._end.areaId,
+          relativeLocation
+        };
       }
       return null;
     }

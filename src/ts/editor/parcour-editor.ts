@@ -509,6 +509,35 @@ namespace PRKR.Editor {
     }
 
     /**
+     * Projects the mouse on the floor plane and return an `AreaLocation`.
+     * @param mouseEvent jQuery mouse event from which the mouse location is taken.
+     * @returns An area location or null.
+     */
+    public projectMouseOnAreas(mouseEvent: JQueryMouseEventObject): AreaLocation {
+      let intersect = this.projectMouseOnFloor(
+        new Vector2(mouseEvent.clientX, mouseEvent.clientY));
+
+      if (!intersect) return null;
+
+      let area = this.getAreaAtLocation(intersect.point);
+      if (!area) {
+        return {
+          worldLocation: intersect.point,
+          areaId: null,
+          relativeLocation: null
+        };
+      }
+
+      let relativeLocation = new Vector3().subVectors(intersect.point, area.location);
+      return {
+        worldLocation: intersect.point,
+        areaId: area.id,
+        relativeLocation: relativeLocation
+      };
+
+    }
+
+    /**
      * 
      * @param mouse Mouse coordinates.
      * @param p A point in the plane.
