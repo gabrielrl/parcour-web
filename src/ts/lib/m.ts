@@ -131,5 +131,17 @@ namespace PRKR {
         return value;
       }
     }
+
+    /**
+     * Gets the Box2 that encompasses an area's floor.
+     * @param area An area
+     */
+    public static getAreaFloorBox2(area: Model.Area): THREE.Box2 {
+      let min = new Vector2(area.location.x, area.location.z);
+      let max = new Vector2(area.location.x + area.size.x, area.location.z + area.size.z) 
+      let box = new THREE.Box2(min, max);
+      return box;
+    }
+
   }
 }

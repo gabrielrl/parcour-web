@@ -179,6 +179,7 @@ namespace PRKR.Editor {
         new PRKR.Editor.Tools.CameraPanTool(this),
         new PRKR.Editor.Tools.CameraRotateTool(this),
         new PRKR.Editor.Tools.DoorwayPlacementTool(this),
+        new PRKR.Editor.Tools.AddHolesTool(this),
         new PRKR.Editor.Tools.AddStaticObjectTool(this),
         new PRKR.Editor.Tools.AddDynamicObjectTool(this)
       ];
@@ -1152,6 +1153,11 @@ namespace PRKR.Editor {
             display: 'Doorways',
             image: 'fa-external-link-square',
             tool: this._toolMap['doorway-placement']
+          }, {
+            name: 'addHoles',
+            display: 'Cut holes',
+            image: 'fa-cut',
+            tool: this._toolMap['add-holes']
           }, {
             name: 'addStaticObject',
             display: 'Static Object',

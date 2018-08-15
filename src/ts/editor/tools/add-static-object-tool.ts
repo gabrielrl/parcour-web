@@ -343,9 +343,7 @@ namespace PRKR.Editor.Tools {
     // Good candidate for a utility function.
     private _getAreaFloorBox2(areaId): THREE.Box2 {
       let area = <PRKR.Model.Area>this._editor.getObjectById(areaId).model;
-      let min = new Vector2(area.location.x, area.location.z);
-      let max = new Vector2(area.location.x + area.size.x, area.location.z + area.size.z) 
-      let box = new THREE.Box2(min, max);
+      let box = M.getAreaFloorBox2(area);
       return box;
     }
 
