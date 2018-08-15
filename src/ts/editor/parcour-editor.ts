@@ -524,7 +524,7 @@ namespace PRKR.Editor {
       if (!area) {
         return {
           worldLocation: intersect.point,
-          areaId: null,
+          area: null,
           relativeLocation: null
         };
       }
@@ -532,7 +532,7 @@ namespace PRKR.Editor {
       let relativeLocation = new Vector3().subVectors(intersect.point, area.location);
       return {
         worldLocation: intersect.point,
-        areaId: area.id,
+        area: area,
         relativeLocation: relativeLocation
       };
 

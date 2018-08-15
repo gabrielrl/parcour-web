@@ -9,7 +9,7 @@ namespace PRKR.Editor {
     worldLocation: THREE.Vector3;
 
     /** The ID of the area inside which the location is. Null if not inside any area. */
-    areaId: string;
+    area: Model.Area;
 
     /** (Area relative) location. Null if not inside any area. */
     relativeLocation: THREE.Vector3;
