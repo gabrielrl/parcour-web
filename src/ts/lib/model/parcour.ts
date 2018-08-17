@@ -168,6 +168,10 @@ namespace PRKR.Model {
           neighbours.push(n);
         }
       }
+
+      // TODO This is bad... instead,
+      // Take the area's bounding box, inflate it and intersect with all other areas bounding boxes...
+
       // for each border...
       // 1st x0 -> x1 when z = z0
       for (let x = 0; x < area.size.x; x++) {
