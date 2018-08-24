@@ -23,18 +23,7 @@ namespace PRKR.Builders {
 
       // FLOOR LEVEL
       let V = THREE.Vector3;
-      let vertices = g.vertices;
-      vertices.push(new V(t, 0, t));
-      vertices.push(new V(w - t, 0, t));
-      vertices.push(new V(w - t, 0, d - t));
-      vertices.push(new V(t, 0, d - t));
-
-      // ROOF LEVEL
-      vertices.push(new V(t, h, t));
-      vertices.push(new V(w - t, h, t));
-      vertices.push(new V(w - t, h, d - t));
-      vertices.push(new V(t, h, d - t));
-
+      let vertexCreator = new VertexCreator(g.vertices);
       let faces = g.faces;      
 
       // The walls...
@@ -162,11 +151,29 @@ namespace PRKR.Builders {
       });
 
       // FLOOR FACES
-      faces.push(new Face3(0, 2, 1));
-      faces.push(new Face3(2, 0, 3));
+
+      // per tile
+      for (let x = 0; x < this._model.size.x; x++) {
+        for (let z = 0; z < this._model.size.z; z++) {
+          let tile = this._model.getTile(x, z);
+
+          switch(tile) {
+            case Model.TileType.Floor:
+              let v0 = vertexCreator.getVertexIndex(x, 0, z);
+              let v1 = vertexCreator.getVertexIndex(x + 1, 0, z);
+              let v2 = vertexCreator.getVertexIndex(x + 1, 0, z + 1);
+              let v3 = vertexCreator.getVertexIndex(x, 0, z + 1);
+              faces.push(new Face3(v0, v2, v1));
+              faces.push(new Face3(v2, v0, v3));
+              break;
+
+          }
+
+        }
+      }
 
       g.computeFaceNormals();
-      g.computeBoundingBox(); 
+      g.computeBoundingBox();
 
       return g;
     }

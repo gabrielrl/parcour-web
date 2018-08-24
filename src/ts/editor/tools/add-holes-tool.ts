@@ -338,9 +338,9 @@ namespace PRKR.Editor.Tools {
     private _validateDrawing(): boolean {
       // Validate the drawing.
 
-      // It must have a volume.
-      let volume = this._size.x * this._size.y * this._size.z;
-      if (Math.abs(volume) < 0.001) {
+      // It must have an area.
+      let area = this._size.x * this._size.z;
+      if (Math.abs(area) < 0.001) {
         this._drawingValid = false;
         return this._drawingValid;
       }
@@ -361,31 +361,24 @@ namespace PRKR.Editor.Tools {
      * Builds the edit step that correspond to the current drawing.
      * `_location` and `_size` must be up to date.
      */
-    private _buildEditStep(): EditSteps.EditStep /* AddHolesStep */ {
-
-      // Here, location = min and size = (full) size.
-      // For 'DynamicObject', location = center and size = half extents
+    private _buildEditStep(): EditSteps.SetTileTypeStep {
 
       let area = this._start.area;
 
-      let center = new Vector3();
-      center.copy(this._location)
-        .addScaledVector(this._size, 0.5)
-        .sub(area.location);
+      let tiles: number[][] = [];
+      for (let x = 0; x < this._size.x; x++) {
+        for (let z = 0; z < this._size.z; z++) {
+          tiles.push([
+            this._location.x - area.location.x + x,
+            this._location.z - area.location.z + z
+          ]);
+        }
+      }
 
-      let halfExtents = new Vector3();
-      halfExtents.copy(this._size).multiplyScalar(0.5);      
+      let step = new EditSteps.SetTileTypeStep(area.id, tiles, Model.TileType.Hole);
+      return step;
 
-      return null; // TODO
-      // return new AddObjectStep({
-      //   $type: 'DynamicObject',
-      //   areaId: this._start.areaId,
-      //   location: center.toArray(),
-      //   size: halfExtents.toArray()
-      // });
     }
-
-
 
   }
 }
