@@ -90,6 +90,17 @@ namespace PRKR.Player.Physics {
       this._objects.push(obj);
     }
 
+    public remove(obj: Model.RuntimeObject) {
+      if (obj && obj.physicBodies) {
+        obj.physicBodies.forEach(b => {
+          this._removeRigidBody(b);
+          delete this._bodyToObjectMap[b.ptr];
+        });
+      }
+      let i = this._objects.indexOf(obj);
+      this._objects.splice(i, 1);
+    }
+
     private static __transform = new Ammo.btTransform();
     private static __origin = new Ammo.btVector3();
 
@@ -157,6 +168,12 @@ namespace PRKR.Player.Physics {
       this._dynamicsWorld.addRigidBody(body);
     }
 
+    private _removeRigidBody(body: Ammo.btRigidBody) {
+      let i = this._bodies.indexOf(body);
+      this._bodies.splice(i, 1);
+      this._dynamicsWorld.removeRigidBody(body);
+    }
+
     private static MaxSimulationSubSteps = 12;
 
     /** (in seconds). */
@@ -180,6 +197,7 @@ namespace PRKR.Player.Physics {
       // }
 
       var t = ParcourPhysics.__transform;
+      let toRemove: Model.RuntimeObject[] = [];
       this._objects.forEach(o =>  {
         if (o.updateRenderObject && o.physicBodies.length === 1 && o.renderObject) {
           let body = o.physicBodies[0];
@@ -188,9 +206,20 @@ namespace PRKR.Player.Physics {
           let rotation = t.getRotation();
           // console.log(
           //   `world pos = [${origin.x().toFixed(2)}, ${origin.y().toFixed(2)}, ${origin.z().toFixed(2)}]`);
-          o.renderObject.position.set(origin.x(), origin.y(), origin.z());
-          o.renderObject.quaternion.set(rotation.x(), rotation.y(), rotation.z(), rotation.w());
+          let y = origin.y();
+          if (y < Constants.Rules.HoleVanishingThreshold) {
+            toRemove.push(o);
+          } else {
+            o.renderObject.position.set(origin.x(), y, origin.z());
+            o.renderObject.quaternion.set(rotation.x(), rotation.y(), rotation.z(), rotation.w());
+          }
+
         }
+
+        toRemove.forEach(o => {
+          o.renderObject.visible = false; // TODO It should be the player's concern.
+          this.remove(o);
+        });
       });
     }
 
