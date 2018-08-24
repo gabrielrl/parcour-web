@@ -120,14 +120,7 @@ namespace PRKR.Player.Model {
       );
       boxSize.set(roomSize.x, 1, roomSize.z);
 
-      // var box = physics.createBox({
-      //   mass: 0,
-      //   position: boxLocation,
-      //   size: boxSize
-      // });
-
       var bodies: Ammo.btRigidBody[] = [];
-      // bodies.push(box);
 
       // Roof
       boxLocation.set(
@@ -144,7 +137,6 @@ namespace PRKR.Player.Model {
       bodies.push(box);
 
       // Floor tiles
-      // let floor = builder.getPhysicalFloor();
 
       boxSize.set(1, 3, 1);
 
