@@ -13,6 +13,12 @@ namespace PRKR.Player {
       DefaultFriction: .75
     },
 
+    Rules: {
+
+      /** Threshold beyond (below) which (in meters) an object is considered to have fallen in a hole. */
+      HoleFallingThreshold: -5
+    },
+
     /** All character related constants. */
     Character: {
 
