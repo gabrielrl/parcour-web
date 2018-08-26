@@ -8,11 +8,12 @@
 
 
 namespace PRKR.Validators {
-  import Parcour = PRKR.Model.Parcour;
-  import Area = PRKR.Model.Area;
-  import Location = PRKR.Model.Location;
-  import WallElement = PRKR.Model.WallElement;
-  import WallDefinition = PRKR.Model.WallDefinition;
+  import Parcour = Model.Parcour;
+  import Area = Model.Area;
+  import RoomArea = Model.RoomArea
+  import Location = Model.Location;
+  import WallElement = Model.WallElement;
+  import WallDefinition = Model.WallDefinition;
   import Vector3 = THREE.Vector3;
   import Box3 = THREE.Box3;
 
@@ -126,7 +127,19 @@ namespace PRKR.Validators {
           results.push(
             new ValidationResult(ResultLevel.Error,
             "not-an-area",
-            `AreaElement ${element.id} has an area ID, ${element.areaId}, that refers to a non-area object`));
+            `AreaElement ${element.id} has a bounding box that goes outside its containing area`));
+        }
+
+        // Location objects can not be on hole tiles.
+        if (element instanceof Location && area instanceof RoomArea) {
+          let tile = area.getTile(Math.floor(element.location.x), Math.floor(element.location.z));
+          if (tile === Model.TileType.Hole) {
+            results.push(
+              new ValidationResult(ResultLevel.Error,
+              'location-on-hole',
+            `Location ${ element.id } stands on a tile of type ${ tile }`)
+            )
+          }
         }
       }
     }
