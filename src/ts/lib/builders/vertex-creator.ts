@@ -33,6 +33,10 @@ namespace PRKR.Builders {
       return this._map[key];
     }
 
+    getVectorIndex(v: Vector3) {
+      return this.getVertexIndex(v.x, v.y, v.z);
+    }
+
     buildVertexKey(x: number, y: number, z: number) {
       let key = x.toString() + ';' + y.toString() + ';' + z.toString();
       return key;
