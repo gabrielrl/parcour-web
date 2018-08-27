@@ -16,6 +16,9 @@ namespace PRKR.Editor.Tools {
     /** Indicates if the current drawing is valid. */
     private _drawingValid: boolean = true;
 
+    /** Indicates if we are "adding floor" instead of cutting holes. */
+    private _inverted: boolean = false;
+
     /** Drawing starting point. */
     private _start: AreaLocation = null;
 
@@ -94,6 +97,7 @@ namespace PRKR.Editor.Tools {
         if (this._drawing) {
 
          this._end = areaLocation;
+         this._inverted = event.ctrlKey;
 
         } else {
 
@@ -107,7 +111,6 @@ namespace PRKR.Editor.Tools {
           let max = new Vector2(areaLocation.worldLocation.x, areaLocation.worldLocation.z);
           box.set(min, max);
           this._embeddedRectanglesHelper.setRect2(box);
-         // this._embedd
        
         }
 
@@ -120,6 +123,7 @@ namespace PRKR.Editor.Tools {
 
       if (this._drawing) {
         this._end = areaLocation;
+        this._inverted = event.ctrlKey;
         this._computeLocationAndSize();
         this._validateDrawing();
       }
@@ -163,6 +167,7 @@ namespace PRKR.Editor.Tools {
         this._computeLocationAndSize();
 
         if (this._drawing) {
+          this._inverted = event.ctrlKey;
 
           if (this._validateDrawing()) {
             let step = this._buildEditStep();
@@ -182,11 +187,27 @@ namespace PRKR.Editor.Tools {
 
     }
 
+    notifyKeyDown(event: JQueryKeyEventObject) {
+
+      if (this._drawing) {
+        this._inverted = event.ctrlKey;
+        this._computeLocationAndSize();
+        this._validateDrawing();
+      }
+
+      this._inverted = event.ctrlKey;
+      this._editor.setStatus(this._buildStatusMessage());
+    }
+
     private _buildStatusMessage() {
       if (!this._drawing) {
         return 'Click and drag inside an area to cut a hole out of the floor';
       } else {
-        return 'Drag to draw the rectangle to cut out';
+        if (this._inverted) {
+          return 'Drag to draw the rectangle to add. Release CTRL to cut holes'
+        } else {
+          return 'Drag to draw the rectangle to cut out. CTRL to add floor';
+        }
       }
     }
 
@@ -359,7 +380,7 @@ namespace PRKR.Editor.Tools {
 
     /**
      * Builds the edit step that correspond to the current drawing.
-     * `_location` and `_size` must be up to date.
+     * `_location`, `_size` and `_inverted` must be up to date.
      */
     private _buildEditStep(): EditSteps.SetTileTypeStep {
 
@@ -375,7 +396,11 @@ namespace PRKR.Editor.Tools {
         }
       }
 
-      let step = new EditSteps.SetTileTypeStep(area.id, tiles, Model.TileType.Hole);
+      let step = new EditSteps.SetTileTypeStep(
+        area.id,
+        tiles,
+        this._inverted ? Model.TileType.Floor : Model.TileType.Hole
+      );
       return step;
 
     }
