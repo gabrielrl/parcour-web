@@ -212,8 +212,8 @@ namespace PRKR.Model {
     // Override
     public _copy(source: RoomArea) {
       super._copy(source);
-      this._light = _.clone(source.light);
-      this._tiles = _.clone(source._tiles);
+      this._light = _.cloneDeep(source.light);
+      this._tiles = _.cloneDeep(source._tiles);
     }
 
     public toObject(): any {
@@ -223,8 +223,8 @@ namespace PRKR.Model {
         name: this.name,
         location: this.location.toArray(),
         size: this.size.toArray(),
-        light: _.clone(this._light),
-        tiles: _.clone(this._tiles)
+        light: _.cloneDeep(this._light),
+        tiles: _.cloneDeep(this._tiles)
       });
       return o;
     }
