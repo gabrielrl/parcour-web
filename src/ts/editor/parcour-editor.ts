@@ -649,8 +649,6 @@ namespace PRKR.Editor {
      */
     public addEditStep(step: EditStep): StepResult {
 
-      console.debug('adding edit step', step);
-
       // Apply the edit step to the current parcour.
       let result = step.do(this._model);
 
@@ -681,8 +679,6 @@ namespace PRKR.Editor {
      * @returns The edit step result.
      */
     public undo(): StepResult {
-
-      console.debug('undo()');
 
       // Un-apply the last edit step from the current parcour.
       let step = this._editSteps.pop();

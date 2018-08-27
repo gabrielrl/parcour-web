@@ -70,7 +70,6 @@ namespace PRKR.Editor.Components {
     }
 
     private _tabClicked(tabData: RibbonTab) {
-      console.debug('Ribbon tab clicked', tabData);
       this.selectTab(tabData);
     }
 
