@@ -9,6 +9,7 @@ namespace PRKR.Model {
     location: Vector3;
     size: THREE.Vector3;
     light?: RoomLight;
+    tiles?: TileType[][];
   }
 
   export interface RoomLight {
@@ -29,18 +30,47 @@ namespace PRKR.Model {
 
     private _light: RoomLight;
 
+    private _tiles: TileType[][];
+
     constructor(data?: RoomAreaOptions) {
       super(data);
 
-      if (data && data.light) {
-        this._light = data.light;
-      } else {
-        this._light = {};
+      if (data) {
+
+        if (data.light) {
+          this._light = data.light;
+        } else {
+          this._light = {};
+        }
+
+        if (data.tiles) {
+          this._tiles = data.tiles;
+        } else {
+          this._tiles = [];
+        }
       }
     }
 
     get light() {
       return this._light;
+    }
+
+    getTile(x: number, z: number) {
+      if (!this._tiles) return TileType.Floor;
+
+      let row = this._tiles[x];
+      if (!row) return TileType.Floor;
+
+      let tile = row[z];
+      if (!tile) return TileType.Floor;
+
+      return tile;
+    }
+
+    setTile(x: number, z: number, tile: TileType) {
+      if (!this._tiles) this._tiles = [];
+      if (!this._tiles[x]) this._tiles[x] = [];
+      this._tiles[x][z] = tile;      
     }
 
     private static PROPERTIES: Property[] = [{
@@ -182,7 +212,8 @@ namespace PRKR.Model {
     // Override
     public _copy(source: RoomArea) {
       super._copy(source);
-      this._light = _.clone(source.light);
+      this._light = _.cloneDeep(source.light);
+      this._tiles = _.cloneDeep(source._tiles);
     }
 
     public toObject(): any {
@@ -192,7 +223,8 @@ namespace PRKR.Model {
         name: this.name,
         location: this.location.toArray(),
         size: this.size.toArray(),
-        light: _.clone(this._light)
+        light: _.cloneDeep(this._light),
+        tiles: _.cloneDeep(this._tiles)
       });
       return o;
     }

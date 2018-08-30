@@ -48,8 +48,8 @@ namespace PRKR.Player {
     /** Current force applied from player input. */
     private _activeForce: Ammo.btVector3 = new Ammo.btVector3();
 
-    /** The completion state of the current parcour. */
-    private _completed: boolean = false;
+    /** Current game state. */
+    private _state: GameState = GameState.Playing;
 
     /** Camera rig. */
     private _cameras: CameraRig;
@@ -471,24 +471,38 @@ namespace PRKR.Player {
       this._physics.simulate(delta);
       this._lastSimulate = now;
 
-      // Test game logic...
-      if (!this._completed) {
-        let destination = this._parcour.endLocation;
-        // Is the parcour completed?
-        if (destination) {
-          let v = ParcourPlayer.__simulate_v2;
-          v.subVectors(
-            destination,
-            // assumes it is updated during simulation above!
-            this._character.renderObject.position 
-          ).setY(0);
-          if (v.length() < 0.5) {
-            this._setCompleted();
+      this._testGameLogic();
+
+      setTimeout(() => this._simulate());
+    }
+
+    /**
+     * Test game related logic / state stuff. Like did the character reach the end of the parcour? Is he dead cause
+     * he felt in a hole... stuff like that. */
+    private _testGameLogic() {
+
+      if (this._state === GameState.Playing) {
+
+        // Did the character felt in a hole?
+        if (this._character.renderObject.position.y < Constants.Rules.HoleFallingThreshold) {
+          this._setFallen();
+        } else {
+          let destination = this._parcour.endLocation;
+          // Is the parcour completed?
+          if (destination) {
+            let v = ParcourPlayer.__simulate_v2;
+            v.subVectors(
+              destination,
+              // assumes it is updated during simulation above!
+              this._character.renderObject.position 
+            ).setY(0);
+            if (v.length() < 0.5) {
+              this._setCompleted();
+            }
           }
         }
       }
 
-      setTimeout(() => this._simulate());
     }
 
     private static __ray0 = new Vector3();
@@ -561,6 +575,32 @@ namespace PRKR.Player {
 
     }
 
+    private _setFallen() {
+      let fallenTime = performance.now();
+      let ellapsed = fallenTime - this._t0;
+      // ms to minutes:seconds... (TODO get 'moment')
+
+      console.debug('_setFallen called');
+      console.log('Fallen at ' + new Date().toTimeString());
+      console.debug(`ellapsed ${ellapsed} ms.`)
+
+      let $root = $(this._domRoot);
+      let $overlay = $root.find('#prpl-overlay');
+      let $caption = $overlay.find('.prpl-overlay-caption');
+      let $body = $overlay.find('.prpl-overlay-body');
+      let $footer = $overlay.find('.prpl-overlay-footer');
+
+      $caption.html('Oh that\'s too bad!');
+      $body.html(
+        `You felt after ` + 
+        `<span class="number">${(ellapsed / 1000).toFixed(2)}</span>&nbsp;seconds.`
+      );
+      $footer.html('[ RETRY ] [ OK ]');
+      $overlay.fadeIn(400);
+
+      this._state = GameState.Fallen;
+    }
+
     private _setCompleted() {
 
       let completionTime = performance.now();
@@ -585,7 +625,7 @@ namespace PRKR.Player {
       $footer.html('[ RETRY ] [ OK ]');
       $overlay.fadeIn(400);
 
-      this._completed = true;
+      this._state = GameState.Completed;
       this._parcour.setCompleted();
     }
 

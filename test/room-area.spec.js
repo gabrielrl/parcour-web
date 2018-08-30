@@ -1,8 +1,11 @@
 (function(){
+'use strict';
+
 var expect = chai.expect;
 
 var Parcour = PRKR.Model.Parcour;
 var RoomArea = PRKR.Model.RoomArea;
+var TileType = PRKR.Model.TileType;
 
 describe('RoomArea', function() {
   it('is defined', function() {
@@ -14,16 +17,24 @@ describe('RoomArea', function() {
     var id;
     var location;
     var size;
+    var tiles;
     var room;
 
     beforeEach(function() {
       id = PRKR.Utils.uuid();
       location = new THREE.Vector3(1, 2, 3);
       size = new THREE.Vector3(4, 5, 6);
+      tiles = [
+        [ TileType.Floor, TileType.Floor, TileType.Floor, TileType.Floor, TileType.Hole,  TileType.Floor ],
+        [ TileType.Floor, TileType.Floor, TileType.Floor, TileType.Hole,  TileType.Floor, TileType.Floor ],
+        [ TileType.Floor, TileType.Floor, TileType.Hole,  TileType.Floor, TileType.Floor, TileType.Floor ],
+        [ TileType.Floor, TileType.Hole,  TileType.Floor, TileType.Floor, TileType.Floor, TileType.Floor ]
+      ];
       room = new RoomArea({
         id: id,
         location: location,
-        size: size
+        size: size,
+        tiles: tiles
       });
     });
 
@@ -38,6 +49,52 @@ describe('RoomArea', function() {
     it('allows to set `size`', function() {
       expect(room.size.equals(size)).to.be.true;
     });
+
+    it('allows to set tile types', function() {
+      expect(room.getTile(0, 1)).to.equal(TileType.Floor);
+      expect(room.getTile(0, 4)).to.equal(TileType.Hole);
+      expect(room.getTile(1, 3)).to.equal(TileType.Hole);
+      expect(room.getTile(2, 2)).to.equal(TileType.Hole);
+      expect(room.getTile(3, 1)).to.equal(TileType.Hole);
+      expect(room.getTile(3, 4)).to.equal(TileType.Floor);
+      
+    });
+  });
+  
+  describe('.getTile(x, z), setTile(x, z, tile)', function() {
+
+    it('are defined', function() {
+      expect(new RoomArea()).to.have.property('getTile').a('Function').of.length(2);
+      expect(new RoomArea()).to.have.property('setTile').a('Function').of.length(3);
+    });
+
+    it('`getTile` returns `TileType.Floor` by default', function() {
+      expect(new RoomArea().getTile(0, 0)).to.equal(TileType.Floor);
+    });
+
+    describe('`getTile` works after a call to `setTile`', function() {
+
+      let set = [[0, 0], [0, 2], [2, 0], [1, 1]];
+
+      set.forEach(function(coords) {
+        it('at ' + JSON.stringify(coords), function() {
+          let room = new RoomArea();
+          room.setTile(coords[0], coords[1], TileType.Hole);
+          let tile = room.getTile(coords[0], coords[1]);
+          expect(tile).to.equal(TileType.Hole);
+        });
+      });
+
+    });
+
+    // it('`getTile` works after a call to `setTile`', function() {
+
+    //   let room = new RoomArea();
+    //   room.setTile(0, 0, TileType.Hole);
+    //   let tile = room.getTile(0, 0);
+    //   expect(tile).to.equal(TileType.Hole);
+      
+    // });
   });
 
   describe('.getBoundingBox()', function() {
@@ -106,10 +163,54 @@ describe('RoomArea', function() {
       var dataObject;
 
       beforeEach(function() {
+        roomArea = new RoomArea();
+        dataObject = roomArea.toObject();
+      });
+
+      it('declare correct $type', function() {
+        expect(dataObject).to.have.property('$type').equal('RoomArea');
+      });
+
+      it('declare the `ID`', function() {
+        expect(dataObject).to.have.property('id').equal(roomArea.id);
+      });
+
+      it('declare the `name`', function() {
+        expect(dataObject).to.have.property('name').equal(roomArea.name);
+      });
+
+      it('declare the `location`', function() {
+        expect(dataObject.location)
+          .to.have.ordered.members(roomArea.location.toArray());
+      });
+
+      it('declare the `size`', function() {
+        expect(dataObject.size)
+          .to.have.ordered.members(roomArea.size.toArray());
+      });
+
+      it('declare the `tiles`', function() {
+        expect(dataObject).to.have.property('tiles');
+      });
+
+    });
+
+    describe('on a configured instance, it should', function() {
+
+      var roomArea;
+      var dataObject;
+
+      beforeEach(function() {
         roomArea = new RoomArea({
           name: 'test room area',
           location: new THREE.Vector3(1, 2, 3),
-          size: new THREE.Vector3(4, 5, 6)
+          size: new THREE.Vector3(4, 5, 6),
+          tiles: [
+            [ TileType.Floor, TileType.Floor, TileType.Floor, TileType.Floor, TileType.Hole,  TileType.Floor ],
+            [ TileType.Floor, TileType.Floor, TileType.Floor, TileType.Hole,  TileType.Floor, TileType.Floor ],
+            [ TileType.Floor, TileType.Floor, TileType.Hole,  TileType.Floor, TileType.Floor, TileType.Floor ],
+            [ TileType.Floor, TileType.Hole,  TileType.Floor, TileType.Floor, TileType.Floor, TileType.Floor ]
+          ]
         });
         dataObject = roomArea.toObject();
       });
@@ -134,6 +235,16 @@ describe('RoomArea', function() {
       it('declare the `size`', function() {
         expect(dataObject.size)
           .to.have.ordered.members(roomArea.size.toArray());
+      });
+
+      it('declare the `tiles`', function() {
+        expect(dataObject).to.have.property('tiles').an('Array').of.length(roomArea.size.x);
+        dataObject.tiles.forEach(function (row, x) {
+          expect(row).to.be.an('Array').of.length(roomArea.size.z);
+          row.forEach(function (tile, z) {
+            expect(tile).to.equal(roomArea.getTile(x, z));
+          });
+        });
       });
 
     });

@@ -131,5 +131,44 @@ namespace PRKR {
         return value;
       }
     }
+
+    /**
+     * Gets the Box2 that encompasses an area's floor.
+     * @param area An area
+     */
+    public static getAreaFloorBox2(area: Model.Area): THREE.Box2 {
+      let min = new Vector2(area.location.x, area.location.z);
+      let max = new Vector2(area.location.x + area.size.x, area.location.z + area.size.z) 
+      let box = new THREE.Box2(min, max);
+      return box;
+    }
+
+    /**
+     * Gets the Box3 that encompasses an area.
+     * @param area An area
+     */
+    public static getAreaBox3(area: Model.Area) : THREE.Box3 {
+      let min = new Vector3(area.location.x, area.location.y, area.location.z);
+      let max = new Vector3(
+        area.location.x + area.size.x,
+        area.location.y + area.size.y,
+        area.location.z + area.size.z
+      );
+      let box = new THREE.Box3(min, max);
+      return box;
+    }
+
+    /**
+     * Gets the Box2 that encompasses an area tile.
+     * @param position A location inside a tile.
+    */
+    public static getTileFloorBox2(position: Vector3): THREE.Box2 {
+      let box = new THREE.Box2(
+        new Vector2(Math.floor(position.x), Math.floor(position.z)),
+        new Vector2(Math.ceil(position.x), Math.ceil(position.z))
+      );
+      return box;
+    }
+
   }
 }

@@ -2,11 +2,14 @@ namespace PRKR.Tests {
 
   var expect = chai.expect;
 
-  import Parcour = PRKR.Model.Parcour;
-  import RoomArea = PRKR.Model.RoomArea;
-  import Doorway = PRKR.Model.Doorway;
-  import ParcourValidator = PRKR.Validators.ParcourValidator;
-  import ResultLevel = PRKR.Validators.ResultLevel;
+  import Parcour = Model.Parcour;
+  import RoomArea = Model.RoomArea;
+  import TileType = Model.TileType;
+  import Doorway = Model.Doorway;
+  import Location = Model.Location;
+  import LocationKind = Model.LocationKind;
+  import ParcourValidator = Validators.ParcourValidator;
+  import ResultLevel = Validators.ResultLevel;
   import Vector3 = THREE.Vector3;
 
   describe('ParcourValidator', function() {
@@ -163,6 +166,72 @@ namespace PRKR.Tests {
 
           expect(result).to.have.lengthOf(0);
         });
+      });
+
+      describe('location validation', () => {
+        it('reports locations that are on hole tiles', () => {
+
+          let parcour = new Parcour();
+          let objects = parcour.objects;
+          let area = new RoomArea({
+            size: new Vector3(3, 3, 3),
+            location: M.Vector3.Zero,
+            tiles: [
+              [],
+              [ TileType.Floor, TileType.Hole, TileType.Floor ],
+              []
+            ]
+          });
+          let location = new Location({
+            areaId: area.id,
+            location: new Vector3(1.5, 0, 1.5),
+            kind: LocationKind.Start
+          });
+          objects.push(area, location);
+
+          let validator = new ParcourValidator();
+          let result = validator.validate(parcour);
+
+          expect(result.length).to.be.greaterThan(0);
+
+          // TODO MORE VALIDATIONS
+          // TODO NEEDS A CUSTOM VALIDATION ERROR TYPE.
+          // ...
+
+        });
+
+        it('reports nothing for a location on a floor tile', () => {
+
+          let parcour = new Parcour();
+          let objects = parcour.objects;
+          let area = new RoomArea({
+            size: new Vector3(3, 3, 3),
+            location: M.Vector3.Zero,
+            tiles: [
+              [],
+              [ TileType.Floor, TileType.Floor, TileType.Floor ],
+              []
+            ]
+          });
+          let location = new Location({
+            areaId: area.id,
+            location: new Vector3(1, 0, 1),
+            kind: LocationKind.Start
+          });
+          objects.push(area, location);
+
+          let validator = new ParcourValidator();
+          let result = validator.validate(parcour);
+
+          expect(result).to.have.lengthOf(0);
+
+          // TODO MORE VALIDATIONS
+          // TODO NEEDS A CUSTOM VALIDATION ERROR TYPE.
+          // ...
+
+        });
+
+
       });
 
     });

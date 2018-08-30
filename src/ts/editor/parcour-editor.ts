@@ -179,6 +179,7 @@ namespace PRKR.Editor {
         new PRKR.Editor.Tools.CameraPanTool(this),
         new PRKR.Editor.Tools.CameraRotateTool(this),
         new PRKR.Editor.Tools.DoorwayPlacementTool(this),
+        new PRKR.Editor.Tools.AddHolesTool(this),
         new PRKR.Editor.Tools.AddStaticObjectTool(this),
         new PRKR.Editor.Tools.AddDynamicObjectTool(this)
       ];
@@ -509,6 +510,35 @@ namespace PRKR.Editor {
     }
 
     /**
+     * Projects the mouse on the floor plane and return an `AreaLocation`.
+     * @param mouseEvent jQuery mouse event from which the mouse location is taken.
+     * @returns An area location or null.
+     */
+    public projectMouseOnAreas(mouseEvent: JQueryMouseEventObject): AreaLocation {
+      let intersect = this.projectMouseOnFloor(
+        new Vector2(mouseEvent.clientX, mouseEvent.clientY));
+
+      if (!intersect) return null;
+
+      let area = this.getAreaAtLocation(intersect.point);
+      if (!area) {
+        return {
+          worldLocation: intersect.point,
+          area: null,
+          relativeLocation: null
+        };
+      }
+
+      let relativeLocation = new Vector3().subVectors(intersect.point, area.location);
+      return {
+        worldLocation: intersect.point,
+        area: area,
+        relativeLocation: relativeLocation
+      };
+
+    }
+
+    /**
      * 
      * @param mouse Mouse coordinates.
      * @param p A point in the plane.
@@ -619,8 +649,6 @@ namespace PRKR.Editor {
      */
     public addEditStep(step: EditStep): StepResult {
 
-      console.debug('adding edit step', step);
-
       // Apply the edit step to the current parcour.
       let result = step.do(this._model);
 
@@ -651,8 +679,6 @@ namespace PRKR.Editor {
      * @returns The edit step result.
      */
     public undo(): StepResult {
-
-      console.debug('undo()');
 
       // Un-apply the last edit step from the current parcour.
       let step = this._editSteps.pop();
@@ -1123,6 +1149,11 @@ namespace PRKR.Editor {
             display: 'Doorways',
             image: 'fa-external-link-square',
             tool: this._toolMap['doorway-placement']
+          }, {
+            name: 'addHoles',
+            display: 'Cut holes',
+            image: 'fa-cut',
+            tool: this._toolMap['add-holes']
           }, {
             name: 'addStaticObject',
             display: 'Static Object',

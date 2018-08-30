@@ -23,18 +23,7 @@ namespace PRKR.Builders {
 
       // FLOOR LEVEL
       let V = THREE.Vector3;
-      let vertices = g.vertices;
-      vertices.push(new V(t, 0, t));
-      vertices.push(new V(w - t, 0, t));
-      vertices.push(new V(w - t, 0, d - t));
-      vertices.push(new V(t, 0, d - t));
-
-      // ROOF LEVEL
-      vertices.push(new V(t, h, t));
-      vertices.push(new V(w - t, h, t));
-      vertices.push(new V(w - t, h, d - t));
-      vertices.push(new V(t, h, d - t));
-
+      let vertexCreator = new VertexCreator(g.vertices);
       let faces = g.faces;      
 
       // The walls...
@@ -162,13 +151,109 @@ namespace PRKR.Builders {
       });
 
       // FLOOR FACES
-      faces.push(new Face3(0, 2, 1));
-      faces.push(new Face3(2, 0, 3));
+
+      // per tile
+      for (let x = 0; x < this._model.size.x; x++) {
+        for (let z = 0; z < this._model.size.z; z++) {
+          let tile = this._model.getTile(x, z);
+
+          // Compute current tile's x, z box taking walls into account.
+          let x0 = x === 0 ? t : x;
+          let x1 = x === this._model.size.x - 1 ? x + 1 - t : x + 1;
+          let z0 = z === 0 ? t : z;
+          let z1 = z === this._model.size.z - 1 ? z + 1 - t : z + 1;
+
+          switch(tile) {
+            case Model.TileType.Floor:
+              let v0 = vertexCreator.getVertexIndex(x0, 0, z0);
+              let v1 = vertexCreator.getVertexIndex(x1, 0, z0);
+              let v2 = vertexCreator.getVertexIndex(x1, 0, z1);
+              let v3 = vertexCreator.getVertexIndex(x0, 0, z1);
+              faces.push(new Face3(v0, v2, v1));
+              faces.push(new Face3(v2, v0, v3));
+              break;
+
+            case Model.TileType.Hole:
+              let holeWallHeight = .333;
+              // Check if we have some "hole walls" to generate.
+              // In every direction
+              // - X
+              if (x === 0 || this._model.getTile(x - 1, z) !== Model.TileType.Hole) {
+
+                this._generateWallSegment(
+                  vertexCreator, faces,
+                  new Vector3(x0, -holeWallHeight, z1),
+                  z1 - z0, holeWallHeight,
+                  Model.WallOrientation.NegativeZ
+                );
+
+              }
+              // + X
+              if (x === this._model.size.x - 1 || this._model.getTile(x + 1, z) !== Model.TileType.Hole) {
+
+                this._generateWallSegment(
+                  vertexCreator, faces,
+                  new Vector3(x1, -holeWallHeight, z0),
+                  z1 - z0, holeWallHeight,
+                  Model.WallOrientation.PositiveZ
+                );
+
+              }
+
+              // - Z
+              if (z === 0 || this._model.getTile(x, z - 1) !== Model.TileType.Hole) {
+
+                this._generateWallSegment(
+                  vertexCreator, faces,
+                  new Vector3(x0, -holeWallHeight, z0),
+                  x1 - x0, holeWallHeight,
+                  Model.WallOrientation.PositiveX
+                );
+   
+              }
+              // + Z
+              if (z === this._model.size.z - 1 || this._model.getTile(x, z + 1) !== Model.TileType.Hole) {
+
+                this._generateWallSegment(
+                  vertexCreator, faces,
+                  new Vector3(x1, -holeWallHeight, z1),
+                  x1 - x0, holeWallHeight,
+                  Model.WallOrientation.NegativeX
+                );
+
+              }
+
+              break;
+          }
+
+        }
+      }
 
       g.computeFaceNormals();
-      g.computeBoundingBox(); 
+      g.computeBoundingBox();
 
       return g;
+    }
+
+    private _generateWallSegment(
+      verts: VertexCreator,
+      faces: Face3[],
+      origin: Vector3,
+      width: number,
+      height: number,
+      orientation: Model.WallOrientation
+    ) {
+      let v = origin.clone();
+      let v0 = verts.getVectorIndex(v);
+      let v1 = verts.getVectorIndex(v.copy(origin).addScaledVector(M.Vector3.PositiveY, height));
+      let v2 = verts.getVectorIndex(
+        v.copy(origin).addScaledVector(M.Vector3.PositiveY, height)
+          .addScaledVector(orientation.direction, width)
+      );
+      let v3 = verts.getVectorIndex(v.copy(origin).add(orientation.direction));
+     
+      faces.push(new Face3(v0, v2, v1));
+      faces.push(new Face3(v2, v0, v3));
     }
 
     public getPysicsWalls(): WallDefinition[] {

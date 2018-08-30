@@ -120,14 +120,7 @@ namespace PRKR.Player.Model {
       );
       boxSize.set(roomSize.x, 1, roomSize.z);
 
-      var box = physics.createBox({
-        mass: 0,
-        position: boxLocation,
-        size: boxSize
-      });
-
       var bodies: Ammo.btRigidBody[] = [];
-      bodies.push(box);
 
       // Roof
       boxLocation.set(
@@ -135,14 +128,38 @@ namespace PRKR.Player.Model {
         roomLocation.y + roomSize.y + 0.5,
         roomLocation.z + roomSize.z / 2
       )
-      // Use the same boxSize as the floor (just above).
-      box = physics.createBox({
+      let box = physics.createBox({
         mass: 0,
         friction: Constants.StaticObjects.DefaultFriction,
         position: boxLocation,
         size: boxSize
       });
       bodies.push(box);
+
+      // Floor tiles
+
+      boxSize.set(1, 3, 1);
+
+      for (let x = 0; x < roomSize.x; x++) {
+        for (let z = 0; z < roomSize.z; z++) {
+          let type = this._room.getTile(x, z);
+          switch(type) {
+            case PRKR.Model.TileType.Floor:
+              boxLocation.set(
+                roomLocation.x + x + .5,
+                roomLocation.y - boxSize.y * .5,
+                roomLocation.z + z + .5)
+              box = physics.createBox({
+                mass: 0,
+                friction: Constants.StaticObjects.DefaultFriction,
+                position: boxLocation,
+                size: boxSize
+              });
+              bodies.push(box);
+              break;
+          }
+        }
+      }
 
       // Walls
       let walls = builder.getPysicsWalls();
