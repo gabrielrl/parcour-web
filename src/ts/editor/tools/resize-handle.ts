@@ -4,21 +4,25 @@ namespace PRKR.Editor.Tools {
 
   import Vector3 = THREE.Vector3;
 
+  /** Option object passed to `ResizeHandle`'s constructor. */
   export interface ResizeHandleOptions {
     width: number;
     height: number;
-    direction?: Vector3;
+    /** Axes on which the handle can move. Each component should be either 0 or 1. */
+    axes?: Vector3;
+    /** The handle's resting location (base position). */
     location?: Vector3;
     minDelta?: Vector3;
+    maxDelta?: Vector3;
+
+    applyDelta?: Function;
   }
-  
+
   export class ResizeHandle extends THREE.Object3D {
 
-    private static DEFAULT_DIRECTION = new Vector3(1, 0, 1);
+    private static Geometry = new THREE.PlaneGeometry(1, 1);
 
-    private static GEOMETRY = new THREE.PlaneGeometry(1, 1);
-
-    private static MATERIAL = new THREE.MeshBasicMaterial({
+    private static BaseMaterial = new THREE.MeshBasicMaterial({
       color: 0x0000ff,
       depthTest: false,
       transparent: true,
@@ -26,7 +30,7 @@ namespace PRKR.Editor.Tools {
       side: THREE.DoubleSide
     });
 
-    private static HOVERED_MATERIAL = new THREE.MeshBasicMaterial({
+    private static HoveredMaterial = new THREE.MeshBasicMaterial({
       color: 0x00ffff,
       depthTest: false,
       transparent: true,
@@ -34,7 +38,7 @@ namespace PRKR.Editor.Tools {
       side: THREE.DoubleSide
     });
 
-    private static RESIZING_MATERIAL = new THREE.MeshBasicMaterial({
+    private static ResizingMaterial = new THREE.MeshBasicMaterial({
       color: 0x00ff00,
       depthTest: false,
       transparent: true,
@@ -46,25 +50,33 @@ namespace PRKR.Editor.Tools {
 
     private _height: number;
 
-    /** The handle's resize direction(s). */
-    private _direction: Vector3 = new Vector3();
+    /** Axes on which the handle can move. Each component should be either 0 or 1. */
+    private _axes: Vector3 = new Vector3();
 
-    /** The handle's resting location. (base position) */
+    /** The handle's resting location (base position). */
     private _location: Vector3 = new Vector3();
 
     /** The minimum allowed delta value. Can be null. */
     private _minDelta: Vector3 = null;
 
+    /** The maximum allowed delta value. Can be null. */
+    private _maxDelta: Vector3 = null;
+
+    /** User provided function to apply the handle delta. */
+    private _applyDelta: Function = null;
+
     private _hovered: boolean = false;
 
     private _resizing: boolean = false;
 
+    /** The current delta (movement) away from the resting location. */
     private _delta: Vector3 = new Vector3();
 
+    /** The movement's origin. It is the world location of the hit point on the handle. */
     private _origin: THREE.Vector3 = null;
 
     /** The handle mesh. */
-    private _handleMesh: THREE.Mesh = new THREE.Mesh(ResizeHandle.GEOMETRY, ResizeHandle.MATERIAL);
+    private _handleMesh: THREE.Mesh = new THREE.Mesh(ResizeHandle.Geometry, ResizeHandle.BaseMaterial);
 
     constructor(
       private _editor: ParcourEditor,
@@ -72,18 +84,23 @@ namespace PRKR.Editor.Tools {
     ) {
       super();
 
-      this._direction.copy(ResizeHandle.DEFAULT_DIRECTION);
+      if (!options) throw new Error('"options" must be defined');
 
       this._width = options.width;
       this._height = options.height;
-      this._direction.copy(options.direction);
+      this._axes.copy(options.axes);
 
       if (options.location) {
         this._location.copy(options.location);
       }
-
       if (options.minDelta) {
         this._minDelta = new Vector3().copy(options.minDelta);
+      }
+      if (options.maxDelta) {
+        this._maxDelta = new Vector3().copy(options.maxDelta);
+      }
+      if (options.applyDelta) {
+        this._applyDelta = options.applyDelta;
       }
 
       this.add(this._handleMesh);
@@ -101,6 +118,14 @@ namespace PRKR.Editor.Tools {
 
     public get location() { return this._location; }
 
+    public applyDelta(...args) {
+      if (this._applyDelta) {
+        return this._applyDelta(...args);
+      } else {
+        return null;
+      }
+    }
+
     public get hovered() { return this._hovered; }
     public set hovered(value: boolean) { this._hovered = value; }
 
@@ -110,7 +135,6 @@ namespace PRKR.Editor.Tools {
     public update() {
       this._updateHandleObject();      
     }
-
 
     public resizeStart(hitInfo: PRKR.Editor.Tools.ResizeHelperHit) {
       if (!hitInfo) throw new Error('"hitInfo" parameter can not be null or undefined');
@@ -124,7 +148,7 @@ namespace PRKR.Editor.Tools {
     }
 
     /**
-     * Returns the current resize delta. Internal object, do not modify!
+     * Returns the current resize delta.
      */
     public resizeMove(mouseEvent: JQueryMouseEventObject) {
       if (!mouseEvent) throw new Error('"mouseEvent" can not be null or undefined');
@@ -135,16 +159,20 @@ namespace PRKR.Editor.Tools {
       let delta = new Vector3();
       delta.subVectors(intersection.point, this._origin);
 
-      // Adjust delta keeping only configured direction(s).
+      // Adjust delta keeping only supported axes.
       delta.set(
-        delta.x * this._direction.x,
-        delta.y * this._direction.y,
-        delta.z * this._direction.z
+        delta.x * this._axes.x,
+        delta.y * this._axes.y,
+        delta.z * this._axes.z
       );
 
       // Apply the minimal allowed delta.
       if (this._minDelta) {
         delta.max(this._minDelta);
+      }
+      // Apply the maximal allowed delta.
+      if (this._maxDelta) {
+        delta.min(this._maxDelta);
       }
 
       console.debug('delta restricted to direction and minimum = ', delta);
@@ -154,11 +182,11 @@ namespace PRKR.Editor.Tools {
 
       this._updateHandleObject();
 
-      return this._delta;
+      return delta;
     }
 
     /**
-     * Returns the current resize delta. Internal object, do not modify!
+     * Returns the current resize delta.
      */
     public resizeEnd(mouseEvent: JQueryMouseEventObject) {
       if (!mouseEvent) throw new Error('"mouseEvent" can not be null or undefined');
@@ -168,7 +196,7 @@ namespace PRKR.Editor.Tools {
 
       this._updateHandleObject();
 
-      return this._delta;
+      return this._delta.clone();
     }
 
     /**
@@ -178,11 +206,11 @@ namespace PRKR.Editor.Tools {
       let handle = this._handleMesh;
 
       // Set handle material from current state.
-      let material = ResizeHandle.MATERIAL;
+      let material = ResizeHandle.BaseMaterial;
       if (this._resizing) {
-        material = ResizeHandle.RESIZING_MATERIAL;
+        material = ResizeHandle.ResizingMaterial;
       } else if (this._hovered) {
-        material = ResizeHandle.HOVERED_MATERIAL;
+        material = ResizeHandle.HoveredMaterial;
       }
 
       handle.material = material;

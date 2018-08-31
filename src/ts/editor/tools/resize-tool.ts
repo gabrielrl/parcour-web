@@ -6,10 +6,12 @@
 
 
 namespace PRKR.Editor.Tools {
+
   import EditorObject = Objects.EditorObject;
   import IValidationResult = PRKR.Validators.IValidationResult;
   import ResultLevel = PRKR.Validators.ResultLevel;
 
+  /** This tool allows the user to resize objects which support it. */
   export class ResizeTool extends Tool {
 
     constructor(private _editor: ParcourEditor) {
@@ -19,15 +21,13 @@ namespace PRKR.Editor.Tools {
     /** Indicates if a resize operation is in progress. */
     private _resizing: boolean = false;
 
+    /** Indicates if the current resize operation is valid. */
     private _resizeValid: boolean = false;
 
     private _targets: Objects.EditorObject[] = [];
 
     /** Resize helpers for each resizable selected object. */
     private _helpers: ResizeHelper[] = [];
-
-    /** Currently active helper. */
-    // private _activeHelper: ResizeHelper = null;
 
     /** Currently active "resize helper hit" description. */
     private _activeHit: ResizeHelperHit = null;
@@ -80,10 +80,9 @@ namespace PRKR.Editor.Tools {
     public notifyMouseDown(event: JQueryMouseEventObject): void {
 
       if (this._activeHit) {
+
         // There is an active helper under the mouse pointer.
-
         this._activeHit.helper.resizeStart(event, this._activeHit);
-
         this._resizing = true;
 
       }
@@ -106,7 +105,7 @@ namespace PRKR.Editor.Tools {
           }
         }
 
-        // Find the active helper.
+        // Find the active helper; it's the nearest.
         let helper: ResizeHelper = null;
         let hit: ResizeHelperHit = null;
         if (hits.length > 0) {
@@ -212,10 +211,11 @@ namespace PRKR.Editor.Tools {
 
     }
 
-    private _buildEditStep(resizeDelta: THREE.Vector3) {
+    private _buildEditStep(resizeDelta: ResizeDelta) {
       let editStep = 
         new PRKR.Editor.EditSteps.ResizeStep(
-          resizeDelta,
+          resizeDelta.location,
+          resizeDelta.size,
           this._targets.map(t => { return t.id })
         );
       return editStep;

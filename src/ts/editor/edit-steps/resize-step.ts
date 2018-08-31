@@ -10,19 +10,23 @@ namespace PRKR.Editor.EditSteps {
 
   export class ResizeStep extends EditStep {
 
-    private _resizeDelta: Vector3 = new Vector3();
+    private _locationDelta: Vector3 = new Vector3();
+    private _sizeDelta: Vector3 = new Vector3();
     private _targetIds: string[];
 
     constructor(
-      resizeDelta: Vector3,
+      locationDelta: Vector3,
+      sizeDelta: Vector3,
       targetIds: string[]
     ) {
       super();
 
-      if (!resizeDelta) throw new Error('"resizeDelta" must be defined');
+      if (!locationDelta) throw new Error('"locationDelta" must be defined');
+      if (!sizeDelta) throw new Error('"sizeDelta" must be defined');
       if (!targetIds || targetIds.length === 0) throw new Error('"targetIds" must be defined and non-empty');
 
-      this._resizeDelta.copy(resizeDelta);
+      this._locationDelta.copy(locationDelta);
+      this._sizeDelta.copy(sizeDelta);
       this._targetIds = [].concat(targetIds);
     }
 
@@ -34,8 +38,10 @@ namespace PRKR.Editor.EditSteps {
         let target = parcour.getObjectById(targetId);
 
         if (target instanceof PRKR.Model.Area) {
+          memento.push(...target.location.toArray());
           memento.push(...target.size.toArray());
-          target.size.add(this._resizeDelta);
+          target.location.add(this._locationDelta);
+          target.size.add(this._sizeDelta);
         } else {
           memento.push(null);
         }
@@ -56,10 +62,15 @@ namespace PRKR.Editor.EditSteps {
         this._targetIds.forEach((targetId, index) => {
           let po = parcour.getObjectById(targetId);          
           if (po instanceof Area) {
+            po.location.set(
+              dataArray[index * 6],
+              dataArray[index * 6 + 1],
+              dataArray[index * 6 + 2]
+            );
             po.size.set(
-              dataArray[index * 3],
-              dataArray[index * 3 + 1],
-              dataArray[index * 3 + 2]
+              dataArray[index * 6 + 3],
+              dataArray[index * 6 + 4],
+              dataArray[index * 6 + 5]
             );
           }
         });
