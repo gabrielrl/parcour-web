@@ -12,6 +12,7 @@ namespace PRKR.Editor.Tools {
     axes?: Vector3;
     /** The handle's resting location (base position). */
     location?: Vector3;
+    plane?: Helpers.OrthoPlane;
     minDelta?: Vector3;
     maxDelta?: Vector3;
 
@@ -56,6 +57,8 @@ namespace PRKR.Editor.Tools {
     /** The handle's resting location (base position). */
     private _location: Vector3 = new Vector3();
 
+    private _plane: Helpers.OrthoPlane = Helpers.OrthoPlane.XZ;
+
     /** The minimum allowed delta value. Can be null. */
     private _minDelta: Vector3 = null;
 
@@ -88,10 +91,15 @@ namespace PRKR.Editor.Tools {
 
       this._width = options.width;
       this._height = options.height;
-      this._axes.copy(options.axes);
 
+      if (options.axes) {
+        this._axes.copy(options.axes);
+      }
       if (options.location) {
         this._location.copy(options.location);
+      }
+      if (options.plane) {
+        this._plane = options.plane;
       }
       if (options.minDelta) {
         this._minDelta = new Vector3().copy(options.minDelta);
@@ -104,9 +112,6 @@ namespace PRKR.Editor.Tools {
       }
 
       this.add(this._handleMesh);
-
-      this._handleMesh.setRotationFromAxisAngle(M.Vector3.PositiveX, M.PI_OVER_TWO);
-
       this._updateHandleObject();
     }
 
@@ -154,7 +159,13 @@ namespace PRKR.Editor.Tools {
       if (!mouseEvent) throw new Error('"mouseEvent" can not be null or undefined');
       if (!this._resizing) return;
 
-      let intersection = this._editor.projectMouseOnFloor(new THREE.Vector2(mouseEvent.clientX, mouseEvent.clientY));
+      // let intersection = this._editor.projectMouseOnFloor(new THREE.Vector2(mouseEvent.clientX, mouseEvent.clientY));
+      let intersection =
+        this._editor.projectMouseOnPlane(
+          new THREE.Vector2(mouseEvent.clientX, mouseEvent.clientY),
+          this._location,
+          Helpers.getNormalFromOrthoPlane(this._plane)
+        )
 
       let delta = new Vector3();
       delta.subVectors(intersection.point, this._origin);
@@ -217,12 +228,12 @@ namespace PRKR.Editor.Tools {
 
       // Set rotation and scale from current state.
       handle.scale.set(this._width, this._height, 1);
+      //handle.rotation
+      let normal = Helpers.getNormalFromOrthoPlane(this._plane);
+      handle.quaternion.setFromUnitVectors(M.Vector3.PositiveZ, normal);
 
       // Update our position.
-      this.position.addVectors(
-        this._location,
-        new THREE.Vector3(this._width / 2, 0, this._height / 2)
-      );
+      this.position.copy(this._location);
 
       if (this._resizing) {
         this.position.add(this._delta);

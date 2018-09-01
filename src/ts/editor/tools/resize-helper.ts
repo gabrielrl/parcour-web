@@ -206,7 +206,11 @@ namespace PRKR.Editor.Tools {
 
       return {
         location: delta.location.clone().round(),
-        size: delta.size.clone().round()
+        size: new Vector3(
+          Math.round(delta.size.x),
+          Math.round(delta.size.y * 4) / 4,
+          Math.round(delta.size.z)
+        )
       };
     }
 
@@ -297,9 +301,9 @@ namespace PRKR.Editor.Tools {
           minDelta: new Vector3(-(size.x - 1), 0, 0),
           maxDelta: new Vector3(Model.Constants.MaximumAreaSize - size.x, 0, 0),
           location: new Vector3(
-            origin.x + box.max.x - .5, 
+            origin.x + box.max.x, 
             origin.y + box.min.y,
-            origin.z + box.min.z + .5),
+            origin.z + box.max.z * .5),
           applyDelta: applyDeltaGenerator(M.Vector3.Zero, M.Vector3.OneOneOne)
         }),
         // form x min (adjusting location and size).
@@ -310,9 +314,9 @@ namespace PRKR.Editor.Tools {
           minDelta: new Vector3(-(Model.Constants.MaximumAreaSize - size.x), 0, 0),
           maxDelta: new Vector3(size.x - 1, 0 , 0),
           location: new Vector3(
-            origin.x + box.min.x - .5,
+            origin.x + box.min.x,
             origin.y + box.min.y,
-            origin.z + box.min.z + .5
+            origin.z + box.max.z * .5
           ),
           applyDelta: applyDeltaGenerator(M.Vector3.OneOneOne, M.Vector3.MinusOneOneOne)
         }),
@@ -325,9 +329,9 @@ namespace PRKR.Editor.Tools {
           minDelta: new Vector3(0, 0, -(size.z - 1)),
           maxDelta: new Vector3(0, 0, Model.Constants.MaximumAreaSize - size.z),
           location: new Vector3(
-            origin.x + box.min.x + .5, 
+            origin.x + box.max.x * .5, 
             origin.y + box.min.y,
-            origin.z + box.max.z - .5
+            origin.z + box.max.z
           ),
           applyDelta: applyDeltaGenerator(M.Vector3.Zero, M.Vector3.OneOneOne)
         }),
@@ -340,9 +344,9 @@ namespace PRKR.Editor.Tools {
           minDelta: new Vector3(0, 0, -(Model.Constants.MaximumAreaSize - size.z)),
           maxDelta: new Vector3(0, 0, size.z - 1),
           location: new Vector3(
-            origin.x + box.min.x + .5, 
+            origin.x + box.max.x * .5, 
             origin.y + box.min.y,
-            origin.z + box.min.z - .5
+            origin.z + box.min.z
           ),
           applyDelta: applyDeltaGenerator(M.Vector3.OneOneOne, M.Vector3.MinusOneOneOne)
         }),
@@ -359,9 +363,9 @@ namespace PRKR.Editor.Tools {
             Model.Constants.MaximumAreaSize - size.z
           ),
           location: new Vector3(
-            origin.x + box.max.x - .5, 
+            origin.x + box.max.x, 
             origin.y + box.min.y,
-            origin.z + box.max.z - .5
+            origin.z + box.max.z
           ),
           applyDelta: applyDeltaGenerator(M.Vector3.Zero, M.Vector3.OneOneOne)
         }),
@@ -378,9 +382,9 @@ namespace PRKR.Editor.Tools {
           ),
           maxDelta: new Vector3(size.x - 1, 0, size.z - 1),
           location: new Vector3(
-            origin.x + box.min.x - .5, 
+            origin.x + box.min.x, 
             origin.y + box.min.y,
-            origin.z + box.min.z - .5
+            origin.z + box.min.z
           ),
           applyDelta: applyDeltaGenerator(M.Vector3.OneOneOne, M.Vector3.MinusOneOneOne)
         }),
@@ -397,9 +401,9 @@ namespace PRKR.Editor.Tools {
             size.z - 1
           ),
           location: new Vector3(
-            origin.x + box.max.x - .5, 
+            origin.x + box.max.x, 
             origin.y + box.min.y,
-            origin.z + box.min.z - .5
+            origin.z + box.min.z
           ),
           applyDelta: applyDeltaGenerator(
             new Vector3(0, 0, 1),
@@ -419,9 +423,9 @@ namespace PRKR.Editor.Tools {
             Model.Constants.MaximumAreaSize - size.z
           ),
           location: new Vector3(
-            origin.x + box.min.x - .5, 
+            origin.x + box.min.x, 
             origin.y + box.min.y,
-            origin.z + box.max.z - .5
+            origin.z + box.max.z
           ),
           applyDelta: applyDeltaGenerator(
             new Vector3(1, 0, 0),
@@ -429,7 +433,81 @@ namespace PRKR.Editor.Tools {
           )
         }),
 
-        // TODO y max (from each wall, only seen from the inside).
+        // from top of x max wall.
+        new ResizeHandle(this._editor, {
+          width: size.z,
+          height: 1,
+          axes: new Vector3(0, 1, 0),
+          minDelta: new Vector3(0, -(size.y - Model.Constants.MinimumAreaHeight), 0),
+          maxDelta: new Vector3(0, Model.Constants.MaximumAreaSize - size.y, 0),
+          location: new Vector3(
+            origin.x + box.max.x,
+            origin.y + box.max.y,
+            origin.z + box.max.z * .5
+          ),
+          plane: Helpers.OrthoPlane.YZ,
+          applyDelta: applyDeltaGenerator(
+            M.Vector3.Zero,
+            M.Vector3.OneOneOne
+          )
+        }),
+
+        // from top of x min wall.
+        new ResizeHandle(this._editor, {
+          width: size.z,
+          height: 1,
+          axes: new Vector3(0, 1, 0),
+          minDelta: new Vector3(0, -(size.y - Model.Constants.MinimumAreaHeight), 0),
+          maxDelta: new Vector3(0, Model.Constants.MaximumAreaSize - size.y, 0),
+          location: new Vector3(
+            origin.x + box.min.x,
+            origin.y + box.max.y,
+            origin.z + box.max.z * .5
+          ),
+          plane: Helpers.OrthoPlane.YZ,
+          applyDelta: applyDeltaGenerator(
+            M.Vector3.Zero,
+            M.Vector3.OneOneOne
+          )
+        }),
+
+        // from top of z max wall.
+        new ResizeHandle(this._editor, {
+          width: size.x,
+          height: 1,
+          axes: new Vector3(0, 1, 0),
+          minDelta: new Vector3(0, -(size.y - Model.Constants.MinimumAreaHeight), 0),
+          maxDelta: new Vector3(0, Model.Constants.MaximumAreaSize - size.y, 0),
+          location: new Vector3(
+            origin.x + box.max.x * .5,
+            origin.y + box.max.y,
+            origin.z + box.max.z
+          ),
+          plane: Helpers.OrthoPlane.XY,
+          applyDelta: applyDeltaGenerator(
+            M.Vector3.Zero,
+            M.Vector3.OneOneOne
+          )
+        }),
+
+        // from top of z min wall.
+        new ResizeHandle(this._editor, {
+          width: size.x,
+          height: 1,
+          axes: new Vector3(0, 1, 0),
+          minDelta: new Vector3(0, -(size.y - Model.Constants.MinimumAreaHeight), 0),
+          maxDelta: new Vector3(0, Model.Constants.MaximumAreaSize - size.y, 0),
+          location: new Vector3(
+            origin.x + box.max.x * .5,
+            origin.y + box.max.y,
+            origin.z + box.min.z
+          ),
+          plane: Helpers.OrthoPlane.XY,
+          applyDelta: applyDeltaGenerator(
+            M.Vector3.Zero,
+            M.Vector3.OneOneOne
+          )
+        })
 
       ];
       return handles;

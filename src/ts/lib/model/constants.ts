@@ -3,7 +3,9 @@ namespace PRKR.Model {
   
   export let Constants = {
 
-    MaximumAreaSize: 20,
+    MaximumAreaSize: 10,
+
+    MinimumAreaHeight: 2,
     
     WallThickness: 0.1,
 
