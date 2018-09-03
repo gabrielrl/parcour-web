@@ -83,6 +83,7 @@ namespace PRKR.Editor.Tools {
         this._activeHit.helper.resizeStart(event, this._activeHit);
         this._resizing = true;
         this._editor.setStatus(this._buildStatus(ResizeDelta.Empty));
+        this._editor.requestRender();
 
       }
 

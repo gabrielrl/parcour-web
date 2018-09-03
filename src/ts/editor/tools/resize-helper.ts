@@ -152,6 +152,9 @@ namespace PRKR.Editor.Tools {
       this._resizeStartHit = hit;
       this._resizeValid = true;
 
+      this._handles.forEach(h => {
+        if (hit.handle !== h) h.visible = false;
+      });
       this._resizingHelper.visible = true;
       this._resizingAdjustedHelper.visible = true;
       this._updateResizingHelpers(ResizeDelta.Empty, ResizeDelta.Empty);
@@ -195,6 +198,7 @@ namespace PRKR.Editor.Tools {
       this._resizeStartHit = null;
       this._resizeValid = true;
 
+      this._handles.forEach(h => { h.visible = true; });
       this._resizingHelper.visible = false;
       this._resizingAdjustedHelper.visible = false;
 
