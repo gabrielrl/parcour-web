@@ -446,6 +446,7 @@ namespace PRKR.Editor.Tools {
             origin.z + box.max.z * .5
           ),
           plane: Helpers.OrthoPlane.YZ,
+
           applyDelta: applyDeltaGenerator(
             M.Vector3.Zero,
             M.Vector3.OneOneOne
@@ -465,6 +466,7 @@ namespace PRKR.Editor.Tools {
             origin.z + box.max.z * .5
           ),
           plane: Helpers.OrthoPlane.YZ,
+          normal: M.Vector3.PositiveX,
           applyDelta: applyDeltaGenerator(
             M.Vector3.Zero,
             M.Vector3.OneOneOne
@@ -503,6 +505,7 @@ namespace PRKR.Editor.Tools {
             origin.z + box.min.z
           ),
           plane: Helpers.OrthoPlane.XY,
+          normal: M.Vector3.PositiveZ,
           applyDelta: applyDeltaGenerator(
             M.Vector3.Zero,
             M.Vector3.OneOneOne
