@@ -53,9 +53,7 @@ namespace PRKR.Editor.Tools {
     /** Override. */
     public activate() {
       this._reset();
-      // TODO Better status messages for this tool.
-      //      and better mouse pointers too.
-      this._editor.setStatus('Click and drag handles to resize object');
+      this._editor.setStatus(this._buildStatus());
       this._editor.requestRender();
     }
 
@@ -84,6 +82,7 @@ namespace PRKR.Editor.Tools {
         // There is an active helper under the mouse pointer.
         this._activeHit.helper.resizeStart(event, this._activeHit);
         this._resizing = true;
+        this._editor.setStatus(this._buildStatus(ResizeDelta.Empty));
 
       }
 
@@ -160,6 +159,7 @@ namespace PRKR.Editor.Tools {
           }
         }
 
+        this._editor.setStatus(this._buildStatus(resizeDelta));
         this._editor.requestRender();
       }
     }
@@ -174,7 +174,6 @@ namespace PRKR.Editor.Tools {
         let resizeDelta = this._activeHit.helper.resizeEnd(mouseEvent);
         if (resizeDelta) {      
 
-          // TODO Apply resize.
           let editStep = this._buildEditStep(resizeDelta);
           this._editor.addEditStep(editStep);
 
@@ -182,9 +181,9 @@ namespace PRKR.Editor.Tools {
       }
 
       this._resizing = false;
-
       this._reset();
 
+      this._editor.setStatus(this._buildStatus());
       this._editor.requestRender();
     }
 
@@ -211,6 +210,23 @@ namespace PRKR.Editor.Tools {
 
     }
 
+    /**  */
+    private _buildStatus(resizeDelta?: ResizeDelta) {
+      if (!this._resizing) {
+        return 'Click and drag handles to resize selected objects';
+      } else if (resizeDelta) {
+        let newSize = this._targets[0].boundingBox.getSize().add(resizeDelta.size);
+        return 'Release to resize. New dimensions: [' +
+          newSize.x.toFixed(2) + ', ' + 
+          newSize.y.toFixed(2) + ', ' + 
+          newSize.z.toFixed(2) + ']';
+      } else {
+        return 'Release to resize.';
+      }
+
+    }
+
+    /** */
     private _buildEditStep(resizeDelta: ResizeDelta) {
       let editStep = 
         new PRKR.Editor.EditSteps.ResizeStep(
