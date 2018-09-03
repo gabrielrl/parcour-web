@@ -12,7 +12,10 @@ namespace PRKR.Editor.Tools {
     axes?: Vector3;
     /** The handle's resting location (base position). */
     location?: Vector3;
+    /** The orthogonal plane on which the handle resides. */
     plane?: Helpers.OrthoPlane;
+    /** Plane normal. If specified, it must be one of the two valid normal for the specified orthogonal plane. */
+    normal?: Vector3;
     minDelta?: Vector3;
     maxDelta?: Vector3;
 
@@ -28,7 +31,7 @@ namespace PRKR.Editor.Tools {
       depthTest: false,
       transparent: true,
       opacity: 0.8,
-      side: THREE.DoubleSide
+      side: THREE.FrontSide
     });
 
     private static HoveredMaterial = new THREE.MeshBasicMaterial({
@@ -36,7 +39,7 @@ namespace PRKR.Editor.Tools {
       depthTest: false,
       transparent: true,
       opacity: 0.8,
-      side: THREE.DoubleSide
+      side: THREE.FrontSide
     });
 
     private static ResizingMaterial = new THREE.MeshBasicMaterial({
@@ -44,7 +47,7 @@ namespace PRKR.Editor.Tools {
       depthTest: false,
       transparent: true,
       opacity: 0.8,
-      side: THREE.DoubleSide
+      side: THREE.FrontSide
     });
 
     private _width: number;
@@ -57,7 +60,11 @@ namespace PRKR.Editor.Tools {
     /** The handle's resting location (base position). */
     private _location: Vector3 = new Vector3();
 
+    /** The orthogonal plane on which the handle resides. */
     private _plane: Helpers.OrthoPlane = Helpers.OrthoPlane.XZ;
+
+    /** Plane normal. If specified, it must be one of the two valid normal for the specified orthogonal plane. */
+    private _normal?: Vector3 = null;
 
     /** The minimum allowed delta value. Can be null. */
     private _minDelta: Vector3 = null;
@@ -100,6 +107,9 @@ namespace PRKR.Editor.Tools {
       }
       if (options.plane) {
         this._plane = options.plane;
+      }
+      if (options.normal) {
+        this._normal = new Vector3().copy(options.normal);
       }
       if (options.minDelta) {
         this._minDelta = new Vector3().copy(options.minDelta);
@@ -164,7 +174,7 @@ namespace PRKR.Editor.Tools {
         this._editor.projectMouseOnPlane(
           new THREE.Vector2(mouseEvent.clientX, mouseEvent.clientY),
           this._location,
-          Helpers.getNormalFromOrthoPlane(this._plane)
+          this._normal || Helpers.getNormalFromOrthoPlane(this._plane)
         )
 
       let delta = new Vector3();
@@ -229,7 +239,7 @@ namespace PRKR.Editor.Tools {
       // Set rotation and scale from current state.
       handle.scale.set(this._width, this._height, 1);
       //handle.rotation
-      let normal = Helpers.getNormalFromOrthoPlane(this._plane);
+      let normal = this._normal || Helpers.getNormalFromOrthoPlane(this._plane);
       handle.quaternion.setFromUnitVectors(M.Vector3.PositiveZ, normal);
 
       // Update our position.
