@@ -53,7 +53,7 @@ namespace PRKR.Editor.Tools {
     /** Override. */
     public activate() {
       this._reset();
-      this._editor.setStatus(this._buildStatus());
+      this._updateEditor();
       this._editor.requestRender();
     }
 
@@ -82,7 +82,7 @@ namespace PRKR.Editor.Tools {
         // There is an active helper under the mouse pointer.
         this._activeHit.helper.resizeStart(event, this._activeHit);
         this._resizing = true;
-        this._editor.setStatus(this._buildStatus(ResizeDelta.Empty));
+        this._updateEditor(ResizeDelta.Empty);
         this._editor.requestRender();
 
       }
@@ -132,6 +132,7 @@ namespace PRKR.Editor.Tools {
           }
         }
         this._activeHit = hit;
+        this._updateEditor();
 
       } else { // Resizing.
 
@@ -160,7 +161,7 @@ namespace PRKR.Editor.Tools {
           }
         }
 
-        this._editor.setStatus(this._buildStatus(resizeDelta));
+        this._updateEditor(resizeDelta);
         this._editor.requestRender();
       }
     }
@@ -184,7 +185,7 @@ namespace PRKR.Editor.Tools {
       this._resizing = false;
       this._reset();
 
-      this._editor.setStatus(this._buildStatus());
+      this._updateEditor();
       this._editor.requestRender();
     }
 
@@ -211,20 +212,28 @@ namespace PRKR.Editor.Tools {
 
     }
 
-    /**  */
-    private _buildStatus(resizeDelta?: ResizeDelta) {
+    /** Sets status and pointer from current state on the editor. */
+    private _updateEditor(resizeDelta?: ResizeDelta) {
       if (!this._resizing) {
-        return 'Click and drag handles to resize selected objects';
-      } else if (resizeDelta) {
-        let newSize = this._targets[0].boundingBox.getSize().add(resizeDelta.size);
-        return 'Release to resize. New dimensions: [' +
-          newSize.x.toFixed(2) + ', ' + 
-          newSize.y.toFixed(2) + ', ' + 
-          newSize.z.toFixed(2) + ']';
+        if (this._activeHit) {
+          this._editor.setStatus('Click and drag handle to resize selected objects');
+          this._editor.setPointer('-webkit-grab');
+        } else {
+          this._editor.setStatus('Click and drag handles to resize selected objects');
+          this._editor.setPointer('crosshair');
+        }
       } else {
-        return 'Release to resize.';
+        if (resizeDelta) {
+          let newSize = this._targets[0].boundingBox.getSize().add(resizeDelta.size);
+          this._editor.setStatus('Release to resize. New dimensions: [' +
+            newSize.x.toFixed(2) + ', ' + 
+            newSize.y.toFixed(2) + ', ' + 
+            newSize.z.toFixed(2) + ']');
+        } else {
+          this._editor.setStatus('Release to resize');
+        }
+        this._editor.setPointer('-webkit-grabbing');
       }
-
     }
 
     /** */
