@@ -6,10 +6,12 @@
 
 
 namespace PRKR.Editor.Tools {
+
   import EditorObject = Objects.EditorObject;
   import IValidationResult = PRKR.Validators.IValidationResult;
   import ResultLevel = PRKR.Validators.ResultLevel;
 
+  /** This tool allows the user to resize objects which support it. */
   export class ResizeTool extends Tool {
 
     constructor(private _editor: ParcourEditor) {
@@ -19,15 +21,13 @@ namespace PRKR.Editor.Tools {
     /** Indicates if a resize operation is in progress. */
     private _resizing: boolean = false;
 
+    /** Indicates if the current resize operation is valid. */
     private _resizeValid: boolean = false;
 
     private _targets: Objects.EditorObject[] = [];
 
     /** Resize helpers for each resizable selected object. */
     private _helpers: ResizeHelper[] = [];
-
-    /** Currently active helper. */
-    // private _activeHelper: ResizeHelper = null;
 
     /** Currently active "resize helper hit" description. */
     private _activeHit: ResizeHelperHit = null;
@@ -53,9 +53,7 @@ namespace PRKR.Editor.Tools {
     /** Override. */
     public activate() {
       this._reset();
-      // TODO Better status messages for this tool.
-      //      and better mouse pointers too.
-      this._editor.setStatus('Click and drag handles to resize object');
+      this._editor.setStatus(this._buildStatus());
       this._editor.requestRender();
     }
 
@@ -80,11 +78,12 @@ namespace PRKR.Editor.Tools {
     public notifyMouseDown(event: JQueryMouseEventObject): void {
 
       if (this._activeHit) {
+
         // There is an active helper under the mouse pointer.
-
         this._activeHit.helper.resizeStart(event, this._activeHit);
-
         this._resizing = true;
+        this._editor.setStatus(this._buildStatus(ResizeDelta.Empty));
+        this._editor.requestRender();
 
       }
 
@@ -106,7 +105,7 @@ namespace PRKR.Editor.Tools {
           }
         }
 
-        // Find the active helper.
+        // Find the active helper; it's the nearest.
         let helper: ResizeHelper = null;
         let hit: ResizeHelperHit = null;
         if (hits.length > 0) {
@@ -161,6 +160,7 @@ namespace PRKR.Editor.Tools {
           }
         }
 
+        this._editor.setStatus(this._buildStatus(resizeDelta));
         this._editor.requestRender();
       }
     }
@@ -175,7 +175,6 @@ namespace PRKR.Editor.Tools {
         let resizeDelta = this._activeHit.helper.resizeEnd(mouseEvent);
         if (resizeDelta) {      
 
-          // TODO Apply resize.
           let editStep = this._buildEditStep(resizeDelta);
           this._editor.addEditStep(editStep);
 
@@ -183,9 +182,9 @@ namespace PRKR.Editor.Tools {
       }
 
       this._resizing = false;
-
       this._reset();
 
+      this._editor.setStatus(this._buildStatus());
       this._editor.requestRender();
     }
 
@@ -212,10 +211,28 @@ namespace PRKR.Editor.Tools {
 
     }
 
-    private _buildEditStep(resizeDelta: THREE.Vector3) {
+    /**  */
+    private _buildStatus(resizeDelta?: ResizeDelta) {
+      if (!this._resizing) {
+        return 'Click and drag handles to resize selected objects';
+      } else if (resizeDelta) {
+        let newSize = this._targets[0].boundingBox.getSize().add(resizeDelta.size);
+        return 'Release to resize. New dimensions: [' +
+          newSize.x.toFixed(2) + ', ' + 
+          newSize.y.toFixed(2) + ', ' + 
+          newSize.z.toFixed(2) + ']';
+      } else {
+        return 'Release to resize.';
+      }
+
+    }
+
+    /** */
+    private _buildEditStep(resizeDelta: ResizeDelta) {
       let editStep = 
         new PRKR.Editor.EditSteps.ResizeStep(
-          resizeDelta,
+          resizeDelta.location,
+          resizeDelta.size,
           this._targets.map(t => { return t.id })
         );
       return editStep;

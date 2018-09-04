@@ -17,6 +17,7 @@ namespace PRKR {
     static Vector3 = {
       Zero: new Vector3(0, 0, 0),
       OneOneOne: new Vector3(1, 1, 1),
+      MinusOneOneOne: new Vector3(-1, -1, -1),
       OneZeroOne: new Vector3(1, 0, 1),
       Half: new Vector3(.5, .5, .5),
       MinusHalf: new Vector3(-.5, -.5, -.5),
