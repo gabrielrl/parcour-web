@@ -64,7 +64,7 @@ namespace PRKR.Player.Model {
       const lightColor = Utils.colorFromHsv(hue, saturation, value);
       const spotLight = new THREE.SpotLight(lightColor);
 
-      const ambiantHue = hue + (4.1887902048 /* 240° or blue */ - hue) * .2;;
+      const ambiantHue = hue + (4.1887902048 /* 240° or blue */ - hue) * .2;
 
       let ambiantLightColor = Utils.colorFromHsv(ambiantHue, saturation, .05 + value * .1);
       let ambientLigth = new THREE.AmbientLight( ambiantLightColor );
