@@ -56,17 +56,14 @@ namespace PRKR.Editor.Objects {
       }
       let g = new PRKR.Builders.RoomGeometryBuilder(
         <RoomArea>this.model, this.parcour).getGeometry();
-      let c = new THREE.Color();
-      let hue = this.roomArea.light.hue || 0;
-      let saturation = this.roomArea.light.color != null
-        ? this.roomArea.light.color
-        : 0;
-      let lightness = this.roomArea.light.intensity != null
-        ? this.roomArea.light.intensity - saturation * 0.5
-        : 1 - saturation * 0.5;
-      c.setHSL(hue, saturation, lightness);
+
+      let light = this.roomArea.light;
+      let hue = light.hue != null ? light.hue : 0;
+      let saturation = light.color != null ? light.color : 0;
+      let value = light.intensity != null ? light.intensity : 0
+
       let m = new THREE.MeshLambertMaterial({
-        color: c
+        color: Utils.colorFromHsv(hue, saturation, value)
       });      
       this._roomMesh = new THREE.Mesh(g, m);
       this.sceneObject.add(this._roomMesh);

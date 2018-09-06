@@ -57,29 +57,26 @@ namespace PRKR.Player.Model {
       this._scene = new THREE.Scene();
       this._scene.add(mesh);
 
-      let lightColor = new THREE.Color();
-      // TODO extract duplicate code (room light to color).
-      let hue = this._room.light.hue || 0;
-      let saturation = this._room.light.color != null
-        ? this._room.light.color
-        : 0;
-      let lightness = this._room.light.intensity != null
-        ? this._room.light.intensity - saturation * 0.5
-        : 1 - saturation * 0.5;
-      lightColor.setHSL(hue, saturation, lightness);
+      let light = this._room.light;
+      let hue = light.hue != null ? light.hue : 0;
+      let saturation = light.color != null ? light.color : 0;
+      let value = light.intensity != null ? light.intensity : 0;
+      let lightColor = Utils.colorFromHsv(hue, saturation, value);
       let spotLight = new THREE.SpotLight(lightColor);
 
       let ambiantLightColor = new THREE.Color();
-      ambiantLightColor.setHSL(hue, saturation * 0.1, 0.15 + 0.20 * (lightness));
+      ambiantLightColor.setHex(0x444444);
+      // ambiantLightColor.setHSL(hue, saturation * 0.1, 0.15 + 0.20 * (lightness));
       let ambientLigth = new THREE.AmbientLight( ambiantLightColor );
       this._scene.add(ambientLigth);
 
-      let roomLocation = this._room.location;
-      let roomSize = this._room.size;
-      let roomDiag = Math.sqrt(roomSize.x * roomSize.x + roomSize.z * roomSize.z)
+      const roomLocation = this._room.location;
+      const roomSize = this._room.size;
+      const roomDiag = Math.sqrt(roomSize.x * roomSize.x + roomSize.z * roomSize.z);
+      const spotLightHeight = 10;
       spotLight.position.set(
         roomLocation.x + roomSize.x * 0.5,
-        roomDiag / 2,
+        spotLightHeight,
         roomLocation.z + roomSize.z * 0.5
       );
       spotLight.target.position.set(
@@ -87,7 +84,7 @@ namespace PRKR.Player.Model {
         0,
         roomLocation.z + roomSize.z * 0.5
       );
-      spotLight.angle = Math.PI / 4 + (Math.PI / 4 * lightness);
+      spotLight.angle = Math.PI / 4;
       spotLight.penumbra = 0.25;
       spotLight.castShadow = true;
       this._scene.add(spotLight);
@@ -95,11 +92,9 @@ namespace PRKR.Player.Model {
 
       spotLight.shadow.mapSize.width = 1024;  
       spotLight.shadow.mapSize.height = 1024; 
-      (<THREE.PerspectiveCamera>spotLight.shadow.camera).near = 2;
-      (<THREE.PerspectiveCamera>spotLight.shadow.camera).far = 12;
-      spotLight.shadow.bias = -0.00022;
-      //spotLight.shadow.update(spotLight); // TODO bug?
-      // spotLight.shadow.camera.position.copy(spotLight.position);
+      (<THREE.PerspectiveCamera>spotLight.shadow.camera).near = spotLightHeight - roomSize.y - .5;
+      (<THREE.PerspectiveCamera>spotLight.shadow.camera).far = spotLightHeight + 2;
+      spotLight.shadow.bias = 0.00022;
     }
 
     private _buildPhysicalRepresentation(
