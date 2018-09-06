@@ -45,9 +45,9 @@ namespace PRKR.Player.Model {
     private _buildVisualRepresentation(
       builder: PRKR.Builders.RoomGeometryBuilder
     ) {
-      let geometry = builder.getGeometry();
-      let material = new THREE.MeshPhongMaterial({ color: 0xcccccc });
-      let mesh = new THREE.Mesh(geometry, material);
+      const geometry = builder.getGeometry();
+      const material = new THREE.MeshPhongMaterial({ color: 0xcccccc });
+      const mesh = new THREE.Mesh(geometry, material);
       mesh.position.copy(this._room.location);
       mesh.castShadow = false;
       mesh.receiveShadow = true;
@@ -57,23 +57,31 @@ namespace PRKR.Player.Model {
       this._scene = new THREE.Scene();
       this._scene.add(mesh);
 
-      let light = this._room.light;
-      let hue = light.hue != null ? light.hue : 0;
-      let saturation = light.color != null ? light.color : 0;
-      let value = light.intensity != null ? light.intensity : 0;
-      let lightColor = Utils.colorFromHsv(hue, saturation, value);
-      let spotLight = new THREE.SpotLight(lightColor);
+      const light = this._room.light;
+      const hue = light.hue != null ? light.hue * 2 * Math.PI : 0;
+      const saturation = light.color != null ? light.color : 0;
+      const value = light.intensity != null ? light.intensity : 1;
+      const lightColor = Utils.colorFromHsv(hue, saturation, value);
+      const spotLight = new THREE.SpotLight(lightColor);
 
-      let ambiantLightColor = new THREE.Color();
-      ambiantLightColor.setHex(0x444444);
-      // ambiantLightColor.setHSL(hue, saturation * 0.1, 0.15 + 0.20 * (lightness));
+      const blue = 4.1887902048 /* 240° or blue */;
+      let ambiantHue;
+      if (hue < blue) {
+        let diff = blue - hue;
+        ambiantHue = Math.min(hue + diff * .2, blue);
+      } else {
+        let diff = hue - blue;
+        ambiantHue = Math.max(hue - diff * .2, blue);
+      }
+
+      let ambiantLightColor = Utils.colorFromHsv(ambiantHue, saturation, .05 + value * .1);
       let ambientLigth = new THREE.AmbientLight( ambiantLightColor );
       this._scene.add(ambientLigth);
 
       const roomLocation = this._room.location;
       const roomSize = this._room.size;
       const roomDiag = Math.sqrt(roomSize.x * roomSize.x + roomSize.z * roomSize.z);
-      const spotLightHeight = 10;
+      const spotLightHeight = roomSize.y + 0.5 + roomDiag * .5 * value;
       spotLight.position.set(
         roomLocation.x + roomSize.x * 0.5,
         spotLightHeight,
