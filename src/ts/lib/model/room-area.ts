@@ -28,25 +28,20 @@ namespace PRKR.Model {
    */
   export class RoomArea extends Area {
 
-    private _light: RoomLight;
+    private _light: RoomLight = {};
 
-    private _tiles: TileType[][];
+    private _tiles: TileType[][] = [];
 
     constructor(data?: RoomAreaOptions) {
       super(data);
 
       if (data) {
-
         if (data.light) {
           this._light = data.light;
-        } else {
-          this._light = {};
-        }
+        } 
 
         if (data.tiles) {
           this._tiles = data.tiles;
-        } else {
-          this._tiles = [];
         }
       }
     }
