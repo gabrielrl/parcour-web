@@ -58,9 +58,9 @@ namespace PRKR.Editor.Objects {
         <RoomArea>this.model, this.parcour).getGeometry();
 
       let light = this.roomArea.light;
-      let hue = light.hue != null ? light.hue : 0;
-      let saturation = light.color != null ? light.color : 0;
-      let value = light.intensity != null ? light.intensity : 0
+      const hue = light.hue != null ? light.hue * 2 * Math.PI : 0;
+      const saturation = light.color != null ? light.color : 0;
+      const value = light.intensity != null ? light.intensity : 1;
 
       let m = new THREE.MeshLambertMaterial({
         color: Utils.colorFromHsv(hue, saturation, value)
