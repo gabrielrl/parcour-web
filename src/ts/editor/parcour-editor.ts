@@ -835,11 +835,18 @@ namespace PRKR.Editor {
     public save() {
       console.debug('save called');
 
+      // TODO Externalize, create a service...
+      let accessToken = localStorage.getItem('access_token');
+      if (!accessToken) {
+        alert('You must be logged in to create a parcour');
+      }
+
       if (this._model) {
         let data = JSON.stringify(this._model.toObject());        
         let settings: JQueryAjaxSettings;
         if (this._modelIsNew) {
           settings = {
+            headers: { Authorization: 'Bearer ' + accessToken },
             method: 'POST',
             url: this._configuration.backend + this._configuration.parcours,
             contentType: 'application/json',
@@ -847,6 +854,7 @@ namespace PRKR.Editor {
           };
         } else {
           settings = {
+            headers: { Authorization: 'Bearer ' + accessToken },
             method: 'PUT',
             url: this._configuration.backend + this._configuration.parcours + '/' + this._model.id,
             contentType: 'application/json',
