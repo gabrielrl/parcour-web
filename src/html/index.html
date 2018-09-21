@@ -224,15 +224,20 @@ $(function() {
       var byCurrentUser = userId === p.userId;
       var lastUpdate = new Date(p.updatedOn).toLocaleString();
       var formattedId = p.id.substr(0, 4) + '&hellip;' + p.id.substr(p.id.length - 5);
-      var elem = $(`<div id="${ p.id }" class="prkr-list-item">` +
+      var elem = $(
+     `<div id="${ p.id }" class="prkr-list-item">` +        
         (byCurrentUser ? `<div class="prkr-item-actions right">
           <span class="action edit-action"><i class="fa fa-edit"></i></span>
           <span class="action delete-action"><i class="fa fa-minus-circle"></i></span>
         </div>` : '') +
-        `<div class="prkr-item-name">${ p.name }</div>
-        <div class="prkr-item-lastupdate">${ lastUpdate }</div>
-        <div class="prkr-item-id">${ formattedId }</div>
-        <div class="prkr-item-user">by ${ byCurrentUser ? 'you' : '<span class="bold">' + p.userNickname + '</span>' }</div>
+       `<div class="row">
+          <div class="prkr-item-name">${ p.name }</div>
+          <div class="prkr-item-user">by ${ byCurrentUser ? '<span class="accent-color">you</span>' : '<span class="bold">' + p.userNickname + '</span>' }</div>
+        </div>
+        <div class="row">        
+          <div class="prkr-item-lastupdate">${ lastUpdate }</div>
+          <div class="prkr-item-id">${ formattedId }</div>        
+        </div>
       </div>`);
       elem.on('click', e => playParcour(e, p.id));
       elem.find('.edit-action').on('click', e => editParcour(e, p.id));
