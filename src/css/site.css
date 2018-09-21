@@ -9,6 +9,10 @@
   float: right;
 }
 
+.bold {
+  font-weight: 700;
+}
+
 body {
   font-family: Roboto, sans-serif;
   margin: 0;
