@@ -9,6 +9,10 @@
   float: right;
 }
 
+.hidden {
+  display: none;
+}
+
 .bold {
   font-weight: 700;
 }
