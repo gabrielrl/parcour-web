@@ -232,7 +232,10 @@ $(function() {
         </div>` : '') +
        `<div class="row">
           <div class="prkr-item-name">${ p.name }</div>
-          <div class="prkr-item-user">by ${ byCurrentUser ? '<span class="accent-color">you</span>' : '<span class="bold">' + p.userNickname + '</span>' }</div>
+          <div class="prkr-item-user">by ${ byCurrentUser
+            ? '<span class="accent-color">you</span>'
+            : '<span class="bold">' + p.userNickname + '</span>'
+          }</div>
         </div>
         <div class="row">        
           <div class="prkr-item-lastupdate">${ lastUpdate }</div>
