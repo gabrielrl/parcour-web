@@ -273,6 +273,7 @@ $(function() {
     if (confirm(`Are you sure you want to delete the following parcour?\n
       ID: ${id}`)) {
       $.ajax({
+        headers: { Authorization: 'Bearer ' + getAccessToken() },
         method: 'DELETE',
         url: config.backend + config.parcours + '/' + id
       }).then(
