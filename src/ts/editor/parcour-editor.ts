@@ -868,7 +868,7 @@ namespace PRKR.Editor {
               console.log('Parcour saved');
               let responseParcour = JSON.parse(data);
               this._model.id = responseParcour.id;
-              history.pushState(null, '', location.href + '?id=' + this._model.id);
+              history.replaceState(null, '', location.href + '?id=' + this._model.id);
               this._modelIsNew = false;
             } else {
               console.log('Parcour updated');
