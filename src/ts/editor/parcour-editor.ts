@@ -835,11 +835,19 @@ namespace PRKR.Editor {
     public save() {
       console.debug('save called');
 
+      // TODO Externalize, create a service...
+      let accessToken = localStorage.getItem('access_token');
+      if (!accessToken) {
+        alert('You must be logged in to save a parcour');
+        return;
+      }
+
       if (this._model) {
         let data = JSON.stringify(this._model.toObject());        
         let settings: JQueryAjaxSettings;
         if (this._modelIsNew) {
           settings = {
+            headers: { Authorization: 'Bearer ' + accessToken },
             method: 'POST',
             url: this._configuration.backend + this._configuration.parcours,
             contentType: 'application/json',
@@ -847,6 +855,7 @@ namespace PRKR.Editor {
           };
         } else {
           settings = {
+            headers: { Authorization: 'Bearer ' + accessToken },
             method: 'PUT',
             url: this._configuration.backend + this._configuration.parcours + '/' + this._model.id,
             contentType: 'application/json',
@@ -855,10 +864,16 @@ namespace PRKR.Editor {
         }
         $.ajax(settings).then(
           (data, status, xhr) => {
-            console.log('Parcour saved', data);
-            // Reset model? TODO.
+            if (this._modelIsNew) {
+              console.log('Parcour saved');
+              let responseParcour = JSON.parse(data);
+              this._model.id = responseParcour.id;
+              history.replaceState(null, '', location.href + '?id=' + this._model.id);
+              this._modelIsNew = false;
+            } else {
+              console.log('Parcour updated');
+            }
             this._modelIsDirty = false;
-            this._modelIsNew = false;
             this._ribbon.update();
             this._propertiesPanel.update();
           },

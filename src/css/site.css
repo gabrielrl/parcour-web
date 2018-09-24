@@ -9,6 +9,18 @@
   float: right;
 }
 
+.hidden {
+  display: none;
+}
+
+.bold {
+  font-weight: 700;
+}
+
+.accent-color {
+  color: orangered;
+}
+
 body {
   font-family: Roboto, sans-serif;
   margin: 0;
@@ -85,7 +97,12 @@ button:hover {
 }
 
 .prkr-item-name {
+  display: inline-block;  
   font-weight: 700;
+}
+
+.prkr-item-user {
+  display: inline-block;
 }
 
 .prkr-item-lastupdate {
