@@ -1,11 +1,6 @@
 namespace PRKR.Editor.Commands {
   export class DeleteCommand implements Command {
 
-    private _keyboardMatcher = new KeyboardMatcher({
-      keyCode: 46, /* DELETE */
-      key: 'Delete'
-    });
-
     constructor(private _editor: ParcourEditor) { }
 
     get name() { return 'delete'; }
@@ -14,7 +9,12 @@ namespace PRKR.Editor.Commands {
 
     get enabled() { return this._editor.selectedObjects.length > 0; }
 
-    get keyboardShortcut() { return this._keyboardMatcher; }
+    get keyboardShortcut() {
+      return KeyboardMatcher.for({
+        keyCode: 46, /* DELETE */
+        key: 'Delete'
+      });
+    }
 
     get highlighted() { return false; }
 

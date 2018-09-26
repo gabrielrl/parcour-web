@@ -1,18 +1,18 @@
 namespace PRKR.Editor.Commands {
   export class RedoCommand implements Command {
 
-    private _keyboardMatcher = new KeyboardMatcher({
-      ctrl: true,
-      keyCode: 89 /* Y */
-    });
-
     constructor(private _editor: ParcourEditor) { }
 
     get name() { return 'redo'; }
 
     get displayName() { return 'Redo'; }
 
-    get keyboardShortcut() { return this._keyboardMatcher; }
+    get keyboardShortcut() {
+      return KeyboardMatcher.for({
+        ctrl: true,
+        keyCode: 89 /* Y */
+      });
+    }
 
     get enabled() { return this._editor.canRedo; }
 

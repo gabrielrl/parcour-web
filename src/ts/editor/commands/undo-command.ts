@@ -1,18 +1,18 @@
 namespace PRKR.Editor.Commands {
   export class UndoCommand implements Command {
 
-    private _keyboardMatcher = new KeyboardMatcher({
-      ctrl: true,
-      keyCode: 90 /* Z */
-    });
-
     constructor(private _editor: ParcourEditor) { }
 
     get name() { return 'undo'; }
 
     get displayName() { return 'Undo'; }
 
-    get keyboardShortcut() { return this._keyboardMatcher; }
+    get keyboardShortcut() {
+      return KeyboardMatcher.for({
+        ctrl: true,
+        keyCode: 90 /* Z */
+      });
+    }
 
     get enabled() { return this._editor.canUndo; }
 

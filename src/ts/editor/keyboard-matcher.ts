@@ -8,6 +8,13 @@ namespace PRKR.Editor {
     alt?: boolean;
   }
 
+  let paramsToString = (params: KeyboardMatcherParams) => (
+    (params.ctrl ? 'Ctrl+' : '') +
+    (params.shift ? 'Shift+' : '') + 
+    (params.alt ? 'Alt' : '') + 
+    (params.key || String.fromCharCode(params.keyCode))
+  );
+
   export class KeyboardMatcher {
 
     private _params: KeyboardMatcherParams;
@@ -26,14 +33,19 @@ namespace PRKR.Editor {
       return true;
     }
 
-    toString() {
-      return (
-        (this._params.ctrl ? 'CTRL+' : '') +
-        (this._params.shift ? 'SHIFT+' : '') + 
-        (this._params.alt ? 'ALT+' : '') + 
-        (this._params.key || String.fromCharCode(this._params.keyCode))
-      );
+    toString() { return paramsToString(this._params); }
+
+    private static _map: { [key: string]: KeyboardMatcher } = {};
+    static for(params) {
+      let map = KeyboardMatcher._map;
+      let key = paramsToString(params);
+      if (!(key in map)) {
+        let matcher = new KeyboardMatcher(params);
+        map[key] = matcher;
+      }
+      return map[key];
     }
+    
   }
 
 }

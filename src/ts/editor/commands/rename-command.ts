@@ -2,18 +2,18 @@ namespace PRKR.Editor.Commands {
   
   export class RenameCommand implements Command {
 
-    private _keyboardMatcher = new KeyboardMatcher({
-      keyCode: 113, /* F2 */
-      key: 'F2'
-    });
-      
     constructor(private _editor: ParcourEditor) { }
 
     get name() { return 'rename'; }
 
     get displayName() { return 'Rename'; }
 
-    get keyboardShortcut() { return this._keyboardMatcher; }
+    get keyboardShortcut() {
+      return KeyboardMatcher.for({
+        keyCode: 113, /* F2 */
+        key: 'F2'
+      });
+    }
 
     get enabled() { return true; }
 
