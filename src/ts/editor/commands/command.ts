@@ -3,8 +3,11 @@ namespace PRKR.Editor.Commands {
     /** Gets the current command's name. Used as a unique key. */
     name: string;
 
-    /** Gets the current tool's displayable name. */
+    /** Gets the current command's displayable name. */
     displayName: string;
+
+    /** Gets the current command's keyboard shortcut. */
+    keyboardShortcut: KeyboardMatcher;
 
     /** Indicates if the current command is enabled. */
     enabled: boolean;
