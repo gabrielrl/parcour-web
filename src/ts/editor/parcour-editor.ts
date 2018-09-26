@@ -266,7 +266,10 @@ namespace PRKR.Editor {
 
     get modelIsDirty() { return this._modelIsDirty; }
 
-    get modelName() { return this._model.name; }
+    get modelName() {
+      if (this._model) return this._model.name;
+      return null;
+    }
 
     set modelName(value) {
       this._model.name = value;
