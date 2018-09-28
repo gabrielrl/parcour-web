@@ -50,6 +50,11 @@ namespace PRKR.Editor.Tools {
       return false;
     }
 
+    /** Gets the current tool's keyboard shortcut. */
+    get keyboardShortcut(): KeyboardMatcher {
+      return KeyboardMatcher.for({ keyCode: 89 /* Y */ });
+    }
+
     /** Override. */
     public activate() {
       this._reset();

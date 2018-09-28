@@ -51,6 +51,11 @@ namespace PRKR.Editor.Tools {
       return this._editor.selectedObjects.length > 0;
     }
 
+    /** Gets the current tool's keyboard shortcut. */
+    get keyboardShortcut(): KeyboardMatcher {
+      return KeyboardMatcher.for({ keyCode: 84 /* T */ });
+    }
+
     private _movement: Vector3 = new Vector3();
 
     public activate() {

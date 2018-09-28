@@ -23,6 +23,11 @@ namespace PRKR.Editor.Tools {
     get displayName() { return 'Rotate Camera'; }
     get enabled() { return true; }
 
+    /** Gets the current tool's keyboard shortcut. */
+    get keyboardShortcut(): KeyboardMatcher { 
+      return KeyboardMatcher.for({ keyCode: 66 /* B */ });
+    }    
+
     public activate() {
       this._editor.setPointer('-webkit-grab');
       this._editor.setStatus('Click and drag to rotate camera');

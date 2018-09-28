@@ -24,6 +24,11 @@ namespace PRKR.Editor.Tools {
 
     public get enabled() { return true; }
 
+    /** Gets the current tool's keyboard shortcut. */
+    get keyboardShortcut(): KeyboardMatcher {
+      return KeyboardMatcher.for({ keyCode: 86 /* V */ });
+    }
+
     public activate() {
       this._editor.setPointer('-webkit-grab');
       this._editor.setStatus('Click and drag to pan camera');

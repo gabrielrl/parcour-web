@@ -193,16 +193,16 @@ namespace PRKR.Editor {
 
       // Build tool list.
       this._tools = [
-        new PRKR.Editor.Tools.SelectTool(this),
-        new PRKR.Editor.Tools.MoveTool(this),
-        new PRKR.Editor.Tools.ResizeTool(this),
-        new PRKR.Editor.Tools.RoomDrawingTool(this),
-        new PRKR.Editor.Tools.CameraPanTool(this),
-        new PRKR.Editor.Tools.CameraRotateTool(this),
-        new PRKR.Editor.Tools.DoorwayPlacementTool(this),
-        new PRKR.Editor.Tools.AddHolesTool(this),
-        new PRKR.Editor.Tools.AddStaticObjectTool(this),
-        new PRKR.Editor.Tools.AddDynamicObjectTool(this)
+        new Tools.SelectTool(this),
+        new Tools.MoveTool(this),
+        new Tools.ResizeTool(this),
+        new Tools.RoomDrawingTool(this),
+        new Tools.CameraPanTool(this),
+        new Tools.CameraRotateTool(this),
+        new Tools.DoorwayPlacementTool(this),
+        new Tools.AddHolesTool(this),
+        new Tools.AddStaticObjectTool(this),
+        new Tools.AddDynamicObjectTool(this)
       ];
 
       // Build tool map.
@@ -216,8 +216,6 @@ namespace PRKR.Editor {
       this._initPropertiesPanel();
       this._initStatusBar();
 
-      this._setActiveTool(this._tools[0]);
-
       this._initThreeJs();
       this._initGrid();
       this._initHelpers();
@@ -226,6 +224,8 @@ namespace PRKR.Editor {
       this.resetCamera();
 
       window.addEventListener('message', e => this._onMessage(e));
+
+      this._setActiveTool(this._tools[0]);
     }
 
     public run() {
@@ -1003,10 +1003,18 @@ namespace PRKR.Editor {
       }
 
       // TODO for all known tools
-      // for (let i = 0; i < this._tools.length; i++) {
-      //   let tool = this._tools[i];
-      //   if (tool.keyboardShortcut)
-      // }
+      for (let i = 0; i < this._tools.length; i++) {
+        let tool = this._tools[i];
+        if (tool.enabled && tool.keyboardShortcut != null && tool.keyboardShortcut.match(e)) {
+          console.log(
+            'Selecting "' + tool.displayName + '" tool because the current key event matches its keyboard shortcut.',
+            tool.keyboardShortcut.toString()
+          );
+          this._setActiveTool(tool);
+          e.preventDefault();
+          return true;
+        }
+      }
 
       return false;
     }

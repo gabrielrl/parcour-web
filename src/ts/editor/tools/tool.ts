@@ -13,6 +13,9 @@ namespace PRKR.Editor.Tools {
     /** Gets if the current tool is enabled. Computed from the editor's state. */
     enabled: boolean;
 
+    /** Gets the current tool's keyboard shortcut. */
+    keyboardShortcut: KeyboardMatcher;
+
     /** Informs the Tool that it's being activated. */
     activate() { }
 
