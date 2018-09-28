@@ -73,6 +73,10 @@ namespace PRKR.Editor.Components {
       this.selectTab(tabData);
     }
 
+    private _itemMouseEnter(item: RibbonItem) {
+      this._editor.setStatus(buildItemStatus(item));
+    }
+
     private _itemClicked(item: RibbonItem) {
       console.debug('Ribbon item clicked', item);
       
@@ -192,6 +196,7 @@ namespace PRKR.Editor.Components {
             command: tabItem.command,
             $elem: $tabItem
           };
+          $tabItem.on('mouseenter', () => this._itemMouseEnter(itemData));
           $tabItem.on('click', () => this._itemClicked(itemData));
           tabData.items.push(itemData);
           $tabContentRoot.append($tabItem);
@@ -200,5 +205,24 @@ namespace PRKR.Editor.Components {
         $contentRoot.append($tabContentRoot);
       });
     }
+  }
+
+  function buildItemStatus(item: RibbonItem) {
+    let description = '';
+    let shortcut = null;
+
+    if (item.command) {
+      if (item.command.keyboardShortcut) {
+        shortcut = item.command.keyboardShortcut.toString();
+      }
+      description = `"${ item.display }" command`;
+    } else if (item.tool) {
+      if (item.tool.keyboardShortcut) {
+        shortcut = item.tool.keyboardShortcut.toString();
+      }
+      description = `"${ item.display }" tool`;
+    }
+
+    return description + (shortcut ? `<span class="keyboard-shortcut">${ shortcut }</span>` : '');
   }
 }
