@@ -82,7 +82,7 @@ namespace PRKR.Editor.Tools {
     }
 
     get keyboardShortcut() {
-      return KeyboardMatcher.for({ keyCode: 74 /* J */ });
+      return KeyboardMatcher.for({ keyCode: 71 /* G */ });
     }
 
     /** 
