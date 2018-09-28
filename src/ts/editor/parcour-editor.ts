@@ -1011,6 +1011,7 @@ namespace PRKR.Editor {
             tool.keyboardShortcut.toString()
           );
           this._setActiveTool(tool);
+          this._ribbon.showTool(tool);
           e.preventDefault();
           return true;
         }

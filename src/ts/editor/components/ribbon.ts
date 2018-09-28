@@ -79,6 +79,26 @@ namespace PRKR.Editor.Components {
       this.selectTab(this._data[index]);
     }
 
+    /** Trys to show the specified tool to the user by selecting a tab where it is referenced. */
+    public showTool(tool: Tool) {
+
+      // Does the tool show in the current tab?
+      if (this._selectedTab.items.find(item => item.tool === tool)) {
+        return;
+      }
+
+      // Try to find the tool in another tab
+      for (let i = 0; i < this._data.length; i++) {
+        let tab = this._data[i];
+        if (tab !== this._selectedTab) {
+          if (tab.items.find(item => item.tool === tool)) {
+            this.selectTab(tab);
+            return;
+          }
+        }
+      }
+    }
+
     private _tabClicked(tabData: RibbonTab) {
       this.selectTab(tabData);
     }
