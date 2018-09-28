@@ -1016,6 +1016,14 @@ namespace PRKR.Editor {
         }
       }
 
+      /* Digits from 1 to 9 cycle throw tabs */
+      if (e.keyCode >= 49 /* Digit 1 */ && e.keyCode <= 57 /* Digit 9 */) {
+        let tabIndex = e.keyCode - 49;
+        if (tabIndex < this._ribbon.tabCount) {
+          this._ribbon.selectTabIndex(tabIndex);
+        }
+      }
+
       return false;
     }
 

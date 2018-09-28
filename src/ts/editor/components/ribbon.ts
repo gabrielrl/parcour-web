@@ -69,6 +69,16 @@ namespace PRKR.Editor.Components {
 
     }
 
+    get tabCount(): number { return this._data.length }
+
+    public selectTabIndex(index: number) {
+      if (index < 0 || index >= this._data.length) {
+        throw new Error(
+          `"index" out of bounds. ${ index } is not in [0, ${ this._data.length }[.`)
+      }
+      this.selectTab(this._data[index]);
+    }
+
     private _tabClicked(tabData: RibbonTab) {
       this.selectTab(tabData);
     }
