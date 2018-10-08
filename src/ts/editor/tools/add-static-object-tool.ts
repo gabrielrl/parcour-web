@@ -81,6 +81,10 @@ namespace PRKR.Editor.Tools {
 
     }
 
+    get keyboardShortcut() {
+      return KeyboardMatcher.for({ keyCode: 71 /* G */ });
+    }
+
     /** 
      * Gets if the add static object tool is enabled.
      * True if there are areas in the parcour.

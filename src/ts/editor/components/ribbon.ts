@@ -69,8 +69,42 @@ namespace PRKR.Editor.Components {
 
     }
 
+    get tabCount(): number { return this._data.length }
+
+    public selectTabIndex(index: number) {
+      if (index < 0 || index >= this._data.length) {
+        throw new Error(
+          `"index" out of bounds. ${ index } is not in [0, ${ this._data.length }[.`)
+      }
+      this.selectTab(this._data[index]);
+    }
+
+    /** Trys to show the specified tool to the user by selecting a tab where it is referenced. */
+    public showTool(tool: Tool) {
+
+      // Does the tool show in the current tab?
+      if (this._selectedTab.items.find(item => item.tool === tool)) {
+        return;
+      }
+
+      // Try to find the tool in another tab
+      for (let i = 0; i < this._data.length; i++) {
+        let tab = this._data[i];
+        if (tab !== this._selectedTab) {
+          if (tab.items.find(item => item.tool === tool)) {
+            this.selectTab(tab);
+            return;
+          }
+        }
+      }
+    }
+
     private _tabClicked(tabData: RibbonTab) {
       this.selectTab(tabData);
+    }
+
+    private _itemMouseEnter(item: RibbonItem) {
+      this._editor.setStatus(buildItemStatus(item));
     }
 
     private _itemClicked(item: RibbonItem) {
@@ -192,6 +226,7 @@ namespace PRKR.Editor.Components {
             command: tabItem.command,
             $elem: $tabItem
           };
+          $tabItem.on('mouseenter', () => this._itemMouseEnter(itemData));
           $tabItem.on('click', () => this._itemClicked(itemData));
           tabData.items.push(itemData);
           $tabContentRoot.append($tabItem);
@@ -200,5 +235,24 @@ namespace PRKR.Editor.Components {
         $contentRoot.append($tabContentRoot);
       });
     }
+  }
+
+  function buildItemStatus(item: RibbonItem) {
+    let description = '';
+    let shortcut = null;
+
+    if (item.command) {
+      if (item.command.keyboardShortcut) {
+        shortcut = item.command.keyboardShortcut.toString();
+      }
+      description = `"${ item.display }" command`;
+    } else if (item.tool) {
+      if (item.tool.keyboardShortcut) {
+        shortcut = item.tool.keyboardShortcut.toString();
+      }
+      description = `"${ item.display }" tool`;
+    }
+
+    return description + (shortcut ? `<span class="keyboard-shortcut">${ shortcut }</span>` : '');
   }
 }

@@ -80,6 +80,10 @@ namespace PRKR.Editor.Tools {
 
     }
 
+    get keyboardShortcut() {
+      return KeyboardMatcher.for({ keyCode: 72 /* H */ });
+    }
+
     /** 
      * Gets if the add dynamic object tool is enabled.
      * True if there are areas in the parcour.

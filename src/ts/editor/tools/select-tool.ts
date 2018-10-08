@@ -51,13 +51,17 @@ namespace PRKR.Editor.Tools {
       this._moveBehavior = new Behaviors.MoveBehavior(editor);
     }
 
+    get keyboardShortcut() {
+      return KeyboardMatcher.for({ keyCode: 65 /* A */ });
+    }
+
     /** Gets true (select is always enabled). */
     get enabled(): true {
       return true;
     }
 
     public activate() {
-      this._setStatusMessage();
+      this._updateEditor();
     }
 
     public notifyMouseDown(e: JQueryMouseEventObject) {

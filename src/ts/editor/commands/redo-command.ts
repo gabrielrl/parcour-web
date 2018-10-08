@@ -7,6 +7,13 @@ namespace PRKR.Editor.Commands {
 
     get displayName() { return 'Redo'; }
 
+    get keyboardShortcut() {
+      return KeyboardMatcher.for({
+        ctrl: true,
+        keyCode: 89 /* Y */
+      });
+    }
+
     get enabled() { return this._editor.canRedo; }
 
     get highlighted() { return false; }

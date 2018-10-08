@@ -64,6 +64,10 @@ namespace PRKR.Editor.Tools {
 
     get displayName() { return 'Add holes'; }
 
+    get keyboardShortcut() {
+      return KeyboardMatcher.for({ keyCode: 70 /* F */ });
+    }
+
     /** Gets if the tool is currently enabled. True if there are room areas in the current parcour. */
     get enabled() {
       return this._editor.getAreas().length > 0;

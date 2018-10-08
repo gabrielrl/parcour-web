@@ -80,6 +80,12 @@ namespace PRKR.Editor {
      */
     private _objects: EditorObject[] = [];
 
+    /** The collection of known commands. */
+    private _commands: Commands.Command[];
+
+    /** A map of command by name. */
+    private _commandMap: { [key: string]: Commands.Command };
+
     /** The collection of known tools. */
     private _tools: PRKR.Editor.Tools.Tool[];
 
@@ -170,18 +176,33 @@ namespace PRKR.Editor {
         this._modelIsDirty = false;
       }
 
+      // Build command list.
+      this._commands = [
+        new Commands.RenameCommand(this),
+        new Commands.SaveCommand(this),
+        new Commands.PlayCommand(this),
+        new Commands.DeleteCommand(this),
+        new Commands.UndoCommand(this),
+        new Commands.RedoCommand(this)
+      ];
+
+      // Build command map.
+      let commandMap: { [key:string]: Commands.Command } = {};
+      this._commands.forEach(command => { commandMap[command.name] = command; });
+      this._commandMap = commandMap;
+
       // Build tool list.
       this._tools = [
-        new PRKR.Editor.Tools.SelectTool(this),
-        new PRKR.Editor.Tools.MoveTool(this),
-        new PRKR.Editor.Tools.ResizeTool(this),
-        new PRKR.Editor.Tools.RoomDrawingTool(this),
-        new PRKR.Editor.Tools.CameraPanTool(this),
-        new PRKR.Editor.Tools.CameraRotateTool(this),
-        new PRKR.Editor.Tools.DoorwayPlacementTool(this),
-        new PRKR.Editor.Tools.AddHolesTool(this),
-        new PRKR.Editor.Tools.AddStaticObjectTool(this),
-        new PRKR.Editor.Tools.AddDynamicObjectTool(this)
+        new Tools.SelectTool(this),
+        new Tools.MoveTool(this),
+        new Tools.ResizeTool(this),
+        new Tools.RoomDrawingTool(this),
+        new Tools.CameraPanTool(this),
+        new Tools.CameraRotateTool(this),
+        new Tools.DoorwayPlacementTool(this),
+        new Tools.AddHolesTool(this),
+        new Tools.AddStaticObjectTool(this),
+        new Tools.AddDynamicObjectTool(this)
       ];
 
       // Build tool map.
@@ -195,8 +216,6 @@ namespace PRKR.Editor {
       this._initPropertiesPanel();
       this._initStatusBar();
 
-      this._setActiveTool(this._tools[0]);
-
       this._initThreeJs();
       this._initGrid();
       this._initHelpers();
@@ -205,6 +224,8 @@ namespace PRKR.Editor {
       this.resetCamera();
 
       window.addEventListener('message', e => this._onMessage(e));
+
+      this._setActiveTool(this._tools[0]);
     }
 
     public run() {
@@ -244,6 +265,16 @@ namespace PRKR.Editor {
     }
 
     get modelIsDirty() { return this._modelIsDirty; }
+
+    get modelName() {
+      if (this._model) return this._model.name;
+      return null;
+    }
+
+    set modelName(value) {
+      this._model.name = value;
+      this._modelIsDirty = true;
+    }
 
     public selectTool(tool: Tool): void {
       this._setActiveTool(tool);
@@ -884,6 +915,10 @@ namespace PRKR.Editor {
       }
     }
 
+    public play() {
+      this._play();
+    }
+
     private _play() {
       console.debug("_play called");
 
@@ -940,8 +975,57 @@ namespace PRKR.Editor {
     }
 
     private _onKeyDown(e: JQueryKeyEventObject) {
-      // console.log('keydown', e);
-      this._activeTool.notifyKeyDown(e);
+
+      if (!this._handleKeyboardShortcuts(e)) {
+
+        this._activeTool.notifyKeyDown(e);
+      }
+    }
+
+    /**
+     * Searches through all known commands and tools for a keyboard shortcut match. If one is found, the command is
+     * run (or the tool actiavted), the event's default is prevented and true is returned. Else it return false.
+     * @param e Keyboard event
+     */
+    private _handleKeyboardShortcuts(e: JQueryKeyEventObject): boolean {
+      // For all known commands
+      for(let i = 0; i < this._commands.length; i++) {
+        let command = this._commands[i];
+        if (command.enabled && command.keyboardShortcut.match(e)) {
+          console.log(
+            'Invoking "' + command.displayName + '" command because the current key event matches its keyboard shortcut.',
+            command.keyboardShortcut.toString()
+          );
+          command.run();
+          e.preventDefault();
+          return true;
+        }
+      }
+
+      // TODO for all known tools
+      for (let i = 0; i < this._tools.length; i++) {
+        let tool = this._tools[i];
+        if (tool.enabled && tool.keyboardShortcut != null && tool.keyboardShortcut.match(e)) {
+          console.log(
+            'Selecting "' + tool.displayName + '" tool because the current key event matches its keyboard shortcut.',
+            tool.keyboardShortcut.toString()
+          );
+          this._setActiveTool(tool);
+          this._ribbon.showTool(tool);
+          e.preventDefault();
+          return true;
+        }
+      }
+
+      /* Digits from 1 to 9 cycle throw tabs */
+      if (e.keyCode >= 49 /* Digit 1 */ && e.keyCode <= 57 /* Digit 9 */) {
+        let tabIndex = e.keyCode - 49;
+        if (tabIndex < this._ribbon.tabCount) {
+          this._ribbon.selectTabIndex(tabIndex);
+        }
+      }
+
+      return false;
     }
 
     private _checkDelegationQuit(e: JQueryMouseEventObject) {
@@ -1082,19 +1166,7 @@ namespace PRKR.Editor {
             name: 'rename',
             display: 'Rename',
             image: 'fa-font',
-            command: {
-              name: 'rename',
-              displayName: 'Rename',
-              enabled: true,
-              highlighted: false,
-              run: () => { 
-                let newName = prompt('Enter new name', this._model.name);
-                if (newName && newName !== this._model.name) {
-                  this._model.name = newName;
-                  this._modelIsDirty = true;
-                }
-              }
-            }
+            command: this._commandMap['rename']
             // command: () => {
             //   let newName = prompt('Enter new name', this._model.name);
             //   if (newName && newName !== this._model.name) {
@@ -1105,7 +1177,7 @@ namespace PRKR.Editor {
             name: 'save',
             display: 'Save',
             image: 'fa-save',
-            command: new Commands.SaveCommand(this)
+            command: this._commandMap['save']
             // command: {
             //   name: 'save',
             //   displayName: 'Save',
@@ -1118,14 +1190,7 @@ namespace PRKR.Editor {
             name: 'play',
             display: 'Play',
             image: 'fa-play',
-            command: {
-              name: 'play',
-              displayName: 'Play',
-              enabled: true,
-              highlighted: false,
-              run: () => { this._play(); }
-            }
-            // command: () => { this._play(); }
+            command: this._commandMap['play']
           }]
         }, {
           name: 'edit',
@@ -1134,17 +1199,17 @@ namespace PRKR.Editor {
             name: 'undo',
             display: 'Undo',
             image: 'fa-undo',
-            command: new Commands.UndoCommand(this)
+            command: this._commandMap['undo']
           }, {
             name: 'redo',
             display: 'Redo',
             image: 'fa-repeat',
-            command: new Commands.RedoCommand(this)
+            command: this._commandMap['redo']
           }, {
             name: 'delete',
             display: 'Delete',
             image: 'fa-remove',
-            command: new Commands.DeleteCommand(this)
+            command: this._commandMap['delete']
           }]
         }, {
           name: 'areas',

@@ -78,6 +78,11 @@ namespace PRKR.Editor.Tools {
      */
     get enabled() { return true; }
 
+    /** Gets the current tool's keyboard shortcut. */
+    get keyboardShortcut(): KeyboardMatcher {
+      return KeyboardMatcher.for({ keyCode: 83 /* S */ });
+    }
+
     get name() { return 'room-drawing'; }
 
     public activate() {

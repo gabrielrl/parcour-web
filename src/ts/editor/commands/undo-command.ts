@@ -7,6 +7,13 @@ namespace PRKR.Editor.Commands {
 
     get displayName() { return 'Undo'; }
 
+    get keyboardShortcut() {
+      return KeyboardMatcher.for({
+        ctrl: true,
+        keyCode: 90 /* Z */
+      });
+    }
+
     get enabled() { return this._editor.canUndo; }
 
     get highlighted() { return false; }

@@ -9,6 +9,13 @@ namespace PRKR.Editor.Commands {
 
     get enabled() { return this._editor.selectedObjects.length > 0; }
 
+    get keyboardShortcut() {
+      return KeyboardMatcher.for({
+        keyCode: 46, /* DELETE */
+        key: 'Delete'
+      });
+    }
+
     get highlighted() { return false; }
 
     run() {

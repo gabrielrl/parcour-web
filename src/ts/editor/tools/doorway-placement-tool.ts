@@ -19,7 +19,12 @@ namespace PRKR.Editor.Tools {
 
     get displayName(): string { return 'Doorways'; }
 
-    get enabled(): boolean { return true; } 
+    get enabled(): boolean { return true; }
+
+    /** Gets the current tool's keyboard shortcut. */
+    get keyboardShortcut(): KeyboardMatcher {
+      return KeyboardMatcher.for({ keyCode: 68 /* D */ });
+    }
 
     /** Currently active dooway candidate (under pointer). */
     private _activeCandidate: DoorwayCandidate = null;
