@@ -181,6 +181,7 @@ namespace PRKR.Editor {
         new Commands.RenameCommand(this),
         new Commands.SaveCommand(this),
         new Commands.PlayCommand(this),
+        new Commands.CopyCommand(this),
         new Commands.DeleteCommand(this),
         new Commands.UndoCommand(this),
         new Commands.RedoCommand(this)
@@ -196,6 +197,7 @@ namespace PRKR.Editor {
         new Tools.SelectTool(this),
         new Tools.MoveTool(this),
         new Tools.ResizeTool(this),
+        new Tools.PasteTool(this),
         new Tools.RoomDrawingTool(this),
         new Tools.CameraPanTool(this),
         new Tools.CameraRotateTool(this),
@@ -1206,6 +1208,16 @@ namespace PRKR.Editor {
             image: 'fa-repeat',
             command: this._commandMap['redo']
           }, {
+            name: 'copy',
+            display: 'Copy',
+            image: 'fa-copy', // ?
+            command: this._commandMap['copy']
+          }, {
+            name: 'paste',
+            display: 'Paste',
+            image: 'fa-paste', // ?
+            tool: this._toolMap['paste']
+          },{
             name: 'delete',
             display: 'Delete',
             image: 'fa-remove',
