@@ -11,8 +11,7 @@ namespace PRKR.Editor.Tools {
 
     /** Enabled if the clipboard is not empty. */
     get enabled() { 
-      // TODO
-      return true;
+      return !Clipboard.isEmpty;
     }
 
     get keyboardShortcut() {
