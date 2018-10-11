@@ -21,10 +21,36 @@ namespace PRKR.Editor.Tools {
       });
     }
 
-    get highlighted() { return false; }
+    /** Informs the Tool that it's being activated. */
+    activate() {
+      
+      if (!Clipboard.isEmpty) {
 
-    run() {
-      // TODO
+        try {
+
+          let payload = JSON.parse(Clipboard.get());
+          if (!_.isArray(payload)) throw new Error('Clipboard content is not an array');
+
+          if (payload.length === 0) return;
+
+          // this._buildHelpers
+          // ...
+
+
+        } catch(err) {
+
+
+        
+        }       
+
+      }
+      
     }
+
+    /** Informs the Tool that it's being deactivated. */
+    deactivate() { }
+
+    notifyMouseMove(event: JQueryMouseEventObject): void { }
+
   }
 }

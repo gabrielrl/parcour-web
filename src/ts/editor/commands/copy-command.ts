@@ -35,7 +35,6 @@ namespace PRKR.Editor.Commands {
           `It is a collection of ${ sel.length } object${ sel.length > 1 ? 's' : '' }`)
 
         let objs = sel.map(o => o.model.toObject());
-        // objs.forEach(o => delete o.id);
         let json = JSON.stringify(objs);
 
         console.log('...JSON=', json);
