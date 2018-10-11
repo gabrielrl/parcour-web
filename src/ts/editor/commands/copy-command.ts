@@ -2,6 +2,9 @@ namespace PRKR.Editor.Commands {
 
   import EditorObject = Objects.EditorObject;
 
+  /** Checks whether an EditorObject is an area. */
+  let isArea = (x: EditorObject) => x.model instanceof Model.Area;
+
   export class CopyCommand implements Command {
 
     constructor(private _editor: ParcourEditor) { }
@@ -32,9 +35,29 @@ namespace PRKR.Editor.Commands {
         console.log('Attempting to put the following in the clipboard', sel);
         
         console.log(
-          `It is a collection of ${ sel.length } object${ sel.length > 1 ? 's' : '' }`)
+          `It is a collection of ${ sel.length } object${ sel.length > 1 ? 's' : '' }`);
 
         let objs = sel.map(o => o.model.toObject());
+
+        let areaMode = isArea(sel[0]);
+        if (!areaMode) {
+
+          // Converts all object locations to world-relative, so that they make sense relative to one another.
+          objs.forEach(obj => {
+
+            let area = (<Objects.RoomObject>this._editor.getObjectById(obj.areaId)).roomArea;
+            let world = [
+              area.location.x + obj.location[0],
+              area.location.y + obj.location[1],
+              area.location.z + obj.location[2],
+            ];
+
+            obj.location = world;
+            
+          });
+
+        }
+
         let json = JSON.stringify(objs);
 
         console.log('...JSON=', json);
@@ -45,9 +68,8 @@ namespace PRKR.Editor.Commands {
 
     }
 
+    /** Gets a new array which represents a "normalized" selection... TODO explain... */
     private _normalizeSelection(selection: EditorObject[]) {
-
-      let isArea = x => x.model instanceof Model.Area;
   
       // is there an area in the selection.
       let areaCheck = _.find(selection, isArea);
@@ -68,6 +90,7 @@ namespace PRKR.Editor.Commands {
       }
     }
   
+    /** Gets a new array that contains all the objects in `areas` **plus** all the objects inside those areas. */
     private _extendSelection(areas: EditorObject[]) {
   
       let augmented: EditorObject[] = [].concat(areas);
