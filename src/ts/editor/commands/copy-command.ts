@@ -42,7 +42,8 @@ namespace PRKR.Editor.Commands {
         let areaMode = isArea(sel[0]);
         if (!areaMode) {
 
-          // Converts all object locations to world-relative, so that they make sense relative to one another.
+          // Converts all object locations to world-relative, so that they make sense relative to one another and
+          // clear area IDs.
           objs.forEach(obj => {
 
             let area = (<Objects.RoomObject>this._editor.getObjectById(obj.areaId)).roomArea;
@@ -53,6 +54,7 @@ namespace PRKR.Editor.Commands {
             ];
 
             obj.location = world;
+            delete obj.areaId;
             
           });
 
