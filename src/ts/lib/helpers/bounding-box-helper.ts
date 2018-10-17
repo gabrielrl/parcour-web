@@ -17,7 +17,7 @@ namespace PRKR.Helpers {
     private _lines: BoxLineHelper;
     private _faces: BoxFaceHelper;
 
-    constructor(box: Box3, options?: HelperOptions) {
+    constructor(box: Box3, options?: HelperOptions, helperFor?: string) {
 
       super();
 
@@ -26,6 +26,10 @@ namespace PRKR.Helpers {
         if (options.useLines !== undefined) this._useLines = !!options.useLines;
         if (options.useFaces !== undefined) this._useFaces = !!options.useFaces;
         if (options.renderOrder !== undefined) this.renderOrder = options.renderOrder;
+      }
+
+      if (helperFor) {
+        this.helperFor = helperFor;
       }
 
       // Setup lines.
@@ -46,6 +50,9 @@ namespace PRKR.Helpers {
         this.add(this._faces);
       }
     }
+
+    /** Optional user reference. Suggestion, put the ID of an object that the box represents. */
+    public helperFor?: string;
 
     //  TODO ... deprecate and remove ...
     public setColor(value: number) {
