@@ -312,7 +312,8 @@ namespace PRKR.Editor {
     }
 
     /**
-     * Finds and return an editor object by its ID.
+     * Finds and return an editor object by its ID. Returns null of no object matching the specified ID could be
+     * found.
      */
     public getObjectById(id: string): EditorObject {
       let objects = this._objects;
@@ -321,8 +322,6 @@ namespace PRKR.Editor {
           return objects[i];
         }
       }
-      // Nope...
-      // throw new Error('Id not found. ' + id);
       return null;
     }
 
