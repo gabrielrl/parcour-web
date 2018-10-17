@@ -5,6 +5,7 @@ namespace PRKR.Editor.Tools {
   import BoundingBoxHelper = Helpers.BoundingBoxHelper;
 
   let modelIsArea = (x: Model.ParcourObject) => x instanceof Model.Area;
+  let validationIsError = (v: Validators.ValidationResult) => v.level === Validators.ResultLevel.Error;
 
   export class PasteTool extends Tool {
 
@@ -13,6 +14,9 @@ namespace PRKR.Editor.Tools {
 
     private _helpers: BoundingBoxHelper[];
     private _helpersRoot: THREE.Group = null;
+
+    /** Last built edit step. */
+    private _editStep: EditSteps.EditStep = null;
 
     constructor(private _editor: ParcourEditor) {
       super()
@@ -36,7 +40,9 @@ namespace PRKR.Editor.Tools {
 
     /** Informs the Tool that it's being activated. */
     activate() {
-            
+      
+      this._editStep = null;
+
       if (!Clipboard.isEmpty) {
 
         this._init();
@@ -52,6 +58,8 @@ namespace PRKR.Editor.Tools {
         this._editor.removeFromScene(this._helpersRoot);
         this._editor.requestRender();
       }
+
+      this._editStep = null;
       
     }
 
@@ -71,13 +79,15 @@ namespace PRKR.Editor.Tools {
 
         let target = intersect.point.round();
 
-        let editStep = this._buildEditStep(target);
-        if (editStep) {
-          let validation = this._editor.validateEditStep(editStep);
-          validation.forEach((v, i) => console.log('validation ' + i + ':', v));
+        this._editStep = this._buildEditStep(target);
+        if (this._editStep) {
+          let validation = this._editor.validateEditStep(this._editStep);
+          // validation.forEach((v, i) => console.log('validation ' + i + ':', v));
 
-          let errors = validation.filter(v => v.level === Validators.ResultLevel.Error);
-          if (errors.length !== 0) {
+          // let errors = validation.filter(v => v.level === Validators.ResultLevel.Error);
+          // if (errors.length !== 0) {
+
+          if (_.some(validation, validationIsError)) {
             this._helpers.forEach(setInvalidMaterial);
           } else {
             this._helpers.forEach(setValidMaterial);
@@ -85,20 +95,16 @@ namespace PRKR.Editor.Tools {
 
           // only show the helpers for objects that actualy gets pasted (objects falling outside of all areas are
           // excluded in `_buildEditStep`).
-          let composed = <EditSteps.ComposedStep>editStep;
           this._helpers.forEach(helper => {
             if (!helper.helperFor) {
               helper.visible = false;
             } else {
-              let addStep = composed.steps.find(step => {
-                return (
-                  step instanceof EditSteps.AddObjectStep &&
-                  step.data.$$id === helper.helperFor
-                );
-              });
-              helper.visible = addStep != null;
+              helper.visible = _.some(
+                (<EditSteps.ComposedStep>this._editStep).steps,
+                step => (<EditSteps.AddObjectStep>step).data.$$id === helper.helperFor
+              );
             }
-          });
+          });           
         } else {
           this._helpers.forEach(setInvalidMaterial);
           this._helpers.forEach(h => h.visible = true);
@@ -119,7 +125,20 @@ namespace PRKR.Editor.Tools {
 
     notifyMouseUp(event: JQueryMouseEventObject) {
 
-      // TODO
+      if (this._editStep) {
+        let validation = this._editor.validateEditStep(this._editStep);
+
+        if (_.some(validation, validationIsError)) {
+
+          this._editor.setStatus("Errors while pasting. See the console");
+          console.log('Error during paste. validation=', validation);
+
+        } else {
+
+          this._editor.addEditStep(this._editStep);
+
+        }
+      }
 
     }
 
