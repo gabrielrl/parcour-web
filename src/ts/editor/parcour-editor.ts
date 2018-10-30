@@ -268,7 +268,7 @@ namespace PRKR.Editor {
 
     get modelIsDirty() { return this._modelIsDirty; }
 
-    /** Gets a clone of the current model. */
+    /** Gets (a clone of) the current model. */
     get model() {
       return this._model.clone();
     }
