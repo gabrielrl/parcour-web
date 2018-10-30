@@ -171,7 +171,8 @@ namespace PRKR.Editor.Behaviors {
         this._verticalityEnabled = false;
         for (let i = 0; i < movables.length; i++) {
           let movable = movables[i];
-          if (movable.moveConstraints && movable.moveConstraints.steps && movable.moveConstraints.steps.y !== 0) {
+          let moveConstraints = movable.moveConstraints;
+          if (moveConstraints.yEnabled) {
             this._verticalityEnabled = true;
             break;
           }
@@ -233,35 +234,8 @@ namespace PRKR.Editor.Behaviors {
         let adjusted = new Vector3();
         this._targets.forEach((target, index) => {
           adjustedMovement.copy(delta);
-          if (target.moveConstraints) {
-            let steps = target.moveConstraints.steps;
-
-            if (steps.x === 0) {
-              adjustedMovement.setX(0);
-            } else {
-              let s = steps.x;
-              adjustedMovement.setX(
-                Math.round(delta.x / s) * s
-              );
-            }
-
-            if (steps.y === 0) {
-              adjustedMovement.setY(0);
-            } else {
-              let s = steps.y;
-              adjustedMovement.setY(
-                Math.round(delta.y / s) * s
-              );
-            }
-
-            if (steps.z === 0) {
-              adjustedMovement.setZ(0);
-            } else {
-              let s = steps.z;
-              adjustedMovement.setZ(
-                Math.round(delta.z / s) * s
-              );
-            }
+          if (target.movable) {
+            target.moveConstraints.apply(adjustedMovement);
           }
 
           let targetWorldPosition = target.getWorldPosition();
@@ -269,8 +243,8 @@ namespace PRKR.Editor.Behaviors {
           exact.addVectors(targetWorldPosition, delta);
           adjusted.addVectors(targetWorldPosition, adjustedMovement);
 
-          if (target.moveConstraints.constrain) {
-            target.moveConstraints.constrain(adjusted);
+          if (target.locationContstraints) {
+            target.locationContstraints.apply(adjusted);
           }
 
           this._targetMovements[index].subVectors(adjusted, targetWorldPosition);

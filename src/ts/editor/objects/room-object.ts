@@ -36,9 +36,7 @@ namespace PRKR.Editor.Objects {
 
     /** Override. */
     public get moveConstraints(): MoveConstraints {
-      return {
-        steps: new Vector3(1, 0, 1)
-      };
+      return new SteppedMoveConstraints(new Vector3(1, 0, 1));
     }
 
     /** Override. */

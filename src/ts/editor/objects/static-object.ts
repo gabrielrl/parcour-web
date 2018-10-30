@@ -21,11 +21,11 @@ namespace PRKR.Editor.Objects {
     get movable(): true { return true; }
 
     get moveConstraints(): MoveConstraints {
-      return { steps: new THREE.Vector3(
+      return new SteppedMoveConstraints(new THREE.Vector3(
         StaticModel.GridSize,
         StaticModel.GridSize,
         StaticModel.GridSize
-      )};
+      ));
     }
 
     /** Override. */

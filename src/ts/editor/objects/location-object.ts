@@ -38,9 +38,7 @@ namespace PRKR.Editor.Objects {
      * Override if `movable` returns true.
      */
     get moveConstraints(): MoveConstraints {
-      return {
-        steps: new THREE.Vector3(1, 0, 1) 
-      };
+      return new SteppedMoveConstraints(new THREE.Vector3(1, 0, 1));
     }
 
     /** Override. */

@@ -25,17 +25,11 @@ namespace PRKR.Editor.Objects {
     }
 
     get moveConstraints() {
+      return new SteppedMoveConstraints(new Vector3(.5, 0, .5));
+    }
 
-      let placer = new Behaviors.DoorwayPlacer(this.parcour);
-
-      let constraints: MoveConstraints = {
-        steps: new Vector3(.5, 0, .5),
-        constrain(v) {
-          return placer.constrain(v);
-        }
-      }
-      return constraints;
-
+    get locationContstraints () {
+      return new DoorwayLocationConstraints(this.parcour);
     }
 
     /**
