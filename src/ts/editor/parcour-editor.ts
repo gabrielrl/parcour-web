@@ -268,6 +268,11 @@ namespace PRKR.Editor {
 
     get modelIsDirty() { return this._modelIsDirty; }
 
+    /** Gets a clone of the current model. */
+    get model() {
+      return this._model.clone();
+    }
+
     get modelName() {
       if (this._model) return this._model.name;
       return null;
@@ -1396,23 +1401,12 @@ namespace PRKR.Editor {
      * Builds an editor object from a parcour object.
      */
     private _buildEditorObject(parcourObject: ParcourObject): EditorObject {
-      let o: Objects.EditorObject = null;
-      if (parcourObject instanceof PRKR.Model.RoomArea) {
-        o = new Objects.RoomObject(parcourObject, this._model);
-      } else if (parcourObject instanceof PRKR.Model.Location) {
-        o = new Objects.LocationObject(parcourObject, this._model);
-      } else if (parcourObject instanceof PRKR.Model.Doorway) {
-        o = new Objects.DoorwayObject(parcourObject, this._model);      
-      } else if (parcourObject instanceof PRKR.Model.StaticObject) {
-        o = new Objects.StaticObject(parcourObject, this._model);
-      } else if (parcourObject instanceof PRKR.Model.DynamicObject) {
-        o = new Objects.DynamicObject(parcourObject, this._model);
-      } else {
-        // throw new Error(`Can not build an EditorObject for ${parcourObject}`);
-        console.warn(`Can not build an EditorObject for ${parcourObject}`);
-        o = new Objects.UnknownObject(parcourObject, this._model);
+      try {
+        return EditorObject.fromModel(parcourObject, this._model);
+      } catch (err) {
+        console.warn(err);
+        return new Objects.UnknownObject(parcourObject, this._model);
       }
-      return o;
     }
  
     /**

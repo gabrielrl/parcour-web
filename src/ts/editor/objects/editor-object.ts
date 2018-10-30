@@ -42,6 +42,27 @@ namespace PRKR.Editor.Objects {
       this._buildSelectedOverlay();
     }
 
+    /**
+     * Builds an editor object from a parcour object.
+     */
+    public static fromModel(model: ParcourObject, parcour: Parcour) {
+      let eo: Objects.EditorObject = null;
+      if (model instanceof PRKR.Model.RoomArea) {
+        eo = new Objects.RoomObject(model, parcour);
+      } else if (model instanceof PRKR.Model.Location) {
+        eo = new Objects.LocationObject(model, parcour);
+      } else if (model instanceof PRKR.Model.Doorway) {
+        eo = new Objects.DoorwayObject(model, parcour);      
+      } else if (model instanceof PRKR.Model.StaticObject) {
+        eo = new Objects.StaticObject(model, parcour);
+      } else if (model instanceof PRKR.Model.DynamicObject) {
+        eo = new Objects.DynamicObject(model, parcour);
+      } else {
+        throw new Error(`Can not build an EditorObject for ${ model }`);
+      }
+      return eo;
+    }
+
     /** Gets the id of the model backing the current editor object. */
     get id() { return this._model.id }
 
