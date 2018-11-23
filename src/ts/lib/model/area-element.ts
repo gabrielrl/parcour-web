@@ -35,6 +35,8 @@ namespace PRKR.Model {
       }
     }
 
+    get type() { return 'AreaElement'; }
+
     /** Gets the ID of the area that contains the current element. */
     get areaId() { return this._areaId; }
     /** Sets the ID of the area that contains the current element. */

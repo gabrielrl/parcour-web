@@ -24,14 +24,6 @@ namespace PRKR.Editor.Objects {
       return true;
     }
 
-    get moveConstraints() {
-      return new SteppedMoveConstraints(new Vector3(.5, 0, .5));
-    }
-
-    get locationContstraints () {
-      return new DoorwayLocationConstraints(this.parcour);
-    }
-
     /**
      * Gets the world position for the current object.
      * @param target Optional target for the world position.

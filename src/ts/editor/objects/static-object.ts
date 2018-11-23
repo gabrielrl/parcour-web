@@ -20,14 +20,6 @@ namespace PRKR.Editor.Objects {
     /** Gets true because static objects area movables. */
     get movable(): true { return true; }
 
-    get moveConstraints(): MoveConstraints {
-      return new SteppedMoveConstraints(new THREE.Vector3(
-        StaticModel.GridSize,
-        StaticModel.GridSize,
-        StaticModel.GridSize
-      ));
-    }
-
     /** Override. */
     get resizable(): boolean { return true; }
 

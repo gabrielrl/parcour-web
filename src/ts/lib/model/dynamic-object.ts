@@ -44,6 +44,8 @@ namespace PRKR.Model {
 
     }
 
+    get type() { return 'DynamicObject'; }
+
     /** Gets the size of the current dynamic object. */
     get size() { return this._size; }
 
@@ -78,7 +80,7 @@ namespace PRKR.Model {
 
     // Override.
     public toObject() {
-      let o: any = { $type: 'DynamicObject' };
+      let o: any = { $type: this.type };
       _.extend(o, {
         id: this.id,
         areaId: this.areaId,

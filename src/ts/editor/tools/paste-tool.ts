@@ -3,6 +3,8 @@ namespace PRKR.Editor.Tools {
   import Vector3 = THREE.Vector3;
   import ParcourObject = Model.ParcourObject;
   import BoundingBoxHelper = Helpers.BoundingBoxHelper;
+  import getMoveConstraints = Objects.getMoveConstraints;
+  import getLocationConstraints = Objects.getLocationConstraints;
 
   let modelIsArea = (x: Model.ParcourObject) => x instanceof Model.Area;
   let validationIsError = (v: Validators.ValidationResult) => v.level === Validators.ResultLevel.Error;
@@ -14,6 +16,8 @@ namespace PRKR.Editor.Tools {
 
     private _helpers: BoundingBoxHelper[];
     private _helpersRoot: THREE.Group = null;
+    private _adjustedHelpers: BoundingBoxHelper[];
+    private _adjustedHelpersRoot: THREE.Group = null;
 
     /** Last built edit step. */
     private _editStep: EditSteps.EditStep = null;
@@ -56,9 +60,11 @@ namespace PRKR.Editor.Tools {
 
       if (this._helpersRoot) {
         this._editor.removeFromScene(this._helpersRoot);
-        this._editor.requestRender();
       }
-
+      if (this._adjustedHelpersRoot) {
+        this._editor.removeFromScene(this._adjustedHelpersRoot);
+      }
+      this._editor.requestRender();
       this._editStep = null;
       
     }
@@ -75,47 +81,60 @@ namespace PRKR.Editor.Tools {
         let setInvalidMaterial = (helper: BoundingBoxHelper) => {
           helper.setLineMaterial(Constants.Materials.Lines.Invalid);
           helper.setFaceMaterial(Constants.Materials.Faces.Invalid);
-    };
+        };
 
-        let target = intersect.point.round();
+        let target = intersect.point;
 
         this._editStep = this._buildEditStep(target);
         if (this._editStep) {
           let validation = this._editor.validateEditStep(this._editStep);
-          // validation.forEach((v, i) => console.log('validation ' + i + ':', v));
-
-          // let errors = validation.filter(v => v.level === Validators.ResultLevel.Error);
-          // if (errors.length !== 0) {
 
           if (_.some(validation, validationIsError)) {
             this._helpers.forEach(setInvalidMaterial);
+            this._adjustedHelpers.forEach(setInvalidMaterial);
           } else {
             this._helpers.forEach(setValidMaterial);
+            this._adjustedHelpers.forEach(setValidMaterial);
           }
 
           // only show the helpers for objects that actualy gets pasted (objects falling outside of all areas are
           // excluded in `_buildEditStep`).
           this._helpers.forEach(helper => {
-            if (!helper.helperFor) {
-              helper.visible = false;
+            helper.visible = _.some(
+              (<EditSteps.ComposedStep>this._editStep).steps,
+              step => (<EditSteps.AddObjectStep>step).data.$$id === helper.helperFor
+            );
+          });
+          this._adjustedHelpers.forEach(helper => {
+            let step = _.find(
+              (<EditSteps.ComposedStep>this._editStep).steps,
+              step => (<EditSteps.AddObjectStep>step).data.$$id === helper.helperFor
+            );
+            if (step) {
+              let addObjectStep = <EditSteps.AddObjectStep>step;
+              let area = this._editor.model.getAreaById(addObjectStep.data.areaId);
+              helper.position.fromArray(addObjectStep.data.location).add(area.location);
+              
+              helper.visible = true;
             } else {
-              helper.visible = _.some(
-                (<EditSteps.ComposedStep>this._editStep).steps,
-                step => (<EditSteps.AddObjectStep>step).data.$$id === helper.helperFor
-              );
+              helper.visible = false;
             }
-          });           
+          });
         } else {
           this._helpers.forEach(setInvalidMaterial);
           this._helpers.forEach(h => h.visible = true);
+          this._adjustedHelpers.forEach(setInvalidMaterial);
+          this._adjustedHelpers.forEach(h => h.visible = false);
         }
 
         this._helpersRoot.position.copy(target);
         this._helpersRoot.visible = true;
+        this._adjustedHelpersRoot.visible = true;
 
       } else {
 
         this._helpersRoot.visible = false;
+        this._adjustedHelpersRoot.visible = false;
 
       }
 
@@ -147,10 +166,15 @@ namespace PRKR.Editor.Tools {
       if (this._helpersRoot) {
         this._editor.removeFromScene(this._helpersRoot);
       }
+      if (this._adjustedHelpersRoot) {
+        this._editor.removeFromScene(this._adjustedHelpersRoot);
+      }
 
       this._pastePayload = [];
       this._helpers = [];
       this._helpersRoot = new THREE.Group();
+      this._adjustedHelpers = [];
+      this._adjustedHelpersRoot = new THREE.Group();
 
       try {
 
@@ -163,7 +187,8 @@ namespace PRKR.Editor.Tools {
         this._areaMode = modelIsArea(models[0]);
         if (this._areaMode) {
 
-          console.log('paste: area mode not implemented yet');
+          // TODO
+          console.warn('paste: area mode not implemented yet');
 
         } else {
 
@@ -173,6 +198,7 @@ namespace PRKR.Editor.Tools {
         }
 
         this._editor.addToScene(this._helpersRoot);
+        this._editor.addToScene(this._adjustedHelpersRoot);
 
       } catch(err) {
 
@@ -182,6 +208,7 @@ namespace PRKR.Editor.Tools {
 
     }
 
+    /** Initializes in "object mode". */
     private _initObjects(models: ParcourObject[]) {
 
       // Finds payload center (rounded).
@@ -220,7 +247,21 @@ namespace PRKR.Editor.Tools {
               M.Vector3.Zero.clone()
             ).expandByScalar(0.5);
           }
+
+
+          // Make the box relative to the object's position. It is more useful when adjusting the helper's position
+          // afterward.
+          box.translate(pasteeModel.location.clone().negate());
+
           let helper = new BoundingBoxHelper(box, {
+            useFaces: false,
+            useLines: true,
+            faceMaterial: Constants.Materials.Faces.Valid,
+            lineMaterial: Constants.Materials.Lines.Valid
+          }, x.id);
+          helper.position.copy(pasteeModel.location);
+
+          let adjustedHelper = new BoundingBoxHelper(box, {
             useFaces: true,
             useLines: false,
             faceMaterial: Constants.Materials.Faces.Valid,
@@ -229,6 +270,8 @@ namespace PRKR.Editor.Tools {
           this._pastePayload.push(pastee);
           this._helpers.push(helper);
           this._helpersRoot.add(helper);
+          this._adjustedHelpers.push(adjustedHelper);
+          this._adjustedHelpersRoot.add(adjustedHelper);
         }
       });
     }
@@ -241,24 +284,41 @@ namespace PRKR.Editor.Tools {
     private _buildEditStep(target: Vector3) {
 
       let payload = [];
+      let parcour = this._editor.model;
+      let adjustedTarget = new Vector3();
       this._pastePayload.forEach(pastee => {
 
         let result = _.cloneDeep(pastee);
 
         if (pastee.id) {
           result.$$id = pastee.id;
+
+          if (this._editor.getObjectById(pastee.id) != null) {
+            delete result.id;
+          }
         }
 
-        if (pastee.id && this._editor.getObjectById(pastee.id) != null) {
-          delete result.id;
+        let po = Model.ParcourObject.fromObject(pastee);
+        if (!po) throw new Error('Can not instanciate parcour object from pastee payload.');
+
+        // Restrict location
+        adjustedTarget.copy(target);
+        let moveConstraints = getMoveConstraints(po);
+        if (moveConstraints) {
+          moveConstraints.apply(adjustedTarget);
         }
 
         // Express location from the current target.
         let newWorldLocation = new Vector3(
-          target.x + pastee.location[0],
-          target.y + pastee.location[1],
-          target.z + pastee.location[2],
+          adjustedTarget.x + pastee.location[0],
+          adjustedTarget.y + pastee.location[1],
+          adjustedTarget.z + pastee.location[2],
         );
+
+        let locationContstraints = getLocationConstraints(po);
+        if (locationContstraints) {
+          locationContstraints.apply(newWorldLocation, parcour);
+        }
 
         // Is the new location inside an area?
         let area = this._editor.getAreaAtLocation(newWorldLocation);

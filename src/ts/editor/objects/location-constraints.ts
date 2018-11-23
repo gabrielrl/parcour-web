@@ -10,9 +10,10 @@ namespace PRKR.Editor.Objects {
      * and `location` is left untouched, otherwise true is returned and `location` was adjusted to a valid location.
      * **Note** that the location is world-relative.
      * @param location World-relative location vector to update.
+     * @param parcour Parcour that contains the object.
      * @returns True if a suitable location for the object could be found, false otherwise.
      */
-    apply(location: Vector3): boolean;
+    apply(location: Vector3, parcour: Model.Parcour): boolean;
 
   }
 }

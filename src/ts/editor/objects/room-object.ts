@@ -35,11 +35,6 @@ namespace PRKR.Editor.Objects {
     public get movable(): boolean { return true; }
 
     /** Override. */
-    public get moveConstraints(): MoveConstraints {
-      return new SteppedMoveConstraints(new Vector3(1, 0, 1));
-    }
-
-    /** Override. */
     public get resizable(): boolean { return true; }
 
     public update() {

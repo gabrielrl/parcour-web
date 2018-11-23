@@ -244,7 +244,7 @@ namespace PRKR.Editor.Behaviors {
           adjusted.addVectors(targetWorldPosition, adjustedMovement);
 
           if (target.locationContstraints) {
-            target.locationContstraints.apply(adjusted);
+            target.locationContstraints.apply(adjusted, this._editor.model);
           }
 
           this._targetMovements[index].subVectors(adjusted, targetWorldPosition);

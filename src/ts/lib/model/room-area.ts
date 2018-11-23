@@ -46,6 +46,8 @@ namespace PRKR.Model {
       }
     }
 
+    get type() { return 'RoomArea'; }
+
     get light() {
       return this._light;
     }
@@ -212,7 +214,7 @@ namespace PRKR.Model {
     }
 
     public toObject(): any {
-      let o: any = { $type: 'RoomArea' };
+      let o: any = { $type: this.type };
       _.extend(o, {
         id: this.id,
         name: this.name,

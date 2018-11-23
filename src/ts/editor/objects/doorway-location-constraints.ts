@@ -4,18 +4,16 @@ namespace PRKR.Editor.Objects {
 
   export class DoorwayLocationConstraints implements LocationConstraints {
 
-    private _placer: Behaviors.DoorwayPlacer;
+    constructor() { }
 
-    constructor(parcour: Parcour) {
+    apply(location: Vector3, parcour: Parcour): boolean {
       if (parcour == null) {
         throw new Error('"parcour" can not be null or undefined.');
       }
 
-      this._placer = new Behaviors.DoorwayPlacer(parcour);
-    }
+      let placer = new Behaviors.DoorwayPlacer(parcour);
 
-    apply(location: Vector3): boolean {
-      return this._placer.constrain(location);
+      return placer.constrain(location);
     }
   }
 }

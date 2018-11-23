@@ -41,6 +41,8 @@ namespace PRKR.Model {
       }
     }
 
+    get type() { return 'Area'; }
+
     /** Gets the (world relative) location of the current area's origin. */
     get location() { return this._location; }
 

@@ -29,6 +29,8 @@ namespace PRKR.Model {
       }
     }
 
+    get type() { return 'WallElement'; }
+
     get size() { return this._size; }
     get width() { return this._size.x; }
     get height() { return this._size.y; }

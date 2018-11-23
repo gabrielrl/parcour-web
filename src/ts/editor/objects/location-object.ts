@@ -33,14 +33,6 @@ namespace PRKR.Editor.Objects {
      */
     get movable(): true { return true; }
 
-    /**
-     * Gets the current object's move constraints.
-     * Override if `movable` returns true.
-     */
-    get moveConstraints(): MoveConstraints {
-      return new SteppedMoveConstraints(new THREE.Vector3(1, 0, 1));
-    }
-
     /** Override. */
     get resizable(): boolean { return false; }
 

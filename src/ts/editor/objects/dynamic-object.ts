@@ -140,14 +140,6 @@ namespace PRKR.Editor.Objects {
 
     get movable() { return true; }
 
-    get moveConstraints() {
-      return new SteppedMoveConstraints(new Vector3(
-        DynamicModel.GridSize,
-        DynamicModel.GridSize,
-        DynamicModel.GridSize
-      ));
-    }
-
     /** Override */
     protected _computeBoundingBox() {
 

@@ -44,6 +44,8 @@ namespace PRKR.Model {
       }
     }
 
+    get type() { return 'Location'; }
+
     /** Gets the kind of the current location. */
     get kind(): LocationKind { return this._kind; }
 
@@ -59,7 +61,7 @@ namespace PRKR.Model {
 
     // Override.
     public toObject() {
-      let o: any = { $type: 'Location' };
+      let o: any = { $type: this.type };
       _.extend(o, {
         id: this.id,
         areaId: this.areaId,
