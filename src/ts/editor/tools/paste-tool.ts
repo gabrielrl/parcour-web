@@ -2,22 +2,13 @@ namespace PRKR.Editor.Tools {
 
   import Vector3 = THREE.Vector3;
   import ParcourObject = Model.ParcourObject;
-  import BoundingBoxHelper = Helpers.BoundingBoxHelper;
-  import getMoveConstraints = Objects.getMoveConstraints;
-  import getLocationConstraints = Objects.getLocationConstraints;
 
   let modelIsArea = (x: Model.ParcourObject) => x instanceof Model.Area;
   let validationIsError = (v: Validators.ValidationResult) => v.level === Validators.ResultLevel.Error;
 
   export class PasteTool extends Tool {
 
-    private _pastePayload = [];
-    private _areaMode: boolean;
-
-    private _helpers: BoundingBoxHelper[];
-    private _helpersRoot: THREE.Group = null;
-    private _adjustedHelpers: BoundingBoxHelper[];
-    private _adjustedHelpersRoot: THREE.Group = null;
+    private _paster: Paster = null;
 
     /** Last built edit step. */
     private _editStep: EditSteps.EditStep = null;
@@ -58,12 +49,10 @@ namespace PRKR.Editor.Tools {
     /** Informs the Tool that it's being deactivated. */
     deactivate() {
 
-      if (this._helpersRoot) {
-        this._editor.removeFromScene(this._helpersRoot);
+      if (this._paster) {
+        this._paster.helpers.forEach(h => this._editor.removeFromScene(h));
       }
-      if (this._adjustedHelpersRoot) {
-        this._editor.removeFromScene(this._adjustedHelpersRoot);
-      }
+
       this._editor.requestRender();
       this._editStep = null;
       
@@ -71,70 +60,26 @@ namespace PRKR.Editor.Tools {
 
     notifyMouseMove(event: JQueryMouseEventObject): void {
 
+      if (!this._paster) return;
+
       let intersect = this._editor.projectMouseOnFloor(new THREE.Vector2(event.clientX, event.clientY));
       if (intersect) {
-
-        let setValidMaterial = (helper: BoundingBoxHelper) => {
-          helper.setLineMaterial(Constants.Materials.Lines.Valid);
-          helper.setFaceMaterial(Constants.Materials.Faces.Valid);
-        };
-        let setInvalidMaterial = (helper: BoundingBoxHelper) => {
-          helper.setLineMaterial(Constants.Materials.Lines.Invalid);
-          helper.setFaceMaterial(Constants.Materials.Faces.Invalid);
-        };
 
         let target = intersect.point;
 
         this._editStep = this._buildEditStep(target);
+        let validation: Validators.IValidationResult[] = [];
+
         if (this._editStep) {
-          let validation = this._editor.validateEditStep(this._editStep);
-
-          if (_.some(validation, validationIsError)) {
-            this._helpers.forEach(setInvalidMaterial);
-            this._adjustedHelpers.forEach(setInvalidMaterial);
-          } else {
-            this._helpers.forEach(setValidMaterial);
-            this._adjustedHelpers.forEach(setValidMaterial);
-          }
-
-          // only show the helpers for objects that actualy gets pasted (objects falling outside of all areas are
-          // excluded in `_buildEditStep`).
-          this._helpers.forEach(helper => {
-            helper.visible = _.some(
-              (<EditSteps.ComposedStep>this._editStep).steps,
-              step => (<EditSteps.AddObjectStep>step).data.$$id === helper.helperFor
-            );
-          });
-          this._adjustedHelpers.forEach(helper => {
-            let step = _.find(
-              (<EditSteps.ComposedStep>this._editStep).steps,
-              step => (<EditSteps.AddObjectStep>step).data.$$id === helper.helperFor
-            );
-            if (step) {
-              let addObjectStep = <EditSteps.AddObjectStep>step;
-              let area = this._editor.model.getAreaById(addObjectStep.data.areaId);
-              helper.position.fromArray(addObjectStep.data.location).add(area.location);
-              
-              helper.visible = true;
-            } else {
-              helper.visible = false;
-            }
-          });
-        } else {
-          this._helpers.forEach(setInvalidMaterial);
-          this._helpers.forEach(h => h.visible = true);
-          this._adjustedHelpers.forEach(setInvalidMaterial);
-          this._adjustedHelpers.forEach(h => h.visible = false);
+          validation = this._editor.validateEditStep(this._editStep);
         }
 
-        this._helpersRoot.position.copy(target);
-        this._helpersRoot.visible = true;
-        this._adjustedHelpersRoot.visible = true;
+        this._paster.updateHelpers(target, this._editStep, validation);
+
 
       } else {
 
-        this._helpersRoot.visible = false;
-        this._adjustedHelpersRoot.visible = false;
+        this._paster.helpers.forEach(h => h.visible = false);
 
       }
 
@@ -162,118 +107,37 @@ namespace PRKR.Editor.Tools {
     }
 
     private _init() {
-      
-      if (this._helpersRoot) {
-        this._editor.removeFromScene(this._helpersRoot);
-      }
-      if (this._adjustedHelpersRoot) {
-        this._editor.removeFromScene(this._adjustedHelpersRoot);
-      }
 
-      this._pastePayload = [];
-      this._helpers = [];
-      this._helpersRoot = new THREE.Group();
-      this._adjustedHelpers = [];
-      this._adjustedHelpersRoot = new THREE.Group();
+      if (this._paster) {
+        this._paster.helpers.forEach(h => this._editor.removeFromScene(h));
+      }
+      
+      this._paster = null;
 
       try {
 
         let payload = JSON.parse(Clipboard.get());
+        if (payload == null) return;
         if (!_.isArray(payload)) throw new Error('Clipboard content is not an array');
-
         if (payload.length === 0) return;
 
         let models = payload.map(x => ParcourObject.fromObject(x));
-        this._areaMode = modelIsArea(models[0]);
-        if (this._areaMode) {
-
-          // TODO
-          console.warn('paste: area mode not implemented yet');
-
+        let someArea = _.some(models, m => m instanceof Model.Area);
+        if (someArea) {
+          console.error('Implement AREA MODE');
         } else {
-
-          // Working in object mode:          
-          this._initObjects(models);
-
+          this._paster = new ElementPaster(this._editor, models);
         }
 
-        this._editor.addToScene(this._helpersRoot);
-        this._editor.addToScene(this._adjustedHelpersRoot);
+        if (this._paster) {
+          this._paster.helpers.forEach(h => this._editor.addToScene(h));
+        }
+        this._editor.requestRender();
 
       } catch(err) {
-
         console.error(err);
-      
       }
 
-    }
-
-    /** Initializes in "object mode". */
-    private _initObjects(models: ParcourObject[]) {
-
-      // Finds payload center (rounded).
-      let payloadOrigin = new Vector3();
-      let count = 0;
-      models.forEach(x => {
-        if (x instanceof Model.AreaElement) {
-          payloadOrigin.add(x.location);
-          count++;
-        }
-      });
-      payloadOrigin.divideScalar(count).setY(0).round();
-
-      // Prepare paste payload for each object.
-
-      models.forEach(x => {
-        if (x instanceof Model.AreaElement) {
-          let pastee = x.toObject();
-
-          // Express location relatively to the payload center
-          let newLocation = [
-            pastee.location[0] - payloadOrigin.x,
-            pastee.location[1] - payloadOrigin.y,
-            pastee.location[2] - payloadOrigin.z,
-          ];
-          pastee.location = newLocation;
-
-          // Get box 
-          let pasteeModel = <Model.AreaElement>ParcourObject.fromObject(pastee);
-          let box = pasteeModel.getBoundingBox();
-          if (box == null) {
-            // Safety net for when the object doesn't offer a bounding box but it's ugly and should not be relyed on.
-            // TODO make bounding box mandatory?
-            box = new THREE.Box3(
-              pasteeModel.location.clone(),
-              M.Vector3.Zero.clone()
-            ).expandByScalar(0.5);
-          }
-
-
-          // Make the box relative to the object's position. It is more useful when adjusting the helper's position
-          // afterward.
-          box.translate(pasteeModel.location.clone().negate());
-
-          let helper = new BoundingBoxHelper(box, {
-            useFaces: false,
-            useLines: true,
-            faceMaterial: Constants.Materials.Faces.Valid,
-            lineMaterial: Constants.Materials.Lines.Valid
-          }, x.id);
-          helper.position.copy(pasteeModel.location);
-
-          let adjustedHelper = new BoundingBoxHelper(box, {
-            useFaces: true,
-            useLines: false,
-            faceMaterial: Constants.Materials.Faces.Valid,
-            lineMaterial: Constants.Materials.Lines.Valid
-          }, x.id);
-          this._pastePayload.push(pastee);
-          this._helpers.push(helper);
-          this._helpersRoot.add(helper);
-          this._adjustedHelpers.push(adjustedHelper);
-          this._adjustedHelpersRoot.add(adjustedHelper);
-        }
-      });
     }
 
     /**
@@ -283,70 +147,10 @@ namespace PRKR.Editor.Tools {
      */
     private _buildEditStep(target: Vector3) {
 
-      let payload = [];
-      let parcour = this._editor.model;
-      let adjustedTarget = new Vector3();
-      this._pastePayload.forEach(pastee => {
-
-        let result = _.cloneDeep(pastee);
-
-        if (pastee.id) {
-          result.$$id = pastee.id;
-
-          if (this._editor.getObjectById(pastee.id) != null) {
-            delete result.id;
-          }
-        }
-
-        let po = Model.ParcourObject.fromObject(pastee);
-        if (!po) throw new Error('Can not instanciate parcour object from pastee payload.');
-
-        // Restrict location
-        adjustedTarget.copy(target);
-        let moveConstraints = getMoveConstraints(po);
-        if (moveConstraints) {
-          moveConstraints.apply(adjustedTarget);
-        }
-
-        // Express location from the current target.
-        let newWorldLocation = new Vector3(
-          adjustedTarget.x + pastee.location[0],
-          adjustedTarget.y + pastee.location[1],
-          adjustedTarget.z + pastee.location[2],
-        );
-
-        let locationContstraints = getLocationConstraints(po);
-        if (locationContstraints) {
-          locationContstraints.apply(newWorldLocation, parcour);
-        }
-
-        // Is the new location inside an area?
-        let area = this._editor.getAreaAtLocation(newWorldLocation);
-        if (area) {
-
-          let newLocation = [
-            newWorldLocation.x - area.location.x,
-            newWorldLocation.y - area.location.y,
-            newWorldLocation.z - area.location.z
-          ];
-          
-          result.areaId = area.id;
-          result.location = newLocation;
-          payload.push(result);
-
-        }
-
-      });
-
-      let addSteps = payload.map(pastee => new EditSteps.AddObjectStep(pastee));
-
-      if (addSteps.length !== 0) {
-        return new EditSteps.ComposedStep(addSteps);
+      if (this._paster) {
+        return this._paster.buildEditStep(target);
       }
-
-      return null;
-
+      else return null;
     }
-
   }
 }
