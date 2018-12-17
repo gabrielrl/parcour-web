@@ -124,7 +124,7 @@ namespace PRKR.Editor.Tools {
         let models = payload.map(x => ParcourObject.fromObject(x));
         let someArea = _.some(models, m => m instanceof Model.Area);
         if (someArea) {
-          console.error('Implement AREA MODE');
+          this._paster = new AreaPaster(this._editor, models);
         } else {
           this._paster = new ElementPaster(this._editor, models);
         }
