@@ -148,16 +148,11 @@ namespace PRKR.Editor.Tools {
           let editStep = this._buildEditStep(resizeDelta);
           // Validate it.
           let validations = this._editor.validateEditStep(editStep);
-
-          let errors: IValidationResult[] = [];
-          for (let i = 0; i < validations.length; i++) {
-            if (validations[i].level === ResultLevel.Error) {
-              errors.push(validations[i]);
-            }
-          }
+          let someErrors = _.some(validations, x => x.level === ResultLevel.Error)
 
           // Validate resize and update helpers.
-          if (errors.length) {
+          if (someErrors) {
+            // console.log('Some errors in validation', validations);
             this._resizeValid = false;
             this._helpers.forEach(h => h.setError());
           } else {
