@@ -99,8 +99,11 @@ namespace PRKR.Editor.Tools {
 
         } else {
 
-          this._editor.addEditStep(this._editStep);
+          let result = this._editor.addEditStep(this._editStep);
 
+          this._editor.selectByIds(result.dirtyIds);
+          this._editor.selectToolByName('select');
+          this._editor.requestRender();
         }
       }
 
