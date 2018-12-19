@@ -90,12 +90,17 @@ namespace PRKR.Editor.Tools {
 
       // Then the area elements.
       areaElements.forEach(element => {
-        // Exclude elements that doesn't belong to one of the area.
-        let area = _.find(areas, a => a.id === element.areaId);
-        if (area) {
-          let pastee = element.toObject();
-          this._elementPayload.push(pastee);
+
+        if (!PasteTool.shouldExclude(element, this._editor)) {
+
+          // Exclude elements that doen't belong to any of the areas to paste.
+          let area = _.find(areas, a => a.id === element.areaId);
+          if (area) {
+            let pastee = element.toObject();
+            this._elementPayload.push(pastee);
+          }
         }
+
       });
 
     }

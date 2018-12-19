@@ -39,50 +39,54 @@ namespace PRKR.Editor.Tools {
       // Prepare paste payload for each element.
 
       elements.forEach(element => {
-        let pastee = element.toObject();
 
-        // Express location relatively to the payload center
-        pastee.location = [
-          pastee.location[0] - payloadOrigin.x,
-          pastee.location[1] - payloadOrigin.y,
-          pastee.location[2] - payloadOrigin.z,
-        ];
+        if (!PasteTool.shouldExclude(element, this._editor)) {
 
-        // Get box 
-        let pasteeModel = <AreaElement>ParcourObject.fromObject(pastee);
-        let box = pasteeModel.getBoundingBox();
-        if (box == null) {
-          // Safety net for when the object doesn't offer a bounding box but it's ugly and should not be relyed on.
-          // TODO make bounding box mandatory?
-          box = new THREE.Box3(
-            pasteeModel.location.clone(),
-            M.Vector3.Zero.clone()
-          ).expandByScalar(0.5);
+          let pastee = element.toObject();
+
+          // Express location relatively to the payload center
+          pastee.location = [
+            pastee.location[0] - payloadOrigin.x,
+            pastee.location[1] - payloadOrigin.y,
+            pastee.location[2] - payloadOrigin.z,
+          ];
+
+          // Get box 
+          let pasteeModel = <AreaElement>ParcourObject.fromObject(pastee);
+          let box = pasteeModel.getBoundingBox();
+          if (box == null) {
+            // Safety net for when the object doesn't offer a bounding box but it's ugly and should not be relyed on.
+            // TODO make bounding box mandatory?
+            box = new THREE.Box3(
+              pasteeModel.location.clone(),
+              M.Vector3.Zero.clone()
+            ).expandByScalar(0.5);
+          }
+
+          // Make the box relative to the object's position. It is more useful when adjusting the helper's position
+          // afterward.
+          box.translate(pasteeModel.location.clone().negate());
+
+          let helper = new BoundingBoxHelper(box, {
+            useFaces: false,
+            useLines: true,
+            faceMaterial: Constants.Materials.Faces.Valid,
+            lineMaterial: Constants.Materials.Lines.Valid
+          }, element.id);
+          helper.position.copy(pasteeModel.location);
+
+          let adjustedHelper = new BoundingBoxHelper(box, {
+            useFaces: true,
+            useLines: false,
+            faceMaterial: Constants.Materials.Faces.Valid,
+            lineMaterial: Constants.Materials.Lines.Valid
+          }, element.id);
+          this._payload.push(pastee);
+          this._helpers.push(helper);
+          this._helpersRoot.add(helper);
+          this._adjustedHelpers.push(adjustedHelper);
+          this._adjustedHelpersRoot.add(adjustedHelper);
         }
-
-        // Make the box relative to the object's position. It is more useful when adjusting the helper's position
-        // afterward.
-        box.translate(pasteeModel.location.clone().negate());
-
-        let helper = new BoundingBoxHelper(box, {
-          useFaces: false,
-          useLines: true,
-          faceMaterial: Constants.Materials.Faces.Valid,
-          lineMaterial: Constants.Materials.Lines.Valid
-        }, element.id);
-        helper.position.copy(pasteeModel.location);
-
-        let adjustedHelper = new BoundingBoxHelper(box, {
-          useFaces: true,
-          useLines: false,
-          faceMaterial: Constants.Materials.Faces.Valid,
-          lineMaterial: Constants.Materials.Lines.Valid
-        }, element.id);
-        this._payload.push(pastee);
-        this._helpers.push(helper);
-        this._helpersRoot.add(helper);
-        this._adjustedHelpers.push(adjustedHelper);
-        this._adjustedHelpersRoot.add(adjustedHelper);
         
       });
 

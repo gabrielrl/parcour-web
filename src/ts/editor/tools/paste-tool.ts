@@ -109,6 +109,16 @@ namespace PRKR.Editor.Tools {
 
     }
 
+    /** Determines if an object should be excluded from a copy/paste operation. */
+    static shouldExclude(element: ParcourObject, editor: ParcourEditor): boolean {
+
+      // Exclude objects that requires to stay unique: start and end locations.
+      return (
+        element instanceof Model.Location &&
+        _.some(editor.model.objects, x => x instanceof Model.Location && x.kind === element.kind)
+      );
+    }
+
     private _init() {
 
       if (this._paster) {
