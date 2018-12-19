@@ -287,6 +287,10 @@ namespace PRKR.Editor {
       this._setActiveTool(tool);
     }
 
+    public selectToolByName(name: string): void {
+      this._setActiveTool(this._toolMap[name]);
+    }
+
     public get canUndo(): boolean {
       return this._editSteps.length > 0;
     }
