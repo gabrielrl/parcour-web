@@ -42,7 +42,7 @@ namespace PRKR.Editor.Tools {
       let payloadOrigin = new Vector3();
       let count = 0;
       areas.forEach(a => {
-        payloadOrigin.add(a.location);
+        payloadOrigin.add(a.getBoundingBox().getCenter());
         count++;
       });
       payloadOrigin.divideScalar(count).setY(0).round();
