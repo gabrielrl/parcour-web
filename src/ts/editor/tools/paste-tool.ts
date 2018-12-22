@@ -3,9 +3,14 @@ namespace PRKR.Editor.Tools {
   import Vector3 = THREE.Vector3;
   import ParcourObject = Model.ParcourObject;
 
-  let modelIsArea = (x: Model.ParcourObject) => x instanceof Model.Area;
   let validationIsError = (v: Validators.ValidationResult) => v.level === Validators.ResultLevel.Error;
 
+  /**
+   * This tool pastes the clipboard content in the parcour when the user clicks the mouse. Then the pasted objects
+   * are selected and the "select" tool is activated. Work in two modes, areas and elements;
+   * @see ElementPaster
+   * @see AreaPaster
+   */
   export class PasteTool extends Tool {
 
     private _paster: Paster = null;
@@ -46,11 +51,14 @@ namespace PRKR.Editor.Tools {
 
         this._init();
 
+        // Fake the last mouse move to update the tool state with the current mouse position.
+        let mouse = this._editor.lastMouseEvent;
+        if (mouse) this.notifyMouseMove(mouse);
+
         this._editor.setStatus('Click on the ground to paste the clipboard content');
         this._editor.setPointer('crosshair');
 
-      }
-      
+      }      
     }
 
     /** Informs the Tool that it's being deactivated. */
