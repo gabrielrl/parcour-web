@@ -29,6 +29,8 @@ namespace PRKR.Model {
       }
     }
 
+    get type() { return 'ParcourObject'; }
+
     private _id: string;
     get id() { return this._id; }
 
@@ -45,7 +47,7 @@ namespace PRKR.Model {
 
     public toObject(): any {
       return {
-        $type: 'ParcourObject',
+        $type: this.type,
         id: this._id,
         name: this._name
       };

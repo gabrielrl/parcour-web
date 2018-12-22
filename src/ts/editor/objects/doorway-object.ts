@@ -24,20 +24,6 @@ namespace PRKR.Editor.Objects {
       return true;
     }
 
-    get moveConstraints() {
-
-      let placer = new Behaviors.DoorwayPlacer(this.parcour);
-
-      let constraints: MoveConstraints = {
-        steps: new Vector3(.5, 0, .5),
-        constrain(v) {
-          return placer.constrain(v);
-        }
-      }
-      return constraints;
-
-    }
-
     /**
      * Gets the world position for the current object.
      * @param target Optional target for the world position.

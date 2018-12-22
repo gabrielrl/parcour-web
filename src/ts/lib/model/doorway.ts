@@ -12,9 +12,11 @@ namespace PRKR.Model {
       super(data);
     }
 
+    get type() { return 'Doorway'; }
+
     public toObject() {
       return {
-        $type: 'Doorway',
+        $type: this.type,
         id: this.id,
         areaId: this.areaId,
         location: this.location.toArray(),

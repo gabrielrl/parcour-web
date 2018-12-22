@@ -23,6 +23,9 @@ namespace PRKR.Editor.EditSteps {
       this._steps = steps;
     }
 
+    /** Gets the edit steps composing the current step. */
+    get steps() { return _.cloneDeep(this._steps); }
+
     public do(parcour: Parcour): StepResult {
 
       let results: StepResult[] = [];

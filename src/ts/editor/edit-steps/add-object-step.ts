@@ -12,6 +12,9 @@ namespace PRKR.Editor.EditSteps {
       this._data = data;
     }
 
+    /** Gets the data used to generate the added object. */
+    get data(): any { return _.cloneDeep(this._data); }
+
     public do(parcour: Parcour): StepResult {
 
       let po = ParcourObject.fromObject(this._data);

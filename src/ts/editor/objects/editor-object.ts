@@ -42,6 +42,27 @@ namespace PRKR.Editor.Objects {
       this._buildSelectedOverlay();
     }
 
+    /**
+     * Builds an editor object from a parcour object.
+     */
+    public static fromModel(model: ParcourObject, parcour: Parcour) {
+      let eo: Objects.EditorObject = null;
+      if (model instanceof PRKR.Model.RoomArea) {
+        eo = new Objects.RoomObject(model, parcour);
+      } else if (model instanceof PRKR.Model.Location) {
+        eo = new Objects.LocationObject(model, parcour);
+      } else if (model instanceof PRKR.Model.Doorway) {
+        eo = new Objects.DoorwayObject(model, parcour);      
+      } else if (model instanceof PRKR.Model.StaticObject) {
+        eo = new Objects.StaticObject(model, parcour);
+      } else if (model instanceof PRKR.Model.DynamicObject) {
+        eo = new Objects.DynamicObject(model, parcour);
+      } else {
+        throw new Error(`Can not build an EditorObject for ${ model }`);
+      }
+      return eo;
+    }
+
     /** Gets the id of the model backing the current editor object. */
     get id() { return this._model.id }
 
@@ -73,9 +94,19 @@ namespace PRKR.Editor.Objects {
 
     /**
      * Gets the current object's move constraints.
-     * Override if `movable` returns true.
+     * No need to override.
      */
-    get moveConstraints(): MoveConstraints { return undefined; }
+    get moveConstraints(): MoveConstraints { 
+      return getMoveConstraints(this.model);
+    }
+
+    /**
+     * Gets the current object's location constraints.
+     * No need to override.
+     */
+    get locationContstraints(): LocationConstraints {
+      return getLocationConstraints(this.model);
+    }
 
     /**
      * Gets if the current object can be resized.

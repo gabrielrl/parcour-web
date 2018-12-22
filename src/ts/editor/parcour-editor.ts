@@ -100,7 +100,10 @@ namespace PRKR.Editor {
     private _intersectHelper: THREE.Object3D = null;
 
     /** The active tool. Selected by the user. */
-    private _activeTool: PRKR.Editor.Tools.Tool = null // this._tools[0];
+    private _activeTool: PRKR.Editor.Tools.Tool = null; // this._tools[0];
+
+    /** Last occurred mouse event. */
+    private _lastMouseEvent: JQueryMouseEventObject = null;
 
     /** The currently delegated tool. (e.g. overrides through keyboard/mouse "shortcuts") */
     private _mouseDelegation: PRKR.Editor.Tools.Delegation = null;
@@ -181,6 +184,7 @@ namespace PRKR.Editor {
         new Commands.RenameCommand(this),
         new Commands.SaveCommand(this),
         new Commands.PlayCommand(this),
+        new Commands.CopyCommand(this),
         new Commands.DeleteCommand(this),
         new Commands.UndoCommand(this),
         new Commands.RedoCommand(this)
@@ -196,6 +200,7 @@ namespace PRKR.Editor {
         new Tools.SelectTool(this),
         new Tools.MoveTool(this),
         new Tools.ResizeTool(this),
+        new Tools.PasteTool(this),
         new Tools.RoomDrawingTool(this),
         new Tools.CameraPanTool(this),
         new Tools.CameraRotateTool(this),
@@ -266,6 +271,11 @@ namespace PRKR.Editor {
 
     get modelIsDirty() { return this._modelIsDirty; }
 
+    /** Gets (a clone of) the current model. */
+    get model() {
+      return this._model.clone();
+    }
+
     get modelName() {
       if (this._model) return this._model.name;
       return null;
@@ -278,6 +288,10 @@ namespace PRKR.Editor {
 
     public selectTool(tool: Tool): void {
       this._setActiveTool(tool);
+    }
+
+    public selectToolByName(name: string): void {
+      this._setActiveTool(this._toolMap[name]);
     }
 
     public get canUndo(): boolean {
@@ -310,7 +324,8 @@ namespace PRKR.Editor {
     }
 
     /**
-     * Finds and return an editor object by its ID.
+     * Finds and return an editor object by its ID. Returns null of no object matching the specified ID could be
+     * found.
      */
     public getObjectById(id: string): EditorObject {
       let objects = this._objects;
@@ -319,8 +334,6 @@ namespace PRKR.Editor {
           return objects[i];
         }
       }
-      // Nope...
-      // throw new Error('Id not found. ' + id);
       return null;
     }
 
@@ -519,6 +532,9 @@ namespace PRKR.Editor {
 
       return [x, y];
     }
+
+    /** Gets the last mouse event that occurred in the context of the editor. */
+    get lastMouseEvent() { return this._lastMouseEvent; }
 
     public projectMouseOnFloor(mouse: THREE.Vector2): THREE.Intersection {
       let candidates: THREE.Object3D[] = [ this._floor ];
@@ -1036,6 +1052,7 @@ namespace PRKR.Editor {
 
     private _onMouseMove(e: JQueryMouseEventObject) {
       // console.log('mousemove', e);
+      this._lastMouseEvent = e;
 
       if (this._mouseDelegation) {
         this._mouseDelegation.tool.notifyMouseMove(e);
@@ -1048,6 +1065,7 @@ namespace PRKR.Editor {
     private _onMouseDown(e: JQueryMouseEventObject) {
       //console.log('mousedown', e);
       // console.debug('which=', e.which);
+      this._lastMouseEvent = e;
 
       if (this._mouseDelegation) {
         this._mouseDelegation.tool.notifyMouseDown(e);
@@ -1073,6 +1091,7 @@ namespace PRKR.Editor {
 
     private _onMouseUp(e: JQueryMouseEventObject) {
       // console.log('mouseup', e);
+      this._lastMouseEvent = e;
 
       if (this._mouseDelegation) {
         this._mouseDelegation.tool.notifyMouseUp(e);
@@ -1084,6 +1103,8 @@ namespace PRKR.Editor {
 
     private _onClick(e: JQueryMouseEventObject) {
       // console.log('click', e);
+      this._lastMouseEvent = e;
+
       if (this._mouseDelegation) {
         this._mouseDelegation.tool.notifyClick(e);
         this._checkDelegationQuit(e);
@@ -1206,6 +1227,16 @@ namespace PRKR.Editor {
             image: 'fa-repeat',
             command: this._commandMap['redo']
           }, {
+            name: 'copy',
+            display: 'Copy',
+            image: 'fa-copy', // ?
+            command: this._commandMap['copy']
+          }, {
+            name: 'paste',
+            display: 'Paste',
+            image: 'fa-paste', // ?
+            tool: this._toolMap['paste']
+          },{
             name: 'delete',
             display: 'Delete',
             image: 'fa-remove',
@@ -1385,23 +1416,12 @@ namespace PRKR.Editor {
      * Builds an editor object from a parcour object.
      */
     private _buildEditorObject(parcourObject: ParcourObject): EditorObject {
-      let o: Objects.EditorObject = null;
-      if (parcourObject instanceof PRKR.Model.RoomArea) {
-        o = new Objects.RoomObject(parcourObject, this._model);
-      } else if (parcourObject instanceof PRKR.Model.Location) {
-        o = new Objects.LocationObject(parcourObject, this._model);
-      } else if (parcourObject instanceof PRKR.Model.Doorway) {
-        o = new Objects.DoorwayObject(parcourObject, this._model);      
-      } else if (parcourObject instanceof PRKR.Model.StaticObject) {
-        o = new Objects.StaticObject(parcourObject, this._model);
-      } else if (parcourObject instanceof PRKR.Model.DynamicObject) {
-        o = new Objects.DynamicObject(parcourObject, this._model);
-      } else {
-        // throw new Error(`Can not build an EditorObject for ${parcourObject}`);
-        console.warn(`Can not build an EditorObject for ${parcourObject}`);
-        o = new Objects.UnknownObject(parcourObject, this._model);
+      try {
+        return EditorObject.fromModel(parcourObject, this._model);
+      } catch (err) {
+        console.warn(err);
+        return new Objects.UnknownObject(parcourObject, this._model);
       }
-      return o;
     }
  
     /**

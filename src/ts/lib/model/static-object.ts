@@ -36,6 +36,8 @@ namespace PRKR.Model {
 
     }
 
+    get type() { return 'StaticObject'; }
+
     /**
      * Gets the size of the current static object. Represent the "half extents" of the object.
      */
@@ -59,7 +61,7 @@ namespace PRKR.Model {
 
     // Override.
     public toObject() {
-      let o: any = { $type: 'StaticObject' };
+      let o: any = { $type: this.type };
       _.extend(o, {
         id: this.id,
         areaId: this.areaId,
