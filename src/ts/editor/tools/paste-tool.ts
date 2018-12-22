@@ -38,9 +38,16 @@ namespace PRKR.Editor.Tools {
       
       this._editStep = null;
 
-      if (!Clipboard.isEmpty) {
+      if (Clipboard.isEmpty) {
+
+        this._editor.setStatus('Nothing to paste. Clipboard empty');
+
+      } else {
 
         this._init();
+
+        this._editor.setStatus('Click on the ground to paste the clipboard content');
+        this._editor.setPointer('crosshair');
 
       }
       
@@ -89,13 +96,16 @@ namespace PRKR.Editor.Tools {
 
     notifyMouseUp(event: JQueryMouseEventObject) {
 
-      if (this._editStep) {
-        let validation = this._editor.validateEditStep(this._editStep);
+      if (!this._editStep) {
 
+        this._editor.setStatus('Nothing to paste. Maybe the clipboard content is incompatible with the current parcour');
+
+      } else {
+        let validation = this._editor.validateEditStep(this._editStep);
         if (_.some(validation, validationIsError)) {
 
-          this._editor.setStatus("Errors while pasting. See the console");
-          console.log('Error during paste. validation=', validation);
+          this._editor.setStatus('Could no paste because of validation errors. See the console for more details');
+          console.log('Error during paste. validations=', validation);
 
         } else {
 
@@ -104,6 +114,9 @@ namespace PRKR.Editor.Tools {
           this._editor.selectByIds(result.dirtyIds);
           this._editor.selectToolByName('select');
           this._editor.requestRender();
+
+          let length = result.dirtyIds.length;
+          this._editor.setStatus('Pasted ' + length + ' object' + ( length > 1 ? 's' : ''));
         }
       }
 

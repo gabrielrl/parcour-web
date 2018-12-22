@@ -28,7 +28,11 @@ namespace PRKR.Editor.Commands {
     run() {
 
       let sel = this._editor.selectedObjects;
-      if (sel.length !== 0) {
+      if (sel.length === 0) {
+
+        this._editor.setStatus('Nothing to copy. Select one or more objects to copy them to the clipboard');
+
+      } else {
 
         sel = this._normalizeSelection(sel);
 
@@ -63,6 +67,8 @@ namespace PRKR.Editor.Commands {
         let json = JSON.stringify(objs);
 
         console.log('...JSON=', json);
+
+        this._editor.setStatus('Copied ' + objs.length + ' object' + (objs.length > 1 ? 's' : '') + ' to the clipboard');
 
         Clipboard.set(json);
 
