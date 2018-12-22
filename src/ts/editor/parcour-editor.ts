@@ -100,7 +100,10 @@ namespace PRKR.Editor {
     private _intersectHelper: THREE.Object3D = null;
 
     /** The active tool. Selected by the user. */
-    private _activeTool: PRKR.Editor.Tools.Tool = null // this._tools[0];
+    private _activeTool: PRKR.Editor.Tools.Tool = null; // this._tools[0];
+
+    /** Last occurred mouse event. */
+    private _lastMouseEvent: JQueryMouseEventObject = null;
 
     /** The currently delegated tool. (e.g. overrides through keyboard/mouse "shortcuts") */
     private _mouseDelegation: PRKR.Editor.Tools.Delegation = null;
@@ -529,6 +532,9 @@ namespace PRKR.Editor {
 
       return [x, y];
     }
+
+    /** Gets the last mouse event that occurred in the context of the editor. */
+    get lastMouseEvent() { return this._lastMouseEvent; }
 
     public projectMouseOnFloor(mouse: THREE.Vector2): THREE.Intersection {
       let candidates: THREE.Object3D[] = [ this._floor ];
@@ -1046,6 +1052,7 @@ namespace PRKR.Editor {
 
     private _onMouseMove(e: JQueryMouseEventObject) {
       // console.log('mousemove', e);
+      this._lastMouseEvent = e;
 
       if (this._mouseDelegation) {
         this._mouseDelegation.tool.notifyMouseMove(e);
@@ -1058,6 +1065,7 @@ namespace PRKR.Editor {
     private _onMouseDown(e: JQueryMouseEventObject) {
       //console.log('mousedown', e);
       // console.debug('which=', e.which);
+      this._lastMouseEvent = e;
 
       if (this._mouseDelegation) {
         this._mouseDelegation.tool.notifyMouseDown(e);
@@ -1083,6 +1091,7 @@ namespace PRKR.Editor {
 
     private _onMouseUp(e: JQueryMouseEventObject) {
       // console.log('mouseup', e);
+      this._lastMouseEvent = e;
 
       if (this._mouseDelegation) {
         this._mouseDelegation.tool.notifyMouseUp(e);
@@ -1094,6 +1103,8 @@ namespace PRKR.Editor {
 
     private _onClick(e: JQueryMouseEventObject) {
       // console.log('click', e);
+      this._lastMouseEvent = e;
+
       if (this._mouseDelegation) {
         this._mouseDelegation.tool.notifyClick(e);
         this._checkDelegationQuit(e);
