@@ -129,7 +129,7 @@ namespace PRKR.Player {
      * @param parcour Parcour to load
      * @returns Itself.
      */
-    public load(parcour: PRKR.Model.Parcour): ParcourPlayer {
+    public load(parcour: PRKR.Model.Parcour, options?: any): ParcourPlayer {
       console.debug('load called', 'parcour=', parcour);
 
       this._parcour = new Model.RuntimeParcour(parcour);
@@ -137,6 +137,11 @@ namespace PRKR.Player {
 
       // Set start location.
       let start = this._parcour.startLocation.clone();
+
+      if (options && options.startLocation && _.isArray(options.startLocation)) {
+        start = new THREE.Vector3().fromArray(options.startLocation);
+      }
+
       let minHeight = C.Character.CapsuleHeight * .5 + C.Character.LegGap;
       if (start.y < minHeight) {
         start.setY(minHeight);
