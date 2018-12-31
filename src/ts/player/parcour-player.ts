@@ -139,7 +139,18 @@ namespace PRKR.Player {
       let start = this._parcour.startLocation.clone();
 
       if (options && options.startLocation && _.isArray(options.startLocation)) {
-        start = new THREE.Vector3().fromArray(options.startLocation);
+        start = new Vector3().fromArray(options.startLocation);
+      }
+
+      let area = this._parcour.getAreaAtLocation(start);
+      if (area) {
+        let ray = this._physics.rayCast(
+          new Vector3(start.x, area.location.y + area.size.y - 0.1, start.z),
+          new Vector3(start.x, area.location.y, start.z)
+        );
+        if (ray) {
+          start.y = ray.position.y + C.Character.CapsuleHeight * .5 + C.Character.LegGap;
+        }
       }
 
       let minHeight = C.Character.CapsuleHeight * .5 + C.Character.LegGap;
