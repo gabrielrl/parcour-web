@@ -129,7 +129,7 @@ namespace PRKR.Player {
      * @param parcour Parcour to load
      * @returns Itself.
      */
-    public load(parcour: PRKR.Model.Parcour): ParcourPlayer {
+    public load(parcour: PRKR.Model.Parcour, options?: any): ParcourPlayer {
       console.debug('load called', 'parcour=', parcour);
 
       this._parcour = new Model.RuntimeParcour(parcour);
@@ -137,6 +137,22 @@ namespace PRKR.Player {
 
       // Set start location.
       let start = this._parcour.startLocation.clone();
+
+      if (options && options.startLocation && _.isArray(options.startLocation)) {
+        start = start.fromArray(options.startLocation);
+      }
+
+      let area = this._parcour.getAreaAtLocation(start);
+      if (area) {
+        let ray = this._physics.rayCast(
+          new Vector3(start.x, area.location.y + area.size.y - 0.1, start.z),
+          new Vector3(start.x, area.location.y, start.z)
+        );
+        if (ray) {
+          start.y = ray.position.y + C.Character.CapsuleHeight * .5 + C.Character.LegGap;
+        }
+      }
+
       let minHeight = C.Character.CapsuleHeight * .5 + C.Character.LegGap;
       if (start.y < minHeight) {
         start.setY(minHeight);

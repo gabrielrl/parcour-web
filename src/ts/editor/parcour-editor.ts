@@ -143,6 +143,9 @@ namespace PRKR.Editor {
 
     /** Previously created player window, if any. */
     private _player: Window;
+
+    /** Author defined temporary start location. */
+    private _startLocation: THREE.Vector3;
     
     public init() {
       console.debug('ParcourEditor#init');
@@ -198,6 +201,7 @@ namespace PRKR.Editor {
       // Build tool list.
       this._tools = [
         new Tools.SelectTool(this),
+        new Tools.PlayFromTool(this),
         new Tools.MoveTool(this),
         new Tools.ResizeTool(this),
         new Tools.PasteTool(this),
@@ -932,6 +936,12 @@ namespace PRKR.Editor {
     }
 
     public play() {
+      this._startLocation = null;
+      this._play();
+    }
+
+    public playFrom(startLocation: Vector3) {
+      this._startLocation = startLocation;
       this._play();
     }
 
@@ -940,10 +950,9 @@ namespace PRKR.Editor {
 
       if (!this._player || this._player.closed) {
         this._player = window.open('./player.html?el=1');
-        window.addEventListener('message', e => {
-        });
       } else {
         this._player.location.reload();
+        this._player.focus();
       }
     }
 
@@ -951,10 +960,15 @@ namespace PRKR.Editor {
       if (this._player && !this._player.closed && e.data === 'ready') {
         console.log('Received "ready" message from the player.');
         let payload = this._model.toObject();
+        let options: any = {};
+        if (this._startLocation) {
+          options.startLocation = this._startLocation.toArray();
+        }
         console.debug('sending the following payload to the player window', payload);
         this._player.postMessage({
           command: 'load',
-          payload: payload
+          payload: payload,
+          options: options
         }, '*');
       }
     }
@@ -1212,6 +1226,11 @@ namespace PRKR.Editor {
             display: 'Play',
             image: 'fa-play',
             command: this._commandMap['play']
+          }, {
+            name: 'play-from',
+            display: 'Play From&hellip;',
+            image: 'fa-play-circle-o',
+            tool: this._toolMap['play-from']
           }]
         }, {
           name: 'edit',

@@ -38,7 +38,7 @@ namespace PRKR.Player {
 
         console.log('loading model:', model);
 
-        this._player.load(model);
+        this._player.load(model, message.options);
         this._player.run();
       }
     }
