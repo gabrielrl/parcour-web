@@ -25,7 +25,6 @@ namespace PRKR.Editor.Tools {
 
     /** Gets the current tool's keyboard shortcut. */
     get keyboardShortcut(): KeyboardMatcher {
-      // TODO don't know yet
       return KeyboardMatcher.for({
         keyCode: 32, /* space */
         key: 'SPACE'

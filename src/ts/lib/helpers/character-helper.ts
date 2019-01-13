@@ -6,7 +6,7 @@ namespace PRKR.Helpers {
    * A threejs object that represents the character.
    * 
    * In such early stage of development, all you get is a capsule (that curiously matches the phsycical body used to
-   * approximate the character impact on the world).
+   * approximate the character's interactions with the world).
    */
   export class CharacterHelper extends THREE.Object3D {
 

@@ -144,7 +144,7 @@ namespace PRKR.Editor {
     /** Previously created player window, if any. */
     private _player: Window;
 
-    /** Author defined (temporary) start location. */
+    /** Author defined temporary start location. */
     private _startLocation: THREE.Vector3;
     
     public init() {
@@ -952,7 +952,7 @@ namespace PRKR.Editor {
         this._player = window.open('./player.html?el=1');
       } else {
         this._player.location.reload();
-        this._player.focus(); // ?? 
+        this._player.focus();
       }
     }
 
@@ -1228,7 +1228,7 @@ namespace PRKR.Editor {
             command: this._commandMap['play']
           }, {
             name: 'play-from',
-            display: 'Play From &hellip;',
+            display: 'Play From&hellip;',
             image: 'fa-play-circle-o',
             tool: this._toolMap['play-from']
           }]

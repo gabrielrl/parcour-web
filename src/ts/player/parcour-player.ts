@@ -139,7 +139,7 @@ namespace PRKR.Player {
       let start = this._parcour.startLocation.clone();
 
       if (options && options.startLocation && _.isArray(options.startLocation)) {
-        start = new Vector3().fromArray(options.startLocation);
+        start = start.fromArray(options.startLocation);
       }
 
       let area = this._parcour.getAreaAtLocation(start);
