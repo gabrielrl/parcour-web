@@ -17,8 +17,11 @@ namespace PRKR.Editor.Objects {
       this.update();
     }
 
-    /** Gets true because static objects area movables. */
+    /** Gets true because static objects are movables. */
     get movable(): true { return true; }
+
+    /** Gets true because static objects are rotatable. */
+    get rotatable(): true { return true; }
 
     /** Override. */
     get resizable(): boolean { return true; }

@@ -203,6 +203,7 @@ namespace PRKR.Editor {
         new Tools.SelectTool(this),
         new Tools.PlayFromTool(this),
         new Tools.MoveTool(this),
+        new Tools.RotateTool(this),
         new Tools.ResizeTool(this),
         new Tools.PasteTool(this),
         new Tools.RoomDrawingTool(this),
@@ -1269,6 +1270,11 @@ namespace PRKR.Editor {
             display: 'Resize',
             image: 'fa-arrows-alt',
             tool: this._toolMap['resize']
+          }, {
+            name: 'rotate',
+            display: 'Rotate',
+            image: 'fa-circle-o',
+            tool: this._toolMap['rotate']
           }, {
             name: 'addRectangularRoom',
             display: 'Add rect.',

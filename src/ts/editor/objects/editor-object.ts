@@ -88,7 +88,7 @@ namespace PRKR.Editor.Objects {
 
     /**
      * Gets if the current object can be moved.
-     * Override.
+     * Override. Defaults to false.
      */
     get movable(): boolean { return false; }
 
@@ -107,6 +107,17 @@ namespace PRKR.Editor.Objects {
     get locationContstraints(): LocationConstraints {
       return getLocationConstraints(this.model);
     }
+
+    /**
+     * Gets if the object can be rotated.
+     * Override. Defaults to false.
+     */
+    get rotatable(): boolean { return false; }
+
+    // get rotationConstraints(): RotateConstraints {
+    //   return getRotationConstratins
+    // }
+
 
     /**
      * Gets if the current object can be resized.
