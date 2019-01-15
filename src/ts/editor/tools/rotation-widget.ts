@@ -60,7 +60,7 @@ namespace PRKR.Editor.Tools {
     test(mouse: JQueryMouseEventObject, editor: ParcourEditor): WidgetHitTestResult {
       let intersection = editor.projectMouseOnPlane(
         new THREE.Vector2(mouse.clientX, mouse.clientY),
-        this._clippedRing.position,
+        this._root.position,
         Helpers.getNormalFromOrthoPlane(this._plane)
       );
 
