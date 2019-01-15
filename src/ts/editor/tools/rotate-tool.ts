@@ -9,15 +9,21 @@ namespace PRKR.Editor.Tools {
       super();
     }
 
-    private _rotating: boolean = false;
-
-    private _rotationValid: boolean = false;
-
     private _targets: EditorObject[] = [];
 
     private _pivot: Vector3 = new Vector3();
 
-    private _widgets: RotationWidget[] = [];    
+    private _widgets: RotationWidget[] = [];
+
+    private _rotating: boolean = false;
+
+    private _activeWidget: RotationWidget;
+
+    private _from: Vector3 = new Vector3();
+
+    private _to: Vector3 = new Vector3();
+
+    private _rotationValid: boolean = false;
 
     /** Gets the current tool's name. Used as a unique key. */
     get name(): string { return 'rotate'; }
@@ -41,6 +47,11 @@ namespace PRKR.Editor.Tools {
       this._reset();
       this._setUp();
 
+      // Simulate mouse down to update.
+      if (this._editor.lastMouseEvent) {
+        this.notifyMouseMove(this._editor.lastMouseEvent);
+      }
+
       this._editor.requestRender();
 
     }
@@ -56,18 +67,66 @@ namespace PRKR.Editor.Tools {
 
     notifyMouseMove(event: JQueryMouseEventObject): void {
 
-      let intersections = this._widgets.map(w => w.test(event, this._editor));
+      if (!this._rotating) {
 
-      let intersection = _.minBy(intersections, i => i.distance);
+        let intersection = this._getNearestWidgetIntersection(event);
+        if (intersection) {
+
+          this._editor.setStatus('Click and drag to rotate object around ' + intersection.widget.name);
+
+          this._widgets.forEach(w => {
+            if (w === intersection.widget) {
+              w.setState(WidgetState.Hovered);
+            } else {
+              w.setState(WidgetState.Normal);
+            }
+          });
+
+        }
+      } else {
+
+        // Rotating
+        let intersection = this._activeWidget.test(event, this._editor);
+        this._to.copy(intersection.point);
+
+        let v1 = new Vector3().subVectors(this._from, this._pivot);
+        let v2 = new Vector3().subVectors(this._to, this._pivot);
+
+        let angle = v1.angleTo(v2);
+        let degrees = angle / M.TWO_PI * 360;
+
+        let planes: THREE.Plane[] = [];
+        let n = new Vector3().subVectors(v2, v1);
+        let projection = n.clone().projectOnVector(v1);
+        n.sub(projection).normalize();
+        planes.push(new THREE.Plane().setFromNormalAndCoplanarPoint(n, this._pivot));
+
+        n.subVectors(v1, v2);
+        projection = n.clone().projectOnVector(v2);
+        n.sub(projection).normalize();
+        planes.push(new THREE.Plane().setFromNormalAndCoplanarPoint(n, this._pivot));
+        this._activeWidget.setClippingPlanes(planes);
+
+        this._editor.setStatus('Click and drag to rotate object around ' + this._activeWidget.name + ' by ' + degrees.toFixed(0) + '°');
+
+      }
+
+      this._editor.requestRender();
+
+    }
+
+    notifyMouseDown(event: JQueryMouseEventObject): void {
+
+      let intersection = this._getNearestWidgetIntersection(event);
       if (intersection) {
-
-        this._editor.setStatus('Click and drag to rotate object around ' + intersection.widget.name);
+        this._rotating = true;
+        this._activeWidget = intersection.widget;
+        this._from.copy(intersection.point);
+        this._to.copy(intersection.point);
 
         this._widgets.forEach(w => {
-          if (w === intersection.widget) {
-            w.setState(WidgetState.Hovered);
-          } else {
-            w.setState(WidgetState.Normal);
+          if (w !== this._activeWidget) {
+            w.setState(WidgetState.Hidden);
           }
         });
 
@@ -77,11 +136,22 @@ namespace PRKR.Editor.Tools {
 
     }
 
-    notifyMouseDown(event: JQueryMouseEventObject): void { }
+    notifyMouseUp(event: JQueryMouseEventObject): void {
 
-    notifyMouseUp(event: JQueryMouseEventObject): void { }
+      this._rotating = false;
+      this._activeWidget = null;
+
+      this._reset();
+      this._setUp();
+
+      // Simulate mouse move to update state.
+      this.notifyMouseMove(event);
+
+    }
     
-    notifyKeyDown(event: JQueryKeyEventObject): void { }
+    notifyKeyDown(event: JQueryKeyEventObject): void {
+
+    }
 
     private _reset() {
 
@@ -140,5 +210,9 @@ namespace PRKR.Editor.Tools {
 
     }
 
+    private _getNearestWidgetIntersection(mouse: JQueryMouseEventObject): WidgetHitTestResult {
+      let intersections = this._widgets.map(w => w.test(mouse, this._editor));
+      return _.minBy(intersections, i => i.distance);
+    }
   }
 }
