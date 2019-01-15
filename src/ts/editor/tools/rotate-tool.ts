@@ -14,7 +14,7 @@ namespace PRKR.Editor.Tools {
 
     private _targets: EditorObject[] = [];
 
-    private _widets: RotationWidget[] = [];    
+    private _widgets: RotationWidget[] = [];    
 
     /** Gets the current tool's name. Used as a unique key. */
     get name(): string { return 'rotate'; }
@@ -51,7 +51,28 @@ namespace PRKR.Editor.Tools {
 
     }
 
-    notifyMouseMove(event: JQueryMouseEventObject): void { }
+    notifyMouseMove(event: JQueryMouseEventObject): void {
+
+      let intersections = this._widgets.map(w => w.test(event, this._editor));
+
+      let intersection = _.minBy(intersections, i => i.distance);
+      if (intersection) {
+
+        this._editor.setStatus('Click and drag to rotate object around ' + intersection.widget.name);
+
+        this._widgets.forEach(w => {
+          if (w === intersection.widget) {
+            w.setState(WidgetState.Hovered);
+          } else {
+            w.setState(WidgetState.Normal);
+          }
+        });
+
+        this._editor.requestRender();
+
+      }
+
+    }
 
     notifyMouseDown(event: JQueryMouseEventObject): void { }
 
@@ -61,13 +82,13 @@ namespace PRKR.Editor.Tools {
 
     private _reset() {
 
-      if (this._widets) {
-        this._widets.forEach(w => this._editor.removeFromScene(w.threeObject));
+      if (this._widgets) {
+        this._widgets.forEach(w => this._editor.removeFromScene(w.threeObject));
       }
 
       this._rotating = false;
       this._targets = [];
-      this._widets = [];
+      this._widgets = [];
 
     }
 
@@ -83,17 +104,17 @@ namespace PRKR.Editor.Tools {
       // Build rotation widgets
 
       // rotate around Y
-      let wy = new RotationWidget(Helpers.OrthoPlane.XZ, 0x00ff00);
+      let wy = new RotationWidget('Y', Helpers.OrthoPlane.XZ, 0x00ff00);
 
       // rotate around X
-      let wx = new RotationWidget(Helpers.OrthoPlane.YZ, 0xff0000);
+      let wx = new RotationWidget('X', Helpers.OrthoPlane.YZ, 0xff0000);
 
       // rotate around Z
-      let wz = new RotationWidget(Helpers.OrthoPlane.XY, 0x0000ff);
+      let wz = new RotationWidget('Z', Helpers.OrthoPlane.XY, 0x0000ff);
 
-      this._widets = [ wx, wy, wz ];
+      this._widgets = [ wx, wy, wz ];
 
-      this._widets.forEach(w => {
+      this._widgets.forEach(w => {
         w.setPosition(target.getWorldPosition());
         this._editor.addToScene(w.threeObject);
       });
