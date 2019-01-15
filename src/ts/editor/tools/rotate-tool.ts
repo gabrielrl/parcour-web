@@ -1,5 +1,6 @@
 namespace PRKR.Editor.Tools {
 
+  import Vector3 = THREE.Vector3;
   import EditorObject = Objects.EditorObject;
 
   export class RotateTool extends Tool {
@@ -13,6 +14,8 @@ namespace PRKR.Editor.Tools {
     private _rotationValid: boolean = false;
 
     private _targets: EditorObject[] = [];
+
+    private _pivot: Vector3 = new Vector3();
 
     private _widgets: RotationWidget[] = [];    
 
@@ -98,6 +101,7 @@ namespace PRKR.Editor.Tools {
 
       // TEMPORARY SINGLE TARGET MODE
       let target = this._editor.selectedObjects[0];
+      this._pivot.copy(target.getWorldPosition());
 
       this._targets = [ target ];
 
@@ -114,7 +118,22 @@ namespace PRKR.Editor.Tools {
 
       this._widgets = [ wx, wy, wz ];
 
+      let cameraOrientation = this._editor.getCameraRig().getWorldDirection();
+      let clippingPlanes: THREE.Plane[] = [];
       this._widgets.forEach(w => {
+        let n = Helpers.getNormalFromOrthoPlane(w.plane);
+        let dot = n.dot(cameraOrientation);
+        if (dot > 0) {
+          n.negate(); 
+        }
+        let p = this._pivot.clone();
+        p.addScaledVector(n, -0.001);
+
+        clippingPlanes.push(new THREE.Plane().setFromNormalAndCoplanarPoint(n, p));
+      });
+
+      this._widgets.forEach(w => {
+        w.setClippingPlanes(clippingPlanes);
         w.setPosition(target.getWorldPosition());
         this._editor.addToScene(w.threeObject);
       });

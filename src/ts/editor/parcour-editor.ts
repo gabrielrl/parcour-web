@@ -1361,6 +1361,7 @@ namespace PRKR.Editor {
       let renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setClearColor(0xFFFFFF);
       renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.localClippingEnabled = true;
 
       let container = this._domLayout.main;
       renderer.setSize(container.clientWidth, container.clientHeight);

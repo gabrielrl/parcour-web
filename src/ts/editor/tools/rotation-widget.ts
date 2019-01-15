@@ -9,8 +9,11 @@ namespace PRKR.Editor.Tools {
     private _plane: OrthoPlane;
     private _state: WidgetState;
 
-    private _threeObject: THREE.Object3D;
-    private _material: THREE.MeshBasicMaterial;
+    private _root: THREE.Object3D;
+    private _clippedRing: THREE.Mesh;
+    private _fullRing: THREE.Mesh;
+    private _clippedMaterial: THREE.MeshBasicMaterial;
+    private _fullMaterial: THREE.MeshBasicMaterial;
 
     constructor(name: string, plane: OrthoPlane, color: number) {
 
@@ -20,6 +23,7 @@ namespace PRKR.Editor.Tools {
       this._state = WidgetState.Normal;
 
       this._buildObject();
+      this._applyState();
 
     }
 
@@ -27,13 +31,17 @@ namespace PRKR.Editor.Tools {
       return this._name;
     }
 
+    get plane(): OrthoPlane {
+      return this._plane;
+    }
+
     get threeObject(): THREE.Object3D {
-      return this._threeObject;
+      return this._root;
     }
 
     setPosition(p: THREE.Vector3) {
 
-      this._threeObject.position.copy(p);
+      this._root.position.copy(p);
 
     }
 
@@ -42,22 +50,17 @@ namespace PRKR.Editor.Tools {
 
       this._state = state;
 
-      switch(this._state) {
-        case WidgetState.Normal:
-        default:
-          this._material.opacity = 0.333;
-          break;
+      this._applyState(state);
+    }
 
-        case WidgetState.Hovered:
-          this._material.opacity = 1;
-          break;
-      }
+    setClippingPlanes(clippingPlanes: THREE.Plane[]) {
+      this._clippedMaterial.clippingPlanes = [].concat(clippingPlanes);
     }
 
     test(mouse: JQueryMouseEventObject, editor: ParcourEditor): WidgetHitTestResult {
       let intersection = editor.projectMouseOnPlane(
         new THREE.Vector2(mouse.clientX, mouse.clientY),
-        this._threeObject.position,
+        this._clippedRing.position,
         Helpers.getNormalFromOrthoPlane(this._plane)
       );
 
@@ -71,22 +74,48 @@ namespace PRKR.Editor.Tools {
     private _buildObject(): void {
 
       let ringGeo = new THREE.RingBufferGeometry(0.75, 1, 20, 1);
-      this._material = new THREE.MeshBasicMaterial({
+      this._clippedMaterial = new THREE.MeshBasicMaterial({
         color: this._color,
         transparent: true,
-        opacity: 0.5,
         side: THREE.DoubleSide,
         depthTest: false,
         depthWrite: false
       });
-      let ring = new THREE.Mesh(ringGeo, this._material);
+      this._fullMaterial = new THREE.MeshBasicMaterial({
+        color: this._color,
+        transparent: true,
+        opacity: 0.333,
+        side: THREE.DoubleSide,
+        depthTest: false,
+        depthWrite: false
+      });
+      this._clippedRing = new THREE.Mesh(ringGeo, this._clippedMaterial);
+      this._fullRing = new THREE.Mesh(ringGeo, this._fullMaterial);
+
+      this._root = new THREE.Group();
+      this._root.add(this._clippedRing);
+      this._root.add(this._fullRing);
 
       let normal = Helpers.getNormalFromOrthoPlane(this._plane);
+      this._root.quaternion.setFromUnitVectors(M.Vector3.PositiveZ, normal);
 
-      ring.quaternion.setFromUnitVectors(M.Vector3.PositiveZ, normal);
+    }
 
-      this._threeObject = ring;
-      
+    private _applyState(state?: WidgetState) {
+
+      switch(state || this._state) {
+        case WidgetState.Normal:
+        default:
+          this._clippedMaterial.opacity = 0.333;
+          this._fullRing.visible = false;
+          break;
+
+        case WidgetState.Hovered:
+          this._clippedMaterial.opacity = 1;
+          this._fullRing.visible = true;
+          break;
+      }
+
     }
 
   }
