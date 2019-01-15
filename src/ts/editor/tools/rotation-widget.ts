@@ -108,11 +108,17 @@ namespace PRKR.Editor.Tools {
         default:
           this._clippedMaterial.opacity = 0.333;
           this._fullRing.visible = false;
+          this._root.visible = true;
           break;
 
         case WidgetState.Hovered:
           this._clippedMaterial.opacity = 1;
           this._fullRing.visible = true;
+          this._root.visible = true;
+          break;
+
+        case WidgetState.Hidden:
+          this._root.visible = false;
           break;
       }
 
