@@ -10,15 +10,29 @@ namespace PRKR.Editor.Objects {
 
   export class DynamicObject extends EditorObject {
 
-    private _mesh: THREE.Mesh = null;
+    private _geometry: THREE.Geometry = null;
+    private _mesh: Mesh = null;
 
     constructor(model: DynamicModel, parcour: Parcour) {
       super(model, parcour);
       this.update();
     }
 
+    /** Gets true because dynamic objects are movable. */
+    get movable(): true { return true; }
+
+    /** Gets true because dynamic objects are rotatable. */
+    get rotatable(): true { return true; }
+
     /** Override. */
-    get resizable(): boolean { return true;}
+    get resizable(): boolean { return true; }
+
+    get geometry(): THREE.Geometry {
+      if (!this._geometry) {
+        this._geometry = this._buildGeometry();
+      }
+      return this._geometry;
+    }
 
     public update() {
       this._updateSceneObject();
@@ -138,10 +152,6 @@ namespace PRKR.Editor.Objects {
       return props;
     }
 
-    get movable() { return true; }
-
-    get rotatable() { return true; }
-
     /** Override */
     protected _computeBoundingBox() {
 
@@ -150,7 +160,7 @@ namespace PRKR.Editor.Objects {
       min.copy(staticModel.size).multiplyScalar(-1);
       let max = new Vector3();
       max.copy(staticModel.size);
-      let box = new THREE.Box3(min, max);
+      let box = new Box3(min, max);
       M.rotateBox3(box, staticModel.rotation);
       return box;
     }
@@ -166,21 +176,22 @@ namespace PRKR.Editor.Objects {
      */
     private static MaxDensityColor = new THREE.Color(0xff0000);
 
+    private _buildGeometry() {
+      let model = <DynamicModel>this.model;
+      return new THREE.CubeGeometry(
+        model.size.x * 2,
+        model.size.y * 2,
+        model.size.z * 2
+      );
+    }
+
     private _buildMesh() {
 
-      let dynamicModel = <DynamicModel>this.model;
-      let area = <Model.Area>this.parcour.getObjectById(dynamicModel.areaId);
-      let g = new THREE.CubeGeometry(
-        dynamicModel.size.x * 2,
-        dynamicModel.size.y * 2,
-        dynamicModel.size.z * 2
-      ); 
-
+      let model = <DynamicModel>this.model;
       let material = DynamicObject.Material.clone();
-      material.color.lerp(DynamicObject.MaxDensityColor, DynamicModel.densityToLinear(dynamicModel.density))
-      let mesh = new THREE.Mesh(g, material);
-
-      mesh.quaternion.copy(dynamicModel.rotation);
+      material.color.lerp(DynamicObject.MaxDensityColor, DynamicModel.densityToLinear(model.density))
+      let mesh = new Mesh(this.geometry, material);
+      mesh.quaternion.copy(model.rotation);
       return mesh;
     }
 

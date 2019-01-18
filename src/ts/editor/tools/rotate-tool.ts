@@ -20,13 +20,15 @@ namespace PRKR.Editor.Tools {
 
     private _rotation: Quaternion;
 
+    private _rotationValid: boolean = false;
+
     private _activeWidget: RotationWidget;
 
     private _from: Vector3 = new Vector3();
 
     private _to: Vector3 = new Vector3();
 
-    private _rotationValid: boolean = false;
+    private _helpers: EditorObjectHelper[] = [];
 
     /** Gets the current tool's name. Used as a unique key. */
     get name(): string { return 'rotate'; }
@@ -54,7 +56,7 @@ namespace PRKR.Editor.Tools {
       if (this._editor.lastMouseEvent) {
         this.notifyMouseMove(this._editor.lastMouseEvent);
       }
-
+      this._editor.setPointer('crosshair');
       this._editor.requestRender();
 
     }
@@ -115,6 +117,9 @@ namespace PRKR.Editor.Tools {
         planes.push(new THREE.Plane().setFromNormalAndCoplanarPoint(n, this._pivot));
         this._activeWidget.setClippingPlanes(planes);
 
+        // Rotate all the helpers
+        this._helpers.forEach(h => h.quaternion.copy(this._rotation));
+
         this._editor.setStatus('Click and drag to rotate object around ' + this._activeWidget.name + ' by ' + degrees.toFixed(0) + '°');
 
       }
@@ -172,11 +177,15 @@ namespace PRKR.Editor.Tools {
       if (this._widgets) {
         this._widgets.forEach(w => this._editor.removeFromScene(w.threeObject));
       }
+      if (this._helpers) {
+        this._helpers.forEach(h => this._editor.removeFromScene(h));
+      }
 
       this._rotating = false;
       this._rotation = null;
       this._targets = [];
       this._widgets = [];
+      this._helpers = [];
 
     }
 
@@ -189,6 +198,14 @@ namespace PRKR.Editor.Tools {
       this._pivot.copy(target.getWorldPosition());
 
       this._targets = [ target ];
+
+      // Build visual helper for all the targets.
+      this._helpers = this._targets.map(t => {
+        let h = new EditorObjectHelper(t);
+        t.getWorldPosition(h.position);
+        this._editor.addToScene(h);
+        return h;
+      });
 
       // Build rotation widgets
 

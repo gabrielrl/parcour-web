@@ -138,6 +138,14 @@ namespace PRKR.Editor.Objects {
       return this._bbox;
     }
 
+    /**
+     * Gets a geometry for the object. May return null since not all object will implement this.
+     * Override, don't call super.
+     */
+    get geometry(): THREE.Geometry {
+      return null;
+    }
+
     protected _invalidateBoundingBox() {
       this._bbox = null;
     }

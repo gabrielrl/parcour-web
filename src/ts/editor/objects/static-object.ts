@@ -10,7 +10,8 @@ namespace PRKR.Editor.Objects {
 
   export class StaticObject extends EditorObject {
 
-    private _mesh: THREE.Mesh = null;
+    private _geometry: THREE.Geometry = null;
+    private _mesh: Mesh = null;
 
     constructor(model: StaticModel, parcour: Parcour) {
       super(model, parcour);
@@ -25,6 +26,13 @@ namespace PRKR.Editor.Objects {
 
     /** Override. */
     get resizable(): boolean { return true; }
+
+    get geometry(): THREE.Geometry {
+      if (!this._geometry) {
+        this._geometry = this._buildGeometry();
+      }
+      return this._geometry;
+    }
 
     public update() {
       this._updateSceneObject();
@@ -68,14 +76,14 @@ namespace PRKR.Editor.Objects {
     }
 
     /** Override */
-    protected _computeBoundingBox(): THREE.Box3 {
+    protected _computeBoundingBox(): Box3 {
 
       let staticModel = <StaticModel>this.model;
       let min = new Vector3();
       min.copy(staticModel.size).multiplyScalar(-1);
       let max = new Vector3();
       max.copy(staticModel.size);
-      let box = new THREE.Box3(min, max);
+      let box = new Box3(min, max);
       
       M.rotateBox3(box, staticModel.rotation);
       return box;
@@ -85,17 +93,20 @@ namespace PRKR.Editor.Objects {
       color: 0xcccccc
     });
 
+    private _buildGeometry() {
+      let model = <StaticModel>this.model;
+      return new THREE.CubeGeometry(
+        model.size.x * 2,
+        model.size.y * 2,
+        model.size.z * 2
+      );
+    }
+
     private _buildMesh() {
 
-      let staticModel = <StaticModel>this.model;
-      let area = <Model.Area>this.parcour.getObjectById(staticModel.areaId);
-      let g = new THREE.CubeGeometry(
-        staticModel.size.x * 2,
-        staticModel.size.y * 2,
-        staticModel.size.z * 2
-      ); 
-      let mesh = new THREE.Mesh(g, StaticObject.Material);
-      mesh.quaternion.copy(staticModel.rotation);
+      let mesh = new Mesh(this.geometry, StaticObject.Material);
+      let model = <StaticModel>this.model;
+      mesh.quaternion.copy(model.rotation);
       return mesh;
     }
   }
