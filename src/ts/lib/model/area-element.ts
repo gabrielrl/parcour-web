@@ -3,10 +3,12 @@
 namespace PRKR.Model {
 
   import Vector3 = THREE.Vector3;
+  import Quaternion = THREE.Quaternion;
 
   export interface AreaElementData extends ParcourObjectData {
     areaId: string;
     location: Vector3 | number[];
+    rotation?: Quaternion | number[];
   }
 
   /** Base class for all parcour objects that are part of an area. */
@@ -17,6 +19,9 @@ namespace PRKR.Model {
 
     /** (Area relative) location of the current element. */
     private _location = new Vector3();
+
+    /** Rotation of the current element. */
+    private _rotation = new Quaternion();
 
     constructor(data?: AreaElementData) {
       super(data);
@@ -32,6 +37,14 @@ namespace PRKR.Model {
             this._location.copy(data.location);
           }
         }
+
+        if (data.rotation) {
+          if (_.isArray(data.rotation)) {
+            this._rotation.fromArray(data.rotation);
+          } else {
+            this._rotation.copy(data.rotation);
+          }
+        }
       }
     }
 
@@ -45,11 +58,27 @@ namespace PRKR.Model {
     /** Gets the (area relative) location of the current element in the area. */
     get location() { return this._location; }
 
+    /** Get the rotation of thte current element. */
+    get rotation() { return this._rotation; }
+
     // Override
     public clone() {
       let clone = new AreaElement();
       clone._copy(this);
       return clone;
+    }
+
+    /**
+     * Gets a plain object representation of the current object.
+     * Override, call super and extend its return value, don't forget to overwrite `$type`.
+     */
+    public toObject(): any {
+      return _.assign(super.toObject(), {
+        $type: this.type,
+        areaId: this._areaId,
+        location: this._location.toArray(),
+        rotation: this._rotation.toArray()        
+      });
     }
 
     /**
@@ -66,6 +95,7 @@ namespace PRKR.Model {
       super._copy(source);
       this._areaId = source.areaId;
       this._location.copy(source.location);
+      this._rotation.copy(source.rotation);
     }
   }
 }

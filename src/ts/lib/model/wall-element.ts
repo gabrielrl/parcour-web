@@ -20,8 +20,7 @@ namespace PRKR.Model {
       if (data) {
         if (data.size) {
           if (_.isArray(data.size)) {
-            let a = data.size;
-            this._size.set(a[0], a[1]);
+            this._size.fromArray(data.size);
           } else {
             this._size.copy(data.size);
           }
@@ -40,6 +39,17 @@ namespace PRKR.Model {
       let clone = new WallElement();
       clone._copy(this);
       return clone;
+    }
+
+    /**
+     * Gets a plain object representation of the current object.
+     * Override, call super and extend its return value, don't forget to overwrite `$type`.
+     */
+    public toObject(): any {
+      return _.assign(super.toObject(), {
+        $type: this.type,
+        size: this._size.toArray()
+      });
     }
 
     // Override, call parent.

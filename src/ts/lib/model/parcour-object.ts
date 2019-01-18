@@ -44,7 +44,10 @@ namespace PRKR.Model {
       return clone;      
     }
 
-
+    /**
+     * Gets a plain object representation of the current object.
+     * Override, call super and extend its return value, don't forget to overwrite `$type`.
+     */
     public toObject(): any {
       return {
         $type: this.type,
@@ -109,6 +112,5 @@ namespace PRKR.Model {
       this._id = source.id;
       this._name = source.name;
     }
-    
   }
 }
