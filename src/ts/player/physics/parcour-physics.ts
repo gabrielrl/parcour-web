@@ -235,6 +235,9 @@ namespace PRKR.Player.Physics {
       if (data.position) {
         transform.setOrigin(new Ammo.btVector3(data.position.x, data.position.y, data.position.z));
       }
+      if (data.rotation) {
+        transform.setRotation(new Ammo.btQuaternion(data.rotation.x, data.rotation.y, data.rotation.z, data.rotation.w));
+      }
 
       let mass = data.mass;
       let dynamic = (mass !== 0);
