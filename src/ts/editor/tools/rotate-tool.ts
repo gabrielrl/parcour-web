@@ -1,6 +1,7 @@
 namespace PRKR.Editor.Tools {
 
   import Vector3 = THREE.Vector3;
+  import Quaternion = THREE.Quaternion;
   import EditorObject = Objects.EditorObject;
 
   export class RotateTool extends Tool {
@@ -16,6 +17,8 @@ namespace PRKR.Editor.Tools {
     private _widgets: RotationWidget[] = [];
 
     private _rotating: boolean = false;
+
+    private _rotation: Quaternion;
 
     private _activeWidget: RotationWidget;
 
@@ -92,6 +95,11 @@ namespace PRKR.Editor.Tools {
         let v1 = new Vector3().subVectors(this._from, this._pivot);
         let v2 = new Vector3().subVectors(this._to, this._pivot);
 
+        let nv1 = v1.clone().normalize();
+        let nv2 = v2.clone().normalize();
+        this._rotation.setFromUnitVectors(nv1, nv2);
+        // this._rotation
+
         let angle = v1.angleTo(v2);
         let degrees = angle / M.TWO_PI * 360;
 
@@ -120,6 +128,7 @@ namespace PRKR.Editor.Tools {
       let intersection = this._getNearestWidgetIntersection(event);
       if (intersection) {
         this._rotating = true;
+        this._rotation = new Quaternion();
         this._activeWidget = intersection.widget;
         this._from.copy(intersection.point);
         this._to.copy(intersection.point);
@@ -137,6 +146,11 @@ namespace PRKR.Editor.Tools {
     }
 
     notifyMouseUp(event: JQueryMouseEventObject): void {
+
+      let step = this._buildEditStep();
+      if (step) {
+        this._editor.addEditStep(step);
+      }
 
       this._rotating = false;
       this._activeWidget = null;
@@ -160,6 +174,7 @@ namespace PRKR.Editor.Tools {
       }
 
       this._rotating = false;
+      this._rotation = null;
       this._targets = [];
       this._widgets = [];
 
@@ -214,5 +229,16 @@ namespace PRKR.Editor.Tools {
       let intersections = this._widgets.map(w => w.test(mouse, this._editor));
       return _.minBy(intersections, i => i.distance);
     }
+
+    private _buildEditStep() {
+      if (!this._rotation) return null;
+
+      let step = new EditSteps.RotateStep(
+        this._rotation,
+        this._targets.map(x => x.id)
+      );
+      return step;
+    }
+
   }
 }

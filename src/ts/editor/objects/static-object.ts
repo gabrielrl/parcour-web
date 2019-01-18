@@ -68,15 +68,16 @@ namespace PRKR.Editor.Objects {
     }
 
     /** Override */
-    protected _computeBoundingBox() {
+    protected _computeBoundingBox(): THREE.Box3 {
 
-      // TODO need to take rotation into account
       let staticModel = <StaticModel>this.model;
       let min = new Vector3();
       min.copy(staticModel.size).multiplyScalar(-1);
       let max = new Vector3();
       max.copy(staticModel.size);
       let box = new THREE.Box3(min, max);
+      
+      M.rotateBox3(box, staticModel.rotation);
       return box;
     }
 
@@ -94,6 +95,7 @@ namespace PRKR.Editor.Objects {
         staticModel.size.z * 2
       ); 
       let mesh = new THREE.Mesh(g, StaticObject.Material);
+      mesh.quaternion.copy(staticModel.rotation);
       return mesh;
     }
   }

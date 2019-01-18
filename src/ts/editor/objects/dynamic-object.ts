@@ -140,16 +140,18 @@ namespace PRKR.Editor.Objects {
 
     get movable() { return true; }
 
+    get rotatable() { return true; }
+
     /** Override */
     protected _computeBoundingBox() {
 
-      // TODO need to take rotation into account
       let staticModel = <DynamicModel>this.model;
       let min = new Vector3();
       min.copy(staticModel.size).multiplyScalar(-1);
       let max = new Vector3();
       max.copy(staticModel.size);
       let box = new THREE.Box3(min, max);
+      M.rotateBox3(box, staticModel.rotation);
       return box;
     }
 
@@ -178,6 +180,7 @@ namespace PRKR.Editor.Objects {
       material.color.lerp(DynamicObject.MaxDensityColor, DynamicModel.densityToLinear(dynamicModel.density))
       let mesh = new THREE.Mesh(g, material);
 
+      mesh.quaternion.copy(dynamicModel.rotation);
       return mesh;
     }
 
