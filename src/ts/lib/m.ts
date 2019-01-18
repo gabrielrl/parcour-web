@@ -171,5 +171,28 @@ namespace PRKR {
       return box;
     }
 
+    /**
+     * Computes the new orthogonal (axis-aligned) box that contains the original box after rotating it.
+     * mutates and returns `box`.
+     * @param box The box to rotate (gets mutated)
+     * @param quaternion The rotation to apply.
+     * @returns `box`
+     */
+    public static rotateBox3(box: THREE.Box3, quaternion: THREE.Quaternion): THREE.Box3 {
+      let points: Vector3[] = [];
+      points.push(new Vector3(box.min.x, box.min.y, box.min.z));
+      points.push(new Vector3(box.min.x, box.min.y, box.max.z));
+      points.push(new Vector3(box.max.x, box.min.y, box.min.z));
+      points.push(new Vector3(box.max.x, box.min.y, box.max.z));
+      points.push(new Vector3(box.min.x, box.max.y, box.min.z));
+      points.push(new Vector3(box.min.x, box.max.y, box.max.z));
+      points.push(new Vector3(box.max.x, box.max.y, box.min.z));
+      points.push(new Vector3(box.max.x, box.max.y, box.max.z));
+
+      points.forEach(p => p.applyQuaternion(quaternion));
+      box.setFromPoints(points);
+      return box;
+    }
+
   }
 }
