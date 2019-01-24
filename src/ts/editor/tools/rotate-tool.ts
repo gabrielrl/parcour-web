@@ -120,6 +120,16 @@ namespace PRKR.Editor.Tools {
         // Rotate all the helpers
         this._helpers.forEach(h => h.quaternion.copy(this._rotation));
 
+        let step = this._buildEditStep();
+        if (step) {
+          let validation = this._editor.validateEditStep(step);
+          let someErrors = _.some(validation, Validators.isError);
+          this._rotationValid = !someErrors;
+        } else {
+          this._rotationValid = false;
+        }
+  
+        this._helpers.forEach(h => h.setValidState(this._rotationValid));
         this._editor.setStatus('Click and drag to rotate object around ' + this._activeWidget.name + ' by ' + degrees.toFixed(0) + '°');
 
       }
@@ -153,8 +163,16 @@ namespace PRKR.Editor.Tools {
     notifyMouseUp(event: JQueryMouseEventObject): void {
 
       let step = this._buildEditStep();
+      let finalStatus: string = null;
       if (step) {
-        this._editor.addEditStep(step);
+        let validation = this._editor.validateEditStep(step);
+        let errors = _.filter(validation, Validators.isError);
+        if (errors.length === 0) {
+          this._editor.addEditStep(step);
+        } else {
+          finalStatus = `Could not rotate because of ${ errors.length  } validation error(s)`;
+          console.log('Validation errors:', errors);
+        }
       }
 
       this._rotating = false;
@@ -165,6 +183,10 @@ namespace PRKR.Editor.Tools {
 
       // Simulate mouse move to update state.
       this.notifyMouseMove(event);
+
+      if (finalStatus) {
+        this._editor.setStatus(finalStatus);
+      }
 
     }
     

@@ -51,10 +51,13 @@ namespace PRKR.Model {
 
     // Override
     public getBoundingBox(): THREE.Box3 {
+
       let box = new THREE.Box3(
-        new Vector3().copy(this.location).addScaledVector(this.size, -1),
-        new Vector3().copy(this.location).addScaledVector(this.size, 1),
+        this.size.clone().multiplyScalar(-1),
+        this.size.clone()
       );
+      M.rotateBox3(box, this.rotation);
+      box.translate(this.location);
       return box;
     }
 
