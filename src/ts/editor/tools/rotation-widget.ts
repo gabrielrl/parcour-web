@@ -64,11 +64,11 @@ namespace PRKR.Editor.Tools {
         Helpers.getNormalFromOrthoPlane(this._plane)
       );
 
-      let result = Object.assign(intersection, {
+      if (!intersection) return null;
+
+      return Object.assign(intersection, {
         widget: this
       });
-
-      return  result;
     }
 
     private _buildObject(): void {

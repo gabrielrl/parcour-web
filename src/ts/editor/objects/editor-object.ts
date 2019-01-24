@@ -114,10 +114,13 @@ namespace PRKR.Editor.Objects {
      */
     get rotatable(): boolean { return false; }
 
-    // get rotationConstraints(): RotateConstraints {
-    //   return getRotationConstratins
-    // }
-
+    /**
+     * Gets the current object's rotation constraint.
+     * No need to override.
+     */
+    get rotateConstraints(): RotateConstraints {
+      return getRotationConstratins(this.model);
+    }
 
     /**
      * Gets if the current object can be resized.

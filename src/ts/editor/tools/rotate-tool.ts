@@ -20,6 +20,11 @@ namespace PRKR.Editor.Tools {
 
     private _rotation: Quaternion;
 
+    /**
+     * One adjusted location per target.
+     */
+    private _adjustedRotations: Quaternion[];
+
     private _rotationValid: boolean = false;
 
     private _activeWidget: RotationWidget;
@@ -92,46 +97,57 @@ namespace PRKR.Editor.Tools {
 
         // Rotating
         let intersection = this._activeWidget.test(event, this._editor);
-        this._to.copy(intersection.point);
+        if (intersection) {
 
-        let v1 = new Vector3().subVectors(this._from, this._pivot);
-        let v2 = new Vector3().subVectors(this._to, this._pivot);
+          this._to.copy(intersection.point);
 
-        let nv1 = v1.clone().normalize();
-        let nv2 = v2.clone().normalize();
-        this._rotation.setFromUnitVectors(nv1, nv2);
-        // this._rotation
+          let v1 = new Vector3().subVectors(this._from, this._pivot);
+          let v2 = new Vector3().subVectors(this._to, this._pivot);
 
-        let angle = v1.angleTo(v2);
-        let degrees = angle / M.TWO_PI * 360;
+          let angle = v1.angleTo(v2);
 
-        let planes: THREE.Plane[] = [];
-        let n = new Vector3().subVectors(v2, v1);
-        let projection = n.clone().projectOnVector(v1);
-        n.sub(projection).normalize();
-        planes.push(new THREE.Plane().setFromNormalAndCoplanarPoint(n, this._pivot));
+          let nv1 = v1.clone().normalize();
+          let nv2 = v2.clone().normalize();
+          this._rotation.setFromUnitVectors(nv1, nv2);
+          this._adjustedRotations = this._targets.map(t => {
+            let adjustedRotation = this._rotation.clone();
+            if (t.rotateConstraints) {
+              t.rotateConstraints.apply(adjustedRotation);
+            }
+            return adjustedRotation;
+          });
 
-        n.subVectors(v1, v2);
-        projection = n.clone().projectOnVector(v2);
-        n.sub(projection).normalize();
-        planes.push(new THREE.Plane().setFromNormalAndCoplanarPoint(n, this._pivot));
-        this._activeWidget.setClippingPlanes(planes);
 
-        // Rotate all the helpers
-        this._helpers.forEach(h => h.quaternion.copy(this._rotation));
+          let degrees = angle / M.TWO_PI * 360;
 
-        let step = this._buildEditStep();
-        if (step) {
-          let validation = this._editor.validateEditStep(step);
-          let someErrors = _.some(validation, Validators.isError);
-          this._rotationValid = !someErrors;
-        } else {
-          this._rotationValid = false;
+          let planes: THREE.Plane[] = [];
+          let n = new Vector3().subVectors(v2, v1);
+          let projection = n.clone().projectOnVector(v1);
+          n.sub(projection).normalize();
+          planes.push(new THREE.Plane().setFromNormalAndCoplanarPoint(n, this._pivot));
+
+          n.subVectors(v1, v2);
+          projection = n.clone().projectOnVector(v2);
+          n.sub(projection).normalize();
+          planes.push(new THREE.Plane().setFromNormalAndCoplanarPoint(n, this._pivot));
+          this._activeWidget.setClippingPlanes(planes);
+
+          // Rotate all the helpers
+          this._helpers.forEach((h, i) => h.quaternion.copy(this._adjustedRotations[i]));
+
+          let step = this._buildEditStep();
+          if (step) {
+            let validation = this._editor.validateEditStep(step);
+            let someErrors = _.some(validation, Validators.isError);
+            this._rotationValid = !someErrors;
+          } else {
+            this._rotationValid = false;
+          }
+    
+          this._helpers.forEach(h => h.setValidState(this._rotationValid));
+          this._editor.setStatus('Click and drag to rotate object around ' + this._activeWidget.name + ' by ' + degrees.toFixed(0) + '°');
+
         }
-  
-        this._helpers.forEach(h => h.setValidState(this._rotationValid));
-        this._editor.setStatus('Click and drag to rotate object around ' + this._activeWidget.name + ' by ' + degrees.toFixed(0) + '°');
-
       }
 
       this._editor.requestRender();
@@ -266,17 +282,17 @@ namespace PRKR.Editor.Tools {
 
     private _getNearestWidgetIntersection(mouse: JQueryMouseEventObject): WidgetHitTestResult {
       let intersections = this._widgets.map(w => w.test(mouse, this._editor));
-      return _.minBy(intersections, i => i.distance);
+      return _.minBy(intersections, i => i ? i.distance : Infinity);
     }
 
     private _buildEditStep() {
-      if (!this._rotation) return null;
 
-      let step = new EditSteps.RotateStep(
-        this._rotation,
-        this._targets.map(x => x.id)
-      );
-      return step;
+      if (!this._targets || !this._rotation) return null;
+
+      return new EditSteps.ComposedStep(this._targets.map(
+        (t, i) => new EditSteps.RotateStep(this._adjustedRotations[i], [ t.id ])
+      ));
+
     }
 
   }

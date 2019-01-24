@@ -2,10 +2,14 @@
 /// <reference path="./location-constraints.ts" />
 /// <reference path="./doorway-location-constraints.ts" />
 /// <reference path="./stepped-move-constraints.ts" />
+/// <reference path="./stepped-rotate-constraints.ts" />
+
 
 namespace PRKR.Editor.Objects {
 
   import Vector3 = THREE.Vector3;
+
+  const PI_OVER_8 = Math.PI / 8;
 
   const constraintsByType = {
 
@@ -19,7 +23,8 @@ namespace PRKR.Editor.Objects {
         Model.DynamicObject.GridSize,
         Model.DynamicObject.GridSize,
         Model.DynamicObject.GridSize
-      ))
+      )),
+      rotate: new SteppedRotateConstraints(new Vector3(PI_OVER_8, PI_OVER_8, PI_OVER_8))
     },
 
     Location: {
@@ -35,7 +40,8 @@ namespace PRKR.Editor.Objects {
         Model.StaticObject.GridSize,
         Model.StaticObject.GridSize,
         Model.StaticObject.GridSize
-      ))
+      )),
+      rotate: new SteppedRotateConstraints(new Vector3(PI_OVER_8, PI_OVER_8, PI_OVER_8))
     }
   
   };
@@ -50,5 +56,11 @@ namespace PRKR.Editor.Objects {
     let c = constraintsByType[parcourObject.type];
     if (!c || !c.location) return undefined;
     return c.location;
+  }
+
+  export function getRotationConstratins(parcourObject: Model.ParcourObject): RotateConstraints {
+    let c = constraintsByType[parcourObject.type];
+    if (!c || !c.rotate) return undefined;
+    return c.rotate;
   }
 }
