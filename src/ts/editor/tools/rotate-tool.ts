@@ -21,6 +21,11 @@ namespace PRKR.Editor.Tools {
     private _rotation: Quaternion;
 
     /**
+     * One adjusted translation per target.
+     */
+    private _adjustedTranslations: Vector3[];
+
+    /**
      * One adjusted location per target.
      */
     private _adjustedRotations: Quaternion[];
@@ -105,20 +110,37 @@ namespace PRKR.Editor.Tools {
           let v2 = new Vector3().subVectors(this._to, this._pivot);
 
           let angle = v1.angleTo(v2);
+          let degrees = angle / M.TWO_PI * 360;
 
           let nv1 = v1.clone().normalize();
           let nv2 = v2.clone().normalize();
           this._rotation.setFromUnitVectors(nv1, nv2);
-          this._adjustedRotations = this._targets.map(t => {
+
+          // Compute rotation and position for each target.
+          this._adjustedTranslations = [];
+          this._adjustedRotations = [];
+          // Adjust 
+          this._targets.forEach((t, i) => {
+            let origin = t.getWorldPosition();
+            let p = new Vector3().subVectors(origin, this._pivot);
+            if (p.length() > 0.001 && t.movable) {
+              p.applyQuaternion(this._rotation)
+              p.add(this._pivot);
+              let m = new Vector3().subVectors(p, origin);
+              if (t.moveConstraints) {
+                t.moveConstraints.apply(m);
+              }
+              this._adjustedTranslations.push(m);
+            } else {
+              this._adjustedTranslations.push(null);
+            }
+
             let adjustedRotation = this._rotation.clone();
             if (t.rotateConstraints) {
               t.rotateConstraints.apply(adjustedRotation);
             }
-            return adjustedRotation;
+            this._adjustedRotations.push(adjustedRotation);
           });
-
-
-          let degrees = angle / M.TWO_PI * 360;
 
           let planes: THREE.Plane[] = [];
           let n = new Vector3().subVectors(v2, v1);
@@ -133,7 +155,14 @@ namespace PRKR.Editor.Tools {
           this._activeWidget.setClippingPlanes(planes);
 
           // Rotate all the helpers
-          this._helpers.forEach((h, i) => h.quaternion.copy(this._adjustedRotations[i]));
+          this._helpers.forEach((h, i) => {
+            h.setRotateBy(this._adjustedRotations[i]);
+            if (this._adjustedTranslations[i]) {
+              h.setMoveBy(this._adjustedTranslations[i]);
+            } else {
+              h.setMoveBy(M.Vector3.Zero);
+            }
+          });
 
           let step = this._buildEditStep();
           if (step) {
@@ -229,13 +258,13 @@ namespace PRKR.Editor.Tools {
 
     private _setUp() {
 
-      if (this._editor.selectedObjects.length === 0) return;
+      this._targets = _.filter(this._editor.selectedObjects, o => o.rotatable);
 
-      // TEMPORARY SINGLE TARGET MODE
-      let target = this._editor.selectedObjects[0];
-      this._pivot.copy(target.getWorldPosition());
+      if (this._targets.length === 0) return;
 
-      this._targets = [ target ];
+      this._pivot.set(0, 0, 0);      
+      this._targets.forEach(t => this._pivot.add(t.getWorldPosition()));
+      this._pivot.divideScalar(this._targets.length);
 
       // Build visual helper for all the targets.
       this._helpers = this._targets.map(t => {
@@ -274,7 +303,7 @@ namespace PRKR.Editor.Tools {
 
       this._widgets.forEach(w => {
         w.setClippingPlanes(clippingPlanes);
-        w.setPosition(target.getWorldPosition());
+        w.setPosition(this._pivot);
         this._editor.addToScene(w.threeObject);
       });
 
@@ -289,9 +318,16 @@ namespace PRKR.Editor.Tools {
 
       if (!this._targets || !this._rotation) return null;
 
-      return new EditSteps.ComposedStep(this._targets.map(
+      let steps: EditSteps.EditStep[] = this._targets.map(
         (t, i) => new EditSteps.RotateStep(this._adjustedRotations[i], [ t.id ])
-      ));
+      );
+      this._targets.forEach((t, i) => {
+        if (this._adjustedTranslations[i]) {
+          steps.push(new EditSteps.MoveStep(this._adjustedTranslations[i], [ t.id ]));
+        }
+      });
+
+      return new EditSteps.ComposedStep(steps);
 
     }
 

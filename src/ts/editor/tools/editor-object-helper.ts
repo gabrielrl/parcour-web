@@ -37,7 +37,13 @@ namespace PRKR.Editor.Tools {
 
     }
 
+    setMoveBy(move: THREE.Vector3) {
+      this._mesh.position.copy(move);
+    }
 
+    setRotateBy(rotation: THREE.Quaternion) {
+      this._mesh.quaternion.copy(rotation);
+    }
 
   }
 }
