@@ -323,7 +323,18 @@ namespace PRKR.Editor.Tools {
       );
       this._targets.forEach((t, i) => {
         if (this._adjustedTranslations[i]) {
-          steps.push(new EditSteps.MoveStep(this._adjustedTranslations[i], [ t.id ]));
+          if (t.model instanceof Model.AreaElement) {
+            let newWorldPos = t.getWorldPosition(new Vector3()).add(this._adjustedTranslations[i]);
+            let newArea = this._editor.getAreaAtLocation(newWorldPos);
+            if (newArea && newArea.id !== t.model.areaId) {
+              let newAreaLocation = new Vector3().subVectors(newWorldPos, newArea.location);
+              steps.push(new EditSteps.MoveToStep(t.id, newArea.id, newAreaLocation));                
+            } else {
+              steps.push(new EditSteps.MoveStep(this._adjustedTranslations[i], [ t.id ]));
+            }
+          } else {
+            steps.push(new EditSteps.MoveStep(this._adjustedTranslations[i], [ t.id ]));
+          }
         }
       });
 
