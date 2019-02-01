@@ -32,7 +32,8 @@ namespace PRKR.Editor.Objects {
     },
 
     RoomArea: {
-      move: new SteppedMoveConstraints(new Vector3(1, 0, 1))
+      move: new SteppedMoveConstraints(new Vector3(1, 0, 1)),
+      rotate: new SteppedRotateConstraints(new Vector3(0, M.PI_OVER_TWO, 0))
     },
 
     StaticObject: {

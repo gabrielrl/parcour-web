@@ -3,6 +3,7 @@
 namespace PRKR.Editor.Objects {
 
   import Vector3 = THREE.Vector3;
+  import Quaternion = THREE.Quaternion;
   import Box3 = THREE.Box3;
   import Parcour = PRKR.Model.Parcour;
   import ParcourObject = PRKR.Model.ParcourObject;
@@ -223,6 +224,30 @@ namespace PRKR.Editor.Objects {
      * @returns the world position for the current object.
      */
     public abstract getWorldPosition(target?: Vector3): Vector3;
+
+    /**
+     * Gets the pivot (rotation origin) in world coordinate for the current object.
+     * 
+     * Defaults to calling `getWorldPosition(target)`. Override if the pivot is not at the object's origin; don't
+     * call super.
+     * @param target Optional target for the pivot point's world location.
+     * @returns the world position of the pivot (rotation origin) for the current object.
+     */
+    public getWorldPivot(target?: Vector3): Vector3 {
+      return this.getWorldPosition(target);
+    }
+
+    /**
+     * Gets the current object's rotation.
+     * 
+     * Defaults to an empty quaternion (no rotation). Override, don't call super.
+     * @param target Optional target for the object's rotation.
+     */
+    public getRotation(target?: Quaternion): Quaternion {
+      if (target) target.set(0, 0, 0, 1);
+      else target = new Quaternion();
+      return target;
+    }
 
     /**
      * Gets the properties of the current object.

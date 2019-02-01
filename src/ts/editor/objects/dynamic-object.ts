@@ -1,6 +1,7 @@
 namespace PRKR.Editor.Objects {
 
   import Vector3 = THREE.Vector3;
+  import Quaternion = THREE.Quaternion;
   import Box3 = THREE.Box3;
   import Mesh = THREE.Mesh;
   import DynamicModel = PRKR.Model.DynamicObject;
@@ -72,6 +73,16 @@ namespace PRKR.Editor.Objects {
       } else {
         target.addVectors(area.location, staticModel.location);
       }
+      return target;
+    }
+
+    /**
+     * Gets the current static object's rotation.
+     * @param target Optional target for the object's rotation.
+     */
+    public getRotation(target?: Quaternion): Quaternion {
+      target = target || new Quaternion();
+      target.copy((<DynamicModel>this.model).rotation);
       return target;
     }
 

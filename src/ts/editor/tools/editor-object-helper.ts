@@ -2,9 +2,17 @@ namespace PRKR.Editor.Tools {
 
   import EditorObject = Objects.EditorObject;
 
+  /**
+   * TODO comment
+   * NOTE Created mesh is always centered at the proxied object's local pivot point. Requied for `setRotateBy` to
+   * work.
+   */
   export class EditorObjectHelper extends THREE.Object3D {
 
-    private _mesh: THREE.Mesh;
+    /** Mesh that proxies the original object. */
+    private _proxy: THREE.Mesh;
+
+    private _restRotation: THREE.Quaternion;
 
     constructor(object: EditorObject) {
 
@@ -12,37 +20,53 @@ namespace PRKR.Editor.Tools {
 
       super();
 
-      let geometry = object.geometry;
+      let pivotAdjustment = object.getWorldPosition().sub(object.getWorldPivot());
       let material = Constants.Materials.Faces.Valid;
+      let geometry = object.geometry;
       if (geometry) {
-        this._mesh = new THREE.Mesh(geometry, material);
-        if (object.rotatable) {
-          this._mesh.quaternion.copy((<any>object.model).rotation);
-        }
+        geometry.translate(pivotAdjustment.x, pivotAdjustment.y, pivotAdjustment.z);
+        this._proxy = new THREE.Mesh(geometry, material);
       } else {
-        let size = object.boundingBox.getSize();
-        // Note: the object's bounding box already includes rotation.
-        let geometry = new THREE.BoxBufferGeometry(size.x, size.y, size.z);
-        this._mesh = new THREE.Mesh(geometry, material);
+        let box = object.boundingBox;
+        let w = box.max.x - box.min.x;
+        let h = box.max.y - box.min.y;
+        let d = box.max.z - box.min.z;
+        let g = new THREE.BoxBufferGeometry(w, h, d);
+        g.translate(
+          box.min.x + w * .5 + pivotAdjustment.x,
+          box.min.y + h * .5 + pivotAdjustment.y,
+          box.min.z + d * .5 + pivotAdjustment.z
+        );
+        this._proxy = new THREE.Mesh(g, material);
       }
-      this.add(this._mesh);
+      this.add(this._proxy);
 
+      this._restRotation = new THREE.Quaternion();
     }
 
     setValidState(valid: boolean) {
 
-      this._mesh.material = valid
+      this._proxy.material = valid
         ? Constants.Materials.Faces.Valid
         : Constants.Materials.Faces.Invalid;
 
     }
 
     setMoveBy(move: THREE.Vector3) {
-      this._mesh.position.copy(move);
+      this._proxy.position.copy(move);
+    }
+
+    setRestRotation(restRotation: THREE.Quaternion) {
+      if (restRotation) {
+        this._restRotation.copy(restRotation);
+      } else {
+        this._restRotation.set(0, 0, 0, 1);
+      }
+      this._proxy.quaternion.copy(this._restRotation);
     }
 
     setRotateBy(rotation: THREE.Quaternion) {
-      this._mesh.quaternion.copy(rotation);
+      this._proxy.quaternion.copy(this._restRotation).premultiply(rotation);
     }
 
   }

@@ -4,20 +4,30 @@ namespace PRKR.Editor.Tools {
   import Quaternion = THREE.Quaternion;
   import EditorObject = Objects.EditorObject;
 
+  let isArea = (editorObject: EditorObject) => editorObject.model instanceof Model.Area;
+
   export class RotateTool extends Tool {
 
     constructor(private _editor: ParcourEditor) {
       super();
     }
 
+    /** Objects that could be rotated with the tool as per the last setup. */
     private _targets: EditorObject[] = [];
 
+    /** True if `_targets` contains only areas. */
+    private _areaMode: boolean;
+
+    /** Pivot point, rotation origin. */
     private _pivot: Vector3 = new Vector3();
 
+    /** Rotation widgets. */
     private _widgets: RotationWidget[] = [];
 
+    /** True if the author is rotating right now. */
     private _rotating: boolean = false;
 
+    /** Current rotation as per the last mouse move (if rotating). */
     private _rotation: Quaternion;
 
     /**
@@ -121,7 +131,7 @@ namespace PRKR.Editor.Tools {
           this._adjustedRotations = [];
           // Adjust 
           this._targets.forEach((t, i) => {
-            let origin = t.getWorldPosition();
+            let origin = t.getWorldPivot();
             let p = new Vector3().subVectors(origin, this._pivot);
             if (p.length() > 0.001 && t.movable) {
               p.applyQuaternion(this._rotation)
@@ -174,7 +184,7 @@ namespace PRKR.Editor.Tools {
           }
     
           this._helpers.forEach(h => h.setValidState(this._rotationValid));
-          this._editor.setStatus('Click and drag to rotate object around ' + this._activeWidget.name + ' by ' + degrees.toFixed(0) + '°');
+          this._editor.setStatus('Release to rotate object around ' + this._activeWidget.name + ' by ' + degrees.toFixed(0) + '°');
 
         }
       }
@@ -239,6 +249,9 @@ namespace PRKR.Editor.Tools {
 
     }
 
+    /**
+     * Reverts to neutral state.
+     */
     private _reset() {
 
       if (this._widgets) {
@@ -250,6 +263,7 @@ namespace PRKR.Editor.Tools {
 
       this._rotating = false;
       this._rotation = null;
+      this._areaMode = false;
       this._targets = [];
       this._widgets = [];
       this._helpers = [];
@@ -262,14 +276,22 @@ namespace PRKR.Editor.Tools {
 
       if (this._targets.length === 0) return;
 
+      this._areaMode = _.some(this._targets, isArea);
+      if (this._areaMode) {
+        // Sanitize the target list. We only keep the targets.
+        this._targets = _.filter(this._targets, isArea);
+      }
+
       this._pivot.set(0, 0, 0);      
-      this._targets.forEach(t => this._pivot.add(t.getWorldPosition()));
+      this._targets.forEach(t => this._pivot.add(t.getWorldPivot()));
       this._pivot.divideScalar(this._targets.length);
 
       // Build visual helper for all the targets.
       this._helpers = this._targets.map(t => {
         let h = new EditorObjectHelper(t);
-        t.getWorldPosition(h.position);
+        t.getWorldPivot(h.position);
+        h.setRestRotation(t.getRotation());
+        h.setMoveBy(M.Vector3.Zero);
         this._editor.addToScene(h);
         return h;
       });
@@ -306,7 +328,6 @@ namespace PRKR.Editor.Tools {
         w.setPosition(this._pivot);
         this._editor.addToScene(w.threeObject);
       });
-
     }
 
     private _getNearestWidgetIntersection(mouse: JQueryMouseEventObject): WidgetHitTestResult {
