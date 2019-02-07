@@ -133,7 +133,9 @@ namespace PRKR.Editor.Objects {
 
     /**
      * Gets the object's bounding box (using the object's origin as
-     * referencial)
+     * referencial).
+     * 
+     * Always returns the same cached object. Clone before modifying.
      */
     get boundingBox() { 
       if (!this._bbox) {
