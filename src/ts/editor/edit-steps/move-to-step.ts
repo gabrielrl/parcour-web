@@ -28,6 +28,7 @@ namespace PRKR.Editor.EditSteps {
     private _areaId: string;
     private _location: Vector3 = new Vector3();
 
+    // NOTE Since `areaId` is the optional one, shouldn't he be kept for last?
     constructor(targetId: string, areaId: string, targetLocation: Vector3) {
       super();
 
