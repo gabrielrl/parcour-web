@@ -342,14 +342,18 @@ namespace PRKR.Editor {
       return null;
     }
 
+    /**
+     * Gets all the area elements related to an area.
+     * @param areaId The ID of the area for which we want the objects.
+     * @returns An array of all the objects related to the area.
+     */
     public getObjectsByAreaId(areaId: string): EditorObject[] {
-      //let area = this._model.getAreaById(areaId);
+
       let objects = <AreaElement[]>_.filter(this._model.objects,
         o => o instanceof PRKR.Model.AreaElement && o.areaId === areaId);
       let editorObjects = objects.map(o => this.getObjectById(o.id));
       return editorObjects;
     }
-    
 
     public getAreas(): RoomObject[] {
       let areas: RoomObject[];
