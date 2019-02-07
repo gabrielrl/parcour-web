@@ -337,27 +337,103 @@ namespace PRKR.Editor.Tools {
 
     private _buildEditStep() {
 
-      if (!this._targets || !this._rotation) return null;
+      if (!this._targets || this._targets.length === 0 || !this._rotation) return null;
 
-      let steps: EditSteps.EditStep[] = this._targets.map(
-        (t, i) => new EditSteps.RotateStep(this._adjustedRotations[i], [ t.id ])
-      );
-      this._targets.forEach((t, i) => {
-        if (this._adjustedTranslations[i]) {
-          if (t.model instanceof Model.AreaElement) {
+      let steps: EditSteps.EditStep[] = [];
+
+      if (this._areaMode) {
+
+        // Working in area mode.
+
+        // Rotate the area themselves with resize edit steps.
+        this._targets.forEach((target, i) => {
+          let adjustedRotation = this._adjustedRotations[i];
+          let adjustedTranslation = this._adjustedTranslations[i];
+
+          // Apply adjusted rotation to the area's box.
+          let area = <Model.Area>target.model;
+          let box = target.boundingBox.clone();
+          let originalSize = box.getSize();
+          if (adjustedRotation) {
+            M.rotateBox3(box, adjustedRotation);
+          }
+          box.min.round();
+          box.max.round();
+
+          let newSize = box.getSize();
+          let location = new Vector3().copy(area.location).addScaledVector(originalSize, 0.5);
+          if (adjustedTranslation) {
+            location.add(adjustedTranslation);
+          }
+          location.addScaledVector(newSize, -0.5).round();
+
+          if (target.locationContstraints) {
+            target.locationContstraints.apply(location, this._editor.model);
+          }
+
+          let locationDelta = new Vector3().subVectors(location, area.location);
+          let sizeDelta = new Vector3().subVectors(newSize, area.size).round();
+          let resize = new EditSteps.ResizeStep(locationDelta, sizeDelta, [ target.id ]);
+          steps.push(resize);
+
+          // Then move (and rotate) all the objects inside the area.
+          let elements = this._editor.getObjectsByAreaId(target.id);
+
+          let areaPivot = originalSize.clone().multiplyScalar(0.5);
+
+          elements.forEach(element => {
+            let areaElement = <Model.AreaElement>element.model;
+
+            // Apply adjusted rotation.
+            if (element.rotatable) {
+              steps.push(new EditSteps.RotateStep(adjustedRotation, [ element.id ]));
+            }
+
+            // Then rotate the object around the area's rotation pivot.
+            if (element.movable) {
+              let delta = new Vector3().subVectors(areaElement.location, areaPivot);
+              delta.applyQuaternion(adjustedRotation);
+              delta.add(areaPivot);
+
+              if (element.locationContstraints) {
+                // Switch to world position
+                delta.add(area.location);
+                element.locationContstraints.apply(delta, this._editor.model);
+                delta.sub(area.location);
+              }
+              delta.sub(areaElement.location);
+              steps.push(new EditSteps.MoveStep(delta, [ element.id ]));
+            }
+
+          });
+
+          // TODO handle tiles...
+
+        });
+
+      } else {
+
+        // Working in element mode.
+
+        this._targets.forEach((t, i) => {
+          let element = <Model.AreaElement>t.model;
+
+          // Apply adjusted rotation.
+          steps.push(new EditSteps.RotateStep(this._adjustedRotations[i], [ t.id ]));
+          // Apply adjusted translation, 
+          if (this._adjustedTranslations[i]) {
             let newWorldPos = t.getWorldPosition(new Vector3()).add(this._adjustedTranslations[i]);
             let newArea = this._editor.getAreaAtLocation(newWorldPos);
-            if (newArea && newArea.id !== t.model.areaId) {
+            if (newArea && newArea.id !== element.areaId) {
               let newAreaLocation = new Vector3().subVectors(newWorldPos, newArea.location);
               steps.push(new EditSteps.MoveToStep(t.id, newArea.id, newAreaLocation));                
             } else {
               steps.push(new EditSteps.MoveStep(this._adjustedTranslations[i], [ t.id ]));
             }
-          } else {
-            steps.push(new EditSteps.MoveStep(this._adjustedTranslations[i], [ t.id ]));
           }
-        }
-      });
+        });
+
+      }
 
       return new EditSteps.ComposedStep(steps);
 
