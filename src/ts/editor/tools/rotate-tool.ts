@@ -61,7 +61,8 @@ namespace PRKR.Editor.Tools {
 
     /** Gets if the current tool is enabled. Computed from the editor's state. */
     get enabled(): boolean {
-      return _.some(this._editor.selectedObjects, x => x.rotatable);
+      let sel = this._editor.selectedObjects;
+      return _.some(sel, x => x.rotatable) || _.filter(sel, x => x.movable).length > 1;
     }
 
     /** Gets the current tool's keyboard shortcut. */
@@ -128,17 +129,11 @@ namespace PRKR.Editor.Tools {
           let angle = v1.angleTo(v2);
           let degrees = angle / M.TWO_PI * 360;
 
-          // let nv1 = v1.clone().normalize();
-          // let nv2 = v2.clone().normalize();
-          // this._rotation.setFromUnitVectors(nv1, nv2);
-
           let cross = v1.clone().cross(v2);
           let axis = Helpers.getNormalFromOrthoPlane(activeWidget.plane);
           let dot = cross.dot(axis);
           let sign = dot > 0 ? 1 : -1;
           this._rotation.setFromAxisAngle(axis, angle * sign);
-
-          //let euler = new THREE.Euler().setFromVector3()
 
           // Compute rotation and position for each target.
           this._adjustedTranslations = [];
@@ -160,18 +155,20 @@ namespace PRKR.Editor.Tools {
               this._adjustedTranslations.push(null);
             }
 
-            let adjustedRotation = this._rotation.clone();
-            let rotateConstraints = t.rotateConstraints;
-            if (rotateConstraints) {
-              if (!rotateConstraints.supportsAxis(this._activeWidgetIndex)) {
-                adjustedRotation = null;
+            let adjustedRotation = null;
+            if (t.rotatable) {
+              let rotateConstraints = t.rotateConstraints;
+              if (!rotateConstraints) {
+                adjustedRotation = this._rotation.clone();
               } else {
-                let rounded = angle;
-                let s = rotateConstraints.step;
-                if (s === 0) { rounded = 0; }
-                else { rounded = Math.round(angle / s) * s; }
+                if (rotateConstraints.supportsAxis(this._activeWidgetIndex)) {
+                  let rounded = angle;
+                  let s = rotateConstraints.step;
+                  if (s === 0) { rounded = 0; }
+                  else { rounded = Math.round(angle / s) * s; }
 
-                adjustedRotation.setFromAxisAngle(axis, rounded * sign);
+                  adjustedRotation = new Quaternion().setFromAxisAngle(axis, rounded * sign);
+                }
               }
             }
             this._adjustedRotations.push(adjustedRotation);      
@@ -301,8 +298,10 @@ namespace PRKR.Editor.Tools {
 
     private _setUp() {
 
-      this._targets = _.filter(this._editor.selectedObjects, o => o.rotatable);
+      let sel = this._editor.selectedObjects;
 
+      this._targets = _.filter(sel, o => o.rotatable || sel.length > 1 && o.movable);
+      
       if (this._targets.length === 0) return;
 
       this._areaMode = _.some(this._targets, isArea);
@@ -508,7 +507,9 @@ namespace PRKR.Editor.Tools {
           let element = <Model.AreaElement>t.model;
 
           // Apply adjusted rotation.
-          steps.push(new EditSteps.RotateStep(this._adjustedRotations[i], [ t.id ]));
+          if (this._adjustedRotations[i]) {
+            steps.push(new EditSteps.RotateStep(this._adjustedRotations[i], [ t.id ]));
+          }
           // Apply adjusted translation, 
           if (this._adjustedTranslations[i]) {
             let newWorldPos = t.getWorldPosition(new Vector3()).add(this._adjustedTranslations[i]);
