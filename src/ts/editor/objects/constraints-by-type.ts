@@ -2,8 +2,7 @@
 /// <reference path="./location-constraints.ts" />
 /// <reference path="./doorway-location-constraints.ts" />
 /// <reference path="./stepped-move-constraints.ts" />
-/// <reference path="./stepped-rotate-constraints.ts" />
-
+/// <reference path="./rotate-constraints.ts" />
 
 namespace PRKR.Editor.Objects {
 
@@ -24,7 +23,7 @@ namespace PRKR.Editor.Objects {
         Model.DynamicObject.GridSize,
         Model.DynamicObject.GridSize
       )),
-      rotate: new SteppedRotateConstraints(new Vector3(PI_OVER_8, PI_OVER_8, PI_OVER_8))
+      rotate: new RotateConstraints(PI_OVER_8)
     },
 
     Location: {
@@ -33,7 +32,7 @@ namespace PRKR.Editor.Objects {
 
     RoomArea: {
       move: new SteppedMoveConstraints(new Vector3(1, 0, 1)),
-      rotate: new SteppedRotateConstraints(new Vector3(0, M.PI_OVER_TWO, 0))
+      rotate: new RotateConstraints(M.PI_OVER_TWO, [ false, true, false ])
     },
 
     StaticObject: {
@@ -42,7 +41,7 @@ namespace PRKR.Editor.Objects {
         Model.StaticObject.GridSize,
         Model.StaticObject.GridSize
       )),
-      rotate: new SteppedRotateConstraints(new Vector3(PI_OVER_8, PI_OVER_8, PI_OVER_8))
+      rotate: new RotateConstraints(PI_OVER_8)
     }
   
   };

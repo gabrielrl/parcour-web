@@ -15,7 +15,7 @@ namespace PRKR.Editor.Tools {
     /** Objects that could be rotated with the tool as per the last setup. */
     private _targets: EditorObject[] = [];
 
-    /** True if `_targets` contains only areas. */
+    /** True if `_targets` contains areas, else it contains area elements. */
     private _areaMode: boolean;
 
     /** Pivot point, rotation origin. */
@@ -42,7 +42,7 @@ namespace PRKR.Editor.Tools {
 
     private _rotationValid: boolean = false;
 
-    private _activeWidget: RotationWidget;
+    private _activeWidgetIndex: number;
 
     private _from: Vector3 = new Vector3();
 
@@ -111,7 +111,8 @@ namespace PRKR.Editor.Tools {
       } else {
 
         // Rotating
-        let intersection = this._activeWidget.test(event, this._editor);
+        let activeWidget = this._widgets[this._activeWidgetIndex];
+        let intersection = activeWidget.test(event, this._editor);
         if (intersection) {
 
           this._to.copy(intersection.point);
@@ -122,15 +123,24 @@ namespace PRKR.Editor.Tools {
           let angle = v1.angleTo(v2);
           let degrees = angle / M.TWO_PI * 360;
 
-          let nv1 = v1.clone().normalize();
-          let nv2 = v2.clone().normalize();
-          this._rotation.setFromUnitVectors(nv1, nv2);
+          // let nv1 = v1.clone().normalize();
+          // let nv2 = v2.clone().normalize();
+          // this._rotation.setFromUnitVectors(nv1, nv2);
+
+          let cross = v1.clone().cross(v2);
+          let axis = Helpers.getNormalFromOrthoPlane(activeWidget.plane);
+          let dot = cross.dot(axis);
+          let sign = dot > 0 ? 1 : -1;
+          this._rotation.setFromAxisAngle(axis, angle * sign);
+
+          //let euler = new THREE.Euler().setFromVector3()
 
           // Compute rotation and position for each target.
           this._adjustedTranslations = [];
           this._adjustedRotations = [];
           // Adjust 
           this._targets.forEach((t, i) => {
+
             let origin = t.getWorldPivot();
             let p = new Vector3().subVectors(origin, this._pivot);
             if (p.length() > 0.001 && t.movable) {
@@ -146,10 +156,20 @@ namespace PRKR.Editor.Tools {
             }
 
             let adjustedRotation = this._rotation.clone();
-            if (t.rotateConstraints) {
-              t.rotateConstraints.apply(adjustedRotation);
+            let rotateConstraints = t.rotateConstraints;
+            if (rotateConstraints) {
+              if (!rotateConstraints.supportsAxis(this._activeWidgetIndex)) {
+                adjustedRotation = null;
+              } else {
+                let rounded = angle;
+                let s = rotateConstraints.step;
+                if (s === 0) { rounded = 0; }
+                else { rounded = Math.round(angle / s) * s; }
+
+                adjustedRotation.setFromAxisAngle(axis, rounded * sign);
+              }
             }
-            this._adjustedRotations.push(adjustedRotation);
+            this._adjustedRotations.push(adjustedRotation);      
           });
 
           let planes: THREE.Plane[] = [];
@@ -162,7 +182,7 @@ namespace PRKR.Editor.Tools {
           projection = n.clone().projectOnVector(v2);
           n.sub(projection).normalize();
           planes.push(new THREE.Plane().setFromNormalAndCoplanarPoint(n, this._pivot));
-          this._activeWidget.setClippingPlanes(planes);
+          activeWidget.setClippingPlanes(planes);
 
           // Rotate all the helpers
           this._helpers.forEach((h, i) => {
@@ -184,7 +204,7 @@ namespace PRKR.Editor.Tools {
           }
     
           this._helpers.forEach(h => h.setValidState(this._rotationValid));
-          this._editor.setStatus('Release to rotate object around ' + this._activeWidget.name + ' by ' + degrees.toFixed(0) + '°');
+          this._editor.setStatus('Release to rotate object around ' + activeWidget.name + ' by ' + degrees.toFixed(0) + '°');
 
         }
       }
@@ -199,12 +219,12 @@ namespace PRKR.Editor.Tools {
       if (intersection) {
         this._rotating = true;
         this._rotation = new Quaternion();
-        this._activeWidget = intersection.widget;
+        this._activeWidgetIndex = this._widgets.indexOf(intersection.widget);
         this._from.copy(intersection.point);
         this._to.copy(intersection.point);
 
-        this._widgets.forEach(w => {
-          if (w !== this._activeWidget) {
+        this._widgets.forEach((w, i) => {
+          if (i !== this._activeWidgetIndex) {
             w.setState(WidgetState.Hidden);
           }
         });
@@ -231,7 +251,7 @@ namespace PRKR.Editor.Tools {
       }
 
       this._rotating = false;
-      this._activeWidget = null;
+      this._activeWidgetIndex = null;
 
       this._reset();
       this._setUp();
@@ -347,6 +367,7 @@ namespace PRKR.Editor.Tools {
 
         // Rotate the area themselves with resize edit steps.
         this._targets.forEach((target, i) => {
+
           let adjustedRotation = this._adjustedRotations[i];
           let adjustedTranslation = this._adjustedTranslations[i];
 
@@ -379,7 +400,8 @@ namespace PRKR.Editor.Tools {
           // Then move (and rotate) all the objects inside the area.
           let elements = this._editor.getObjectsByAreaId(target.id);
 
-          let areaPivot = originalSize.clone().multiplyScalar(0.5);
+          let originalPivot = originalSize.clone().multiplyScalar(0.5);
+          let newPivot = newSize.clone().multiplyScalar(0.5);
 
           elements.forEach(element => {
             let areaElement = <Model.AreaElement>element.model;
@@ -391,9 +413,9 @@ namespace PRKR.Editor.Tools {
 
             // Then rotate the object around the area's rotation pivot.
             if (element.movable) {
-              let delta = new Vector3().subVectors(areaElement.location, areaPivot);
+              let delta = new Vector3().subVectors(areaElement.location, originalPivot);
               delta.applyQuaternion(adjustedRotation);
-              delta.add(areaPivot);
+              delta.add(originalPivot);
 
               if (element.locationContstraints) {
                 // Switch to world position
@@ -407,7 +429,53 @@ namespace PRKR.Editor.Tools {
 
           });
 
-          // TODO handle tiles...
+          // If the rotated area is a room, rotate its tile definitions.
+          if (area instanceof Model.RoomArea) {
+
+            // Setup.
+            let tileMap: { [type: number]: number[][] }= {};
+            let tileTypes = [];
+            
+            Object.keys(Model.TileType).filter(key => isNaN(Number(key))).forEach(typeName => {
+              let type = Model.TileType[typeName];
+              tileMap[type] = [];
+              tileTypes.push(type);
+            });
+            
+            for (let x = 0; x < area.size.x; x++) {
+              for (let z = 0; z < area.size.z; z++) {
+                let type = area.getTile(x, z);
+                tileMap[type].push([x, z]);
+              }
+            }
+
+            // Rotate
+            let v = new Vector3();
+            tileTypes.forEach(type => {
+              let tiles = tileMap[type];
+              tiles.forEach(tile => {
+                v.set(tile[0], 0, tile[1])
+                  .addScalar(0.5)
+                  .sub(originalPivot)
+                  .applyQuaternion(adjustedRotation)
+                  .add(newPivot)
+                  .subScalar(0.5)
+                  .round();
+                tile[0] = v.x;
+                tile[1] = v.z;
+              });
+            });
+
+            // Apply
+            tileTypes.forEach(type => {
+              let tiles = tileMap[type];
+              if (tiles.length !== 0) {
+                steps.push(new EditSteps.SetTileTypeStep(area.id, tiles, type));
+              }
+            });
+
+          }
+
 
         });
 
