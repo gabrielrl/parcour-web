@@ -15,6 +15,9 @@ namespace PRKR.Editor.Tools {
     /** Objects that could be rotated with the tool as per the last setup. */
     private _targets: EditorObject[] = [];
 
+    /** Active state of each axis as per the last setup. */
+    private _axes: boolean[] = [];
+
     /** True if `_targets` contains areas, else it contains area elements. */
     private _areaMode: boolean;
 
@@ -99,11 +102,13 @@ namespace PRKR.Editor.Tools {
 
           this._editor.setStatus('Click and drag to rotate object around ' + intersection.widget.name);
 
-          this._widgets.forEach(w => {
-            if (w === intersection.widget) {
-              w.setState(WidgetState.Hovered);
-            } else {
-              w.setState(WidgetState.Normal);
+          this._widgets.forEach((w, i) => {
+            if (this._axes[i]) {
+              if (w === intersection.widget) {
+                w.setState(WidgetState.Hovered);
+              } else {
+                w.setState(WidgetState.Normal);
+              }
             }
           });
 
@@ -186,7 +191,11 @@ namespace PRKR.Editor.Tools {
 
           // Rotate all the helpers
           this._helpers.forEach((h, i) => {
-            h.setRotateBy(this._adjustedRotations[i]);
+            if (this._adjustedRotations[i]) {
+              h.setRotateBy(this._adjustedRotations[i]);
+            } else {
+              h.setRotateBy(new Quaternion());
+            }
             if (this._adjustedTranslations[i]) {
               h.setMoveBy(this._adjustedTranslations[i]);
             } else {
@@ -316,22 +325,31 @@ namespace PRKR.Editor.Tools {
         return h;
       });
 
+      // Determines enabled axes.
+      this._axes = this._computeEnabledAxes();
+
       // Build rotation widgets
 
-      // rotate around Y
-      let wy = new RotationWidget('Y', Helpers.OrthoPlane.XZ, 0x00ff00);
-
       // rotate around X
-      let wx = new RotationWidget('X', Helpers.OrthoPlane.YZ, 0xff0000);
+      var wx = new RotationWidget('X', Helpers.OrthoPlane.YZ, 0xff0000);
+
+      // rotate around Y
+      var wy = new RotationWidget('Y', Helpers.OrthoPlane.XZ, 0x00ff00);
 
       // rotate around Z
-      let wz = new RotationWidget('Z', Helpers.OrthoPlane.XY, 0x0000ff);
+      var wz = new RotationWidget('Z', Helpers.OrthoPlane.XY, 0x0000ff);
 
       this._widgets = [ wx, wy, wz ];
 
       let cameraOrientation = this._editor.getCameraRig().getWorldDirection();
       let clippingPlanes: THREE.Plane[] = [];
-      this._widgets.forEach(w => {
+      this._widgets.forEach((w, i) => {
+
+        if (!this._axes[i]) {
+          w.setState(WidgetState.Hidden);
+          return;
+        }
+
         let n = Helpers.getNormalFromOrthoPlane(w.plane);
         let dot = n.dot(cameraOrientation);
         if (dot > 0) {
@@ -351,7 +369,8 @@ namespace PRKR.Editor.Tools {
     }
 
     private _getNearestWidgetIntersection(mouse: JQueryMouseEventObject): WidgetHitTestResult {
-      let intersections = this._widgets.map(w => w.test(mouse, this._editor));
+      let w = this._widgets.filter((w, i) => this._axes[i]);
+      let intersections = w.map(w => w.test(mouse, this._editor));
       return _.minBy(intersections, i => i ? i.distance : Infinity);
     }
 
@@ -407,15 +426,17 @@ namespace PRKR.Editor.Tools {
             let areaElement = <Model.AreaElement>element.model;
 
             // Apply adjusted rotation.
-            if (element.rotatable) {
+            if (element.rotatable && adjustedRotation) {
               steps.push(new EditSteps.RotateStep(adjustedRotation, [ element.id ]));
             }
 
             // Then rotate the object around the area's rotation pivot.
             if (element.movable) {
               let delta = new Vector3().subVectors(areaElement.location, originalPivot);
-              delta.applyQuaternion(adjustedRotation);
-              delta.add(originalPivot);
+              if (adjustedRotation) {
+                delta.applyQuaternion(adjustedRotation);
+                delta.add(originalPivot);
+              }
 
               if (element.locationContstraints) {
                 // Switch to world position
@@ -430,7 +451,7 @@ namespace PRKR.Editor.Tools {
           });
 
           // If the rotated area is a room, rotate its tile definitions.
-          if (area instanceof Model.RoomArea) {
+          if (area instanceof Model.RoomArea && adjustedRotation) {
 
             // Setup.
             let tileMap: { [type: number]: number[][] }= {};
@@ -505,6 +526,70 @@ namespace PRKR.Editor.Tools {
 
       return new EditSteps.ComposedStep(steps);
 
+    }
+
+    /** from current `_targets`. */
+    private _computeEnabledAxes(): boolean[] {
+
+      let targets = this._targets;
+
+      if (targets.length === 0) {
+
+        // No target, no axes.
+        return [ false, false, false ];
+
+      } else if (targets.length === 1) {
+
+        // Single target. Apply rotateConstraint if any.
+        let t = targets[0];
+        if (!t.rotatable) return [ false, false, false ];
+        let c = t.rotateConstraints;
+        if (!c) return [ true, true, true ];
+        return  [
+          c.supportsAxis(0),
+          c.supportsAxis(1),
+          c.supportsAxis(2)
+        ];
+
+      } else {
+
+        // Multiple target. Take movability into account.
+        let x = _.some(targets, t => {
+          if (t.movable) {
+            return true;
+          } else if (t.rotatable) {
+            let c = t.rotateConstraints;
+            return c.supportsAxis(0);
+          } else {
+            return false;
+          }
+        });
+
+        let y = _.some(targets, t => {
+          if (t.movable) {
+            return true;
+          } else if (t.rotatable) {
+            let c = t.rotateConstraints;
+            return c.supportsAxis(1);
+          } else {
+            return false;
+          }
+        });
+
+        let z = _.some(targets, t => {
+          if (t.movable) {
+            return true;
+          } else if (t.rotatable) {
+            let c = t.rotateConstraints;
+            return c.supportsAxis(2);
+          } else {
+            return false;
+          }
+        });
+
+        return [ x, y, z ];
+
+      }
     }
 
   }
