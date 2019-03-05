@@ -19,7 +19,7 @@ namespace PRKR.Editor.Objects {
 
       this._step = step;
       if (axes) {
-        if (axes.length !== 3) throw new Error('When specified, "axis" must be of length 3');
+        if (axes.length !== 3) throw new Error('When specified, "axes" must be of length 3');
         this._axes = axes;
       } else {
         this._axes = [ true, true, true ];
