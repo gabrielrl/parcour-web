@@ -203,6 +203,7 @@ namespace PRKR.Editor {
         new Tools.SelectTool(this),
         new Tools.PlayFromTool(this),
         new Tools.MoveTool(this),
+        new Tools.RotateTool(this),
         new Tools.ResizeTool(this),
         new Tools.PasteTool(this),
         new Tools.RoomDrawingTool(this),
@@ -341,14 +342,18 @@ namespace PRKR.Editor {
       return null;
     }
 
+    /**
+     * Gets all the area elements related to an area.
+     * @param areaId The ID of the area for which we want the objects.
+     * @returns An array of all the objects related to the area.
+     */
     public getObjectsByAreaId(areaId: string): EditorObject[] {
-      //let area = this._model.getAreaById(areaId);
+
       let objects = <AreaElement[]>_.filter(this._model.objects,
         o => o instanceof PRKR.Model.AreaElement && o.areaId === areaId);
       let editorObjects = objects.map(o => this.getObjectById(o.id));
       return editorObjects;
     }
-    
 
     public getAreas(): RoomObject[] {
       let areas: RoomObject[];
@@ -1270,6 +1275,11 @@ namespace PRKR.Editor {
             image: 'fa-arrows-alt',
             tool: this._toolMap['resize']
           }, {
+            name: 'rotate',
+            display: 'Rotate',
+            image: 'fa-circle-o',
+            tool: this._toolMap['rotate']
+          }, {
             name: 'addRectangularRoom',
             display: 'Add rect.',
             image: 'fa-cube',
@@ -1355,6 +1365,7 @@ namespace PRKR.Editor {
       let renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setClearColor(0xFFFFFF);
       renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.localClippingEnabled = true;
 
       let container = this._domLayout.main;
       renderer.setSize(container.clientWidth, container.clientHeight);

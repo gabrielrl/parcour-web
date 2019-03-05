@@ -31,8 +31,11 @@ namespace PRKR.Editor.Objects {
      */
     get roomArea(): RoomArea { return <RoomArea> this.model; }
 
-    /** Override. */
-    public get movable(): boolean { return true; }
+    /** Gets true because room objects are movable. */
+    public get movable(): true { return true; }
+
+    /** Gets true because room objects are rotatable. */
+    public get rotatable(): true { return true; }
 
     /** Override. */
     public get resizable(): boolean { return true; }
@@ -78,6 +81,17 @@ namespace PRKR.Editor.Objects {
       if (!target) { target = new Vector3(); }
       target.copy(this.roomArea.location);
       return target;
+    }
+
+    /**
+     * Gets the pivot which is at the center of the current area.
+     * 
+     * @param target Optional target for the pivot point's world location.
+     * @returns the world position of the center of the area.
+     */
+    public getWorldPivot(target?: Vector3): Vector3 {
+      return this.roomArea.getBoundingBox().getCenter(target);
+
     }
     
     /** Override */

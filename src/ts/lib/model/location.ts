@@ -29,7 +29,7 @@ namespace PRKR.Model {
 
   /**
    * A parcour object that defines a special location in an area (in the
-   * parcour), e.g. the _start_ and _stop_ locations.
+   * parcour), e.g. the _start_ and _end_ locations.
    */
   export class Location extends AreaElement {
 
@@ -59,16 +59,15 @@ namespace PRKR.Model {
       return clone;
     }
 
-    // Override.
-    public toObject() {
-      let o: any = { $type: this.type };
-      _.extend(o, {
-        id: this.id,
-        areaId: this.areaId,
-        location: this.location.toArray(),
-        kind: this.kind,
+    /**
+     * Gets a plain object representation of the current object.
+     * Override, call super and extend its return value, don't forget to overwrite `$type`.
+     */
+    public toObject(): any {
+      return _.assign(super.toObject(), {
+        $type: this.type,
+        kind: this.kind
       });
-      return o;
     }
 
     // Override.

@@ -1,6 +1,7 @@
 namespace PRKR.Editor.Objects {
 
   import Vector3 = THREE.Vector3;
+  import Quaternion = THREE.Quaternion;
   import Box3 = THREE.Box3;
   import Mesh = THREE.Mesh;
   import StaticModel = PRKR.Model.StaticObject;
@@ -10,18 +11,29 @@ namespace PRKR.Editor.Objects {
 
   export class StaticObject extends EditorObject {
 
-    private _mesh: THREE.Mesh = null;
+    private _geometry: THREE.Geometry = null;
+    private _mesh: Mesh = null;
 
     constructor(model: StaticModel, parcour: Parcour) {
       super(model, parcour);
       this.update();
     }
 
-    /** Gets true because static objects area movables. */
+    /** Gets true because static objects are movables. */
     get movable(): true { return true; }
+
+    /** Gets true because static objects are rotatable. */
+    get rotatable(): true { return true; }
 
     /** Override. */
     get resizable(): boolean { return true; }
+
+    get geometry(): THREE.Geometry {
+      if (!this._geometry) {
+        this._geometry = this._buildGeometry();
+      }
+      return this._geometry;
+    }
 
     public update() {
       this._updateSceneObject();
@@ -64,16 +76,27 @@ namespace PRKR.Editor.Objects {
       return target;
     }
 
-    /** Override */
-    protected _computeBoundingBox() {
+    /**
+     * Gets the current static object's rotation.
+     * @param target Optional target for the object's rotation.
+     */
+    public getRotation(target?: Quaternion): Quaternion {
+      target = target || new Quaternion();
+      target.copy((<StaticModel>this.model).rotation);
+      return target;
+    }
 
-      // TODO need to take rotation into account
+    /** Override */
+    protected _computeBoundingBox(): Box3 {
+
       let staticModel = <StaticModel>this.model;
       let min = new Vector3();
       min.copy(staticModel.size).multiplyScalar(-1);
       let max = new Vector3();
       max.copy(staticModel.size);
-      let box = new THREE.Box3(min, max);
+      let box = new Box3(min, max);
+      
+      M.rotateBox3(box, staticModel.rotation);
       return box;
     }
 
@@ -81,16 +104,20 @@ namespace PRKR.Editor.Objects {
       color: 0xcccccc
     });
 
+    private _buildGeometry() {
+      let model = <StaticModel>this.model;
+      return new THREE.CubeGeometry(
+        model.size.x * 2,
+        model.size.y * 2,
+        model.size.z * 2
+      );
+    }
+
     private _buildMesh() {
 
-      let staticModel = <StaticModel>this.model;
-      let area = <Model.Area>this.parcour.getObjectById(staticModel.areaId);
-      let g = new THREE.CubeGeometry(
-        staticModel.size.x * 2,
-        staticModel.size.y * 2,
-        staticModel.size.z * 2
-      ); 
-      let mesh = new THREE.Mesh(g, StaticObject.Material);
+      let mesh = new Mesh(this.geometry, StaticObject.Material);
+      let model = <StaticModel>this.model;
+      mesh.quaternion.copy(model.rotation);
       return mesh;
     }
   }

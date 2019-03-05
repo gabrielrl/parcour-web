@@ -26,8 +26,7 @@ namespace PRKR.Model {
       if (data) {
         if (data.size) {
           if (_.isArray(data.size)) {
-            let a = data.size;
-            this._size.set(a[0], a[1], a[2]);
+            this._size.fromArray(data.size);
           } else {
             this._size.copy(data.size);
           }
@@ -52,24 +51,24 @@ namespace PRKR.Model {
 
     // Override
     public getBoundingBox(): THREE.Box3 {
+
       let box = new THREE.Box3(
-        new Vector3().copy(this.location).addScaledVector(this.size, -1),
-        new Vector3().copy(this.location).addScaledVector(this.size, 1),
+        this.size.clone().multiplyScalar(-1),
+        this.size.clone()
       );
+      M.rotateBox3(box, this.rotation);
+      box.translate(this.location);
       return box;
     }
 
-    // Override.
-    public toObject() {
-      let o: any = { $type: this.type };
-      _.extend(o, {
-        id: this.id,
-        areaId: this.areaId,
-        location: this.location.toArray(),
+    /**
+     * Gets a plain object representation of the current object.
+     * Override, call super and extend its return value, don't forget to overwrite `$type`.
+     */
+    public toObject(): any {
+      return _.assign(super.toObject(), {
         size: this.size.toArray()
-        // ...
       });
-      return o;
     }
 
     // Override

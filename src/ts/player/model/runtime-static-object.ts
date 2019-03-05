@@ -38,6 +38,7 @@ namespace PRKR.Player.Model {
         this._parcour.getAreaById(model.areaId).location,
         model.location
       );
+      mesh.quaternion.copy(this._model.rotation);
       mesh.castShadow = true;
       mesh.receiveShadow = true;
 
@@ -59,7 +60,8 @@ namespace PRKR.Player.Model {
         mass: 0,
         friction: Constants.StaticObjects.DefaultFriction,
         size,
-        position
+        position,
+        rotation: this._model.rotation
       });
 
       this._body = box;

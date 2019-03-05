@@ -14,14 +14,14 @@ namespace PRKR.Model {
 
     get type() { return 'Doorway'; }
 
+    /**
+     * Gets a plain object representation of the current object.
+     * Override, call super and extend its return value, don't forget to overwrite `$type`.
+     */
     public toObject() {
-      return {
+      return _.assign(super.toObject(), {
         $type: this.type,
-        id: this.id,
-        areaId: this.areaId,
-        location: this.location.toArray(),
-        size: this.size.toArray()
-      };
+      });
     }
   }
 }

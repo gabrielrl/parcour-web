@@ -6,8 +6,6 @@ namespace PRKR.Model {
   import Vector3 = THREE.Vector3;
 
   export interface RoomAreaOptions extends AreaData {
-    location: Vector3;
-    size: THREE.Vector3;
     light?: RoomLight;
     tiles?: TileType[][];
   }
@@ -213,17 +211,16 @@ namespace PRKR.Model {
       this._tiles = _.cloneDeep(source._tiles);
     }
 
+    /**
+     * Gets a plain object representation of the current object.
+     * Override, call super and extend its return value, don't forget to overwrite `$type`.
+     */
     public toObject(): any {
-      let o: any = { $type: this.type };
-      _.extend(o, {
-        id: this.id,
-        name: this.name,
-        location: this.location.toArray(),
-        size: this.size.toArray(),
+      return _.assign(super.toObject(), {
+        $type: this.type,
         light: _.cloneDeep(this._light),
         tiles: _.cloneDeep(this._tiles)
       });
-      return o;
     }
   }
 }

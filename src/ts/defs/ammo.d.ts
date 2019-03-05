@@ -59,7 +59,7 @@ declare namespace Ammo {
     setW(w: number): void;
   }
 
-  interface btQuaternion extends btQuadWord {
+  class btQuaternion implements btQuadWord {
     // void btQuaternion(float x, float y, float z, float w);
     constructor(x, y, z, w); // ??
     setValue(x: number, y: number, z: number, w: number): void;
@@ -82,6 +82,16 @@ declare namespace Ammo {
 
     op_mulq(q: /*[Ref]*/ btQuaternion): /*[Operator="*=", Ref]*/ btQuaternion;
     op_div(s: number): /*[Operator="/=", Ref]*/ btQuaternion;
+
+    x(): number;
+    y(): number;
+    z(): number;
+    w(): number;
+    setX(x: number): void;
+    setY(y: number): void;
+    setZ(z: number): void;
+    setW(w: number): void;
+
   }
 
   interface btMatrix3x3 {
