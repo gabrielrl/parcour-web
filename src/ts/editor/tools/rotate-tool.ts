@@ -39,7 +39,7 @@ namespace PRKR.Editor.Tools {
     private _adjustedTranslations: Vector3[];
 
     /**
-     * One adjusted location per target.
+     * One adjusted rotation per target.
      */
     private _adjustedRotations: Quaternion[];
 
@@ -76,7 +76,7 @@ namespace PRKR.Editor.Tools {
       this._reset();
       this._setUp();
 
-      // Simulate mouse down to update.
+      // Simulate mouse move to update.
       if (this._editor.lastMouseEvent) {
         this.notifyMouseMove(this._editor.lastMouseEvent);
       }
@@ -138,7 +138,6 @@ namespace PRKR.Editor.Tools {
           // Compute rotation and position for each target.
           this._adjustedTranslations = [];
           this._adjustedRotations = [];
-          // Adjust 
           this._targets.forEach((t, i) => {
 
             let origin = t.getWorldPivot();
@@ -306,7 +305,7 @@ namespace PRKR.Editor.Tools {
 
       this._areaMode = _.some(this._targets, isArea);
       if (this._areaMode) {
-        // Sanitize the target list. We only keep the targets.
+        // Sanitize the target list. We only keep the areas.
         this._targets = _.filter(this._targets, isArea);
       }
 
