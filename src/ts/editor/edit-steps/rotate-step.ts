@@ -5,7 +5,10 @@ namespace PRKR.Editor.EditSteps {
   import AreaElement = PRKR.Model.AreaElement;
 
   /**
-   * Parcour edition step that rotates an object(s) from its(their) original rotation state.
+   * Parcour edition step that rotates an object(s) from its(their) current rotation state.
+   * 
+   * In mathematical terms, the rotation represented by the current edit step is premultiplied to each target's
+   * quaternion.
    */
   export class RotateStep extends EditStep {
 
@@ -14,8 +17,8 @@ namespace PRKR.Editor.EditSteps {
 
     /**
      * 
-     * @param rotation The rotation to apply to the current object rotation.
-     * @param targetIds The IDs of the object to rotate.
+     * @param rotation The rotation to apply to the targets.
+     * @param targetIds The IDs of the object(s) to rotate.
      */
     constructor(rotation: Quaternion, targetIds: string[]) {
       super();
