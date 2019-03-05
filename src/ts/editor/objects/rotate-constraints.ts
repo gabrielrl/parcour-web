@@ -1,6 +1,10 @@
 namespace PRKR.Editor.Objects {
 
-  /** Defines a type that can constrain an object's rotation. */
+  /**
+   * Constraints that apply to an object's rotation.
+   * 
+   * The allowed rotation steps and the possible axes.
+   */
   export class RotateConstraints {
 
     private _step: number;
