@@ -3,7 +3,8 @@ namespace PRKR.Editor.Tools {
   import EditorObject = Objects.EditorObject;
 
   /**
-   * TODO comment
+   * A helper to proxy any editor object used to represent tool effects.
+   * 
    * NOTE Created mesh is always centered at the proxied object's local pivot point. Requied for `setRotateBy` to
    * work.
    */
