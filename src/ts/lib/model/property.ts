@@ -24,10 +24,10 @@ namespace PRKR.Model {
     max?: number;
 
     /** Getter for the property's value. */
-    getValue(parcourObject: ParcourObject): any;
+    getValue(target: any): any;
 
     /** Optional setter for the property's value. */
-    setValue?(parcourObject: ParcourObject, value: any): void; 
+    setValue?(target: any, value: any): void; 
 
   }
 }

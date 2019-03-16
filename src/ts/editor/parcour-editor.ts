@@ -146,7 +146,7 @@ namespace PRKR.Editor {
 
     /** Author defined temporary start location. */
     private _startLocation: THREE.Vector3;
-    
+
     public init() {
       console.debug('ParcourEditor#init');
 
@@ -241,7 +241,7 @@ namespace PRKR.Editor {
     public run() {
 
       this._ribbon.update();
-      this._propertiesPanel.update();
+      this._updatePropertiesPanel();
 
       // Set-up listeners on viewport element.
       let $main = $(this._domLayout.main);
@@ -404,7 +404,7 @@ namespace PRKR.Editor {
       this._selectedObjects = selected;
 
       this._ribbon.update();
-      this._propertiesPanel.update();
+      this._updatePropertiesPanel();
 
       this.requestRender();
 
@@ -454,7 +454,7 @@ namespace PRKR.Editor {
       this._selectedObjects = selected;
 
       this._ribbon.update();
-      this._propertiesPanel.update();
+      this._updatePropertiesPanel();
 
       this.requestRender();
 
@@ -480,7 +480,7 @@ namespace PRKR.Editor {
       this._selectedObjects = selected;
 
       this._ribbon.update();
-      this._propertiesPanel.update();
+      this._updatePropertiesPanel();
 
       this.requestRender();
 
@@ -504,10 +504,12 @@ namespace PRKR.Editor {
      * all selected objects.
      * @param prop 
      */
-    public setPropertyValue(prop: Model.Property, value: any) {
+    private _setPropertyValue(prop: Model.Property, value: any) {
 
       let ids = this._selectedObjects.map(o => o.id);
       let step = new SetPropertyStep(ids, prop.name, value);
+
+      // TODO There should be some validation here!!
 
       this.addEditStep(step);
 
@@ -723,7 +725,7 @@ namespace PRKR.Editor {
       this._sanitizeSelection();
 
       this._ribbon.update();
-      this._propertiesPanel.update();
+      this._updatePropertiesPanel();
 
       this.requestRender();
 
@@ -750,7 +752,7 @@ namespace PRKR.Editor {
       this._sanitizeSelection();
 
       this._ribbon.update();
-      this._propertiesPanel.update();
+      this._updatePropertiesPanel();
 
       this.requestRender();
 
@@ -786,7 +788,7 @@ namespace PRKR.Editor {
       this._doorwayPlacer = null;
 
       this._ribbon.update();
-      this._propertiesPanel.update();
+      this._updatePropertiesPanel();
 
       this.requestRender();
 
@@ -931,7 +933,7 @@ namespace PRKR.Editor {
             }
             this._modelIsDirty = false;
             this._ribbon.update();
-            this._propertiesPanel.update();
+            this._updatePropertiesPanel();
           },
           (xhr, status, err) => {
             console.error('Error saving parcour', err);
@@ -983,6 +985,29 @@ namespace PRKR.Editor {
       this._renderRequested = false;
     }
 
+    private _updatePropertiesPanel() {
+
+      let props: Property[] = [];
+
+      let sel = this.selectedObjects;
+      if (sel.length !== 0) {
+        sel.forEach(object => {
+          let objectProps = object.getProperties();
+          objectProps.forEach(prop => {
+            let p = props.find(p => p.name === prop.name);
+            if (!p) {
+              props.push(prop);
+            }
+          });
+        });
+      }
+
+      let values = props.map(p => this.getPropertyValue(p));
+
+      this._propertiesPanel.setProperties(props, values);
+
+    }
+
     private _computeModelCenter() {
       // Computes the center of all the areas.
       let c = new Vector3();
@@ -1005,8 +1030,6 @@ namespace PRKR.Editor {
       if (this._activeTool) this._activeTool.activate();
 
       this._ribbon.update();
-      // this._updateToolBar();
-      // this._updateAssetPalette();
     }
 
     private _onKeyDown(e: JQueryKeyEventObject) {
@@ -1346,7 +1369,8 @@ namespace PRKR.Editor {
 
     private _initPropertiesPanel() {
 
-      let props = new Components.PropertiesPanel(this);
+      let props = new Components.PropertiesPanel();
+      props.onChange((p, v) => this._setPropertyValue(p, v));
 
       this._domLayout.right.appendChild(props.dom);
 

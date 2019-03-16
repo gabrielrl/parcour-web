@@ -1,42 +1,38 @@
+/// <reference path="./property-editor.ts" />
+
 namespace PRKR.Editor.Components {
   import Property = Model.Property;
 
   /**
    * Displays a non-editable string.
    */
-  export class DisplayPropertyEditor implements PropertyEditor {
+  export class DisplayPropertyEditor extends PropertyEditor {
 
-    public static STEP = 20;
+    private _$domRoot: JQuery;
 
-    private _editor: ParcourEditor;
-    private _domRoot: HTMLElement;
-    private _property: Property;
-    private _value: number;
-
-    constructor(editor: ParcourEditor, property: Property) {
-      this._editor = editor;
-      this._property = property;
-      this._value = 0;
+    constructor(prop: Property, value?: any, callback?: PropertyChangedCallback) {
+      super(prop, value, callback);
 
       this._build();
+      this._onValueChanged(value);
     }
 
-    get name() { return this._property.name; }
-
-    get dom() { return this._domRoot; }
+    get dom() { return this._$domRoot[0]; }
 
     private _build() {
-      let p = this._property;
-      
-      let val = this._editor.getPropertyValue(p);
+      let p = this.prop;
 
       let $root = $(`<div class="prkr-proped prkr-proped-range">
         <div class="prkr-proped-label margin">${ p.display }</div>
-        <div class="prkr-proped-field padding">${ val }</div>
+        <div class="prkr-proped-field padding"></div>
         <div class="prkr-proped-info cloaked">${ p.info }</div>
       </div>`);
 
-      this._domRoot = $root[0];
+      this._$domRoot = $root;
+    }
+
+    protected _onValueChanged(newValue: any) {
+      this._$domRoot.find('.prkr-proped-field').html(newValue || '');
     }
 
   }
