@@ -132,7 +132,7 @@ namespace PRKR.Editor {
     /** The three.js WebGL scene. */
     private _scene: THREE.Scene;
 
-    /** Three three.js WebGL renderer. */
+    /** The three.js WebGL renderer. */
     private _renderer: THREE.WebGLRenderer;
 
     /** Dual camera rig orbit rig. */
