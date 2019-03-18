@@ -32,7 +32,29 @@ namespace PRKR.Player.Model {
 
     private _buildVisualRepresentation() {
       let model = this._model;
-      let geometry = new THREE.BoxGeometry(model.size.x * 2, model.size.y * 2, model.size.z * 2);
+      
+      let geometry: THREE.Geometry = null;
+      
+      switch (this._model.shape) {
+        default:
+        case PRKR.Model.Shape.Box: {
+          geometry = new THREE.BoxGeometry(model.size.x * 2, model.size.y * 2, model.size.z * 2);
+
+          break;
+        }
+
+        case PRKR.Model.Shape.Sphere: {
+          let radius = Math.min(
+            model.size.x,
+            model.size.y,
+            model.size.z,
+          )
+          geometry = new THREE.SphereGeometry(radius, 24, 18);
+
+          break;
+        }
+      }
+      
       let mesh = new THREE.Mesh(geometry, RuntimeStaticObject.Material);
       mesh.position.addVectors(
         this._parcour.getAreaById(model.areaId).location,
@@ -50,21 +72,44 @@ namespace PRKR.Player.Model {
 
       let area = this._parcour.getAreaById(this._model.areaId);
 
-      let position = area.location.clone();
-      position.add(this._model.location);
+      let position = area.location.clone().add(this._model.location);
 
-      let size = this._model.size.clone();
-      size.multiplyScalar(2);
+      let size = this._model.size.clone().multiplyScalar(2);
 
-      let box = physics.createBox({
-        mass: 0,
-        friction: Constants.StaticObjects.DefaultFriction,
-        size,
-        position,
-        rotation: this._model.rotation
-      });
+      let body: Ammo.btRigidBody = null;
+      switch(this._model.shape) {
+        default:
+        case PRKR.Model.Shape.Box: {
+          body = physics.createBox({
+            mass: 0,
+            size,
+            position,
+            rotation: this._model.rotation,
+            friction: Constants.StaticObjects.DefaultFriction
+          });
 
-      this._body = box;
+          break;
+        }
+
+        case PRKR.Model.Shape.Sphere: {
+          let s = this._model.size;
+          let radius = Math.min(s.x, s.y, s.z);
+
+          body = physics.createSphere({
+            mass: 0,
+            radius: radius,
+            position,
+            rotation: this._model.rotation,
+            friction: Constants.StaticObjects.DefaultFriction
+          });
+
+          break;
+        }
+      }
+
+      
+
+      this._body = body;
 
       physics.add(this);
     }    

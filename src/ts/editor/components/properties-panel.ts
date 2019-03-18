@@ -26,6 +26,8 @@ namespace PRKR.Editor.Components {
      */
     setProperties(props: Property[], values?: any[]) {
 
+      if (props == null) props = [];
+
       var editors: PropertyEditor[] = [];
       var handler = (p: Property, v: any) => this._onPropertyChanged(p, v);
 
@@ -47,6 +49,10 @@ namespace PRKR.Editor.Components {
             case 'Display':
             case 'display':
               editor = new DisplayPropertyEditor(prop, value, handler);
+              break;
+
+            case 'select':
+              editor = new SelectPropertyEditor(prop, value, handler);
               break;
           }
         }

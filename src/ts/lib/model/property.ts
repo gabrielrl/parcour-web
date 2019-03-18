@@ -23,6 +23,9 @@ namespace PRKR.Model {
     /** Maximal value (if applicable). */
     max?: number;
 
+    /** Available options (if applicable). */
+    options?: PropertyOption[];
+
     /** Getter for the property's value. */
     getValue(target: any): any;
 

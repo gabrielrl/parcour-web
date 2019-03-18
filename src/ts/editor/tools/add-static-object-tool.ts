@@ -57,6 +57,9 @@ namespace PRKR.Editor.Tools {
     /** Drawn rectangle (adjusted, final) size. */
     private _size: Vector3 = new Vector3();
 
+    /** Shape of the object to create. */
+    private _shape: Model.Shape = Model.Shape.Box;
+
     /** Rectangle on the floor helper. */
     private _embeddedRectanglesHelper: EmbeddedRectanglesHelper = new EmbeddedRectanglesHelper();
 
@@ -83,6 +86,36 @@ namespace PRKR.Editor.Tools {
 
     get keyboardShortcut() {
       return KeyboardMatcher.for({ keyCode: 71 /* G */ });
+    }
+
+    private static PROPERTIES: Model.Property[] = [
+      {
+        name: 'shape',
+        display: 'Shape',
+        info: 'Select the shape of the object to create',
+        type: 'number',
+        editor: 'select',
+        options: [
+          {
+            value: Model.Shape.Box,
+            display: 'Box'
+          },
+          {
+            value: Model.Shape.Sphere,
+            display: 'Sphere'
+          }
+        ],
+        getValue: t => t instanceof AddStaticObjectTool && t._shape,
+        setValue: (t, v) => {
+          if (t instanceof AddStaticObjectTool) {
+            t._shape = v;
+          }
+        }
+      }
+    ];
+
+    get properties(): Model.Property[] {
+      return AddStaticObjectTool.PROPERTIES;
     }
 
     /** 
@@ -434,7 +467,8 @@ namespace PRKR.Editor.Tools {
         $type: 'StaticObject',
         areaId: this._start.area.id,
         location: center.toArray(),
-        size: halfExtents.toArray()
+        size: halfExtents.toArray(),
+        shape: this._shape
       });
     }
 

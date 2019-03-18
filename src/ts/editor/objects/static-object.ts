@@ -106,11 +106,27 @@ namespace PRKR.Editor.Objects {
 
     private _buildGeometry() {
       let model = <StaticModel>this.model;
-      return new THREE.CubeGeometry(
-        model.size.x * 2,
-        model.size.y * 2,
-        model.size.z * 2
-      );
+
+      switch(model.shape) {
+        case Model.Shape.Box:
+        default: {
+          return new THREE.CubeGeometry(
+            model.size.x * 2,
+            model.size.y * 2,
+            model.size.z * 2
+          );
+        }
+        
+        case Model.Shape.Sphere: {
+          let radius = Math.min(
+            model.size.x,
+            model.size.y,
+            model.size.z,
+          )
+          return new THREE.SphereGeometry(radius, 24, 18);
+        }
+      }
+
     }
 
     private _buildMesh() {
