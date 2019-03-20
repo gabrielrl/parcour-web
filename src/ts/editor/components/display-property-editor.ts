@@ -22,7 +22,7 @@ namespace PRKR.Editor.Components {
     private _build() {
       let p = this.prop;
 
-      let $root = $(`<div class="prkr-proped prkr-proped-range">
+      let $root = $(`<div class="prkr-proped prkr-proped-display">
         <div class="prkr-proped-label margin">${ p.display }</div>
         <div class="prkr-proped-field padding"></div>
         <div class="prkr-proped-info cloaked">${ p.info }</div>
