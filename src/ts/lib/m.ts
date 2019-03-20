@@ -194,5 +194,35 @@ namespace PRKR {
       return box;
     }
 
+    /**
+     * Gets the effective minimal bounding box for the specified shape having the specified size (in "half extents").
+     * @param shape A shape.
+     * @param halfExtents A size for the shape in terms of "half extents".
+     */
+    public static getEffectiveBox(shape: Model.Shape, halfExtents: Vector3) {
+
+      switch (shape) {
+
+        case Model.Shape.Box:
+        default:
+          return new Box3(
+            halfExtents.clone().negate(),
+            halfExtents.clone()
+          );
+
+          // break;
+
+        case Model.Shape.Sphere:
+
+          let r = Math.min(halfExtents.x, halfExtents.y, halfExtents.z);
+          return new Box3(
+            new Vector3(-r, -r, -r),
+            new Vector3(r, r, r)
+          );
+
+          // break;
+      }
+    }
+
   }
 }

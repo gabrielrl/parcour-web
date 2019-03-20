@@ -461,13 +461,15 @@ namespace PRKR.Editor.Tools {
         .sub(area.location);
 
       let halfExtents = new Vector3();
-      halfExtents.copy(this._size).multiplyScalar(0.5);      
+      halfExtents.copy(this._size).multiplyScalar(0.5);
+      
+      let minBox = M.getEffectiveBox(this._shape, halfExtents);
 
       return new AddObjectStep({
         $type: 'StaticObject',
         areaId: this._start.area.id,
         location: center.toArray(),
-        size: halfExtents.toArray(),
+        size: minBox.max.toArray(),
         shape: this._shape
       });
     }
