@@ -98,6 +98,25 @@ namespace PRKR.Player.Model {
             rotation: this._model.rotation,
             friction: Constants.StaticObjects.DefaultFriction
           });
+
+          break;
+        }
+
+        case PRKR.Model.Shape.Capsule: {
+
+          let s = this._model.size;
+          let radius = Math.min(s.x, s.z);
+
+          body = physics.createCapsule({
+            mass: 0,
+            radius,
+            height: size.y,
+            position,
+            rotation: this._model.rotation,
+            friction: Constants.StaticObjects.DefaultFriction
+          });
+
+          break;
         }
       }
 
