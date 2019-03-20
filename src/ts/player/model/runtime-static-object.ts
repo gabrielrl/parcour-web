@@ -33,28 +33,8 @@ namespace PRKR.Player.Model {
     private _buildVisualRepresentation() {
       let model = this._model;
       
-      let geometry: THREE.Geometry = null;
-      
-      switch (this._model.shape) {
-        default:
-        case PRKR.Model.Shape.Box: {
-          geometry = new THREE.BoxGeometry(model.size.x * 2, model.size.y * 2, model.size.z * 2);
+      let geometry = Builders.ShapeGeometryBuilder.buildGeometry(model.shape, model.size);
 
-          break;
-        }
-
-        case PRKR.Model.Shape.Sphere: {
-          let radius = Math.min(
-            model.size.x,
-            model.size.y,
-            model.size.z,
-          )
-          geometry = new THREE.SphereGeometry(radius, 24, 18);
-
-          break;
-        }
-      }
-      
       let mesh = new THREE.Mesh(geometry, RuntimeStaticObject.Material);
       mesh.position.addVectors(
         this._parcour.getAreaById(model.areaId).location,
