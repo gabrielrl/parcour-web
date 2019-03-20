@@ -13,7 +13,12 @@ namespace PRKR.Editor.Components {
     private _callback: PropertyChangedCallback;
     private _editors: PropertyEditor[];
 
-    constructor() {
+    private _name: string;
+
+    constructor(name?: string) {
+
+      this._name = name || 'PROPERTIES';
+
       this._build();
       this._updateDom();
     }
@@ -99,19 +104,14 @@ namespace PRKR.Editor.Components {
 
     private _build() {
       this._$root = $(
-        `<div id="propertiesPanelRoot" class="prkr-props-root">
+        `<div class="prkr-props-root">
           <div class="prkr-props-head padding">
-            <div id="propertiesPanelTitle">PROPERTIES</div>` +
-            // Restore the close button when ready to implement it.
-            // <div id="propertiesPanelClose" class="right">
-            //   <i class="fa fa-angle-right" />
-            // </div>
-          `</div>
-          <div id="propertiesPanelBody" class="prkr-props-body">
+            <div class="prkr-props-title">${ this._name }</div>
           </div>
+          <div class="prkr-props-body"></div>
         </div>`);
       
-        this._$bodyRoot = this._$root.find('#propertiesPanelBody');
+        this._$bodyRoot = this._$root.find('.prkr-props-body');
     }
 
   }

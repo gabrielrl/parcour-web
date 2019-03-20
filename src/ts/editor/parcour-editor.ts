@@ -1399,7 +1399,7 @@ namespace PRKR.Editor {
 
     private _initObjectsPanel() {
 
-      let panel = new Components.PropertiesPanel();
+      let panel = new Components.PropertiesPanel('Object properties');
       panel.onChange((p, v) => this._setPropertyValue(p, v));
 
       this._domLayout.right.appendChild(panel.dom);
@@ -1410,7 +1410,7 @@ namespace PRKR.Editor {
 
     private _initToolPanel() {
 
-      let panel = new Components.PropertiesPanel();
+      let panel = new Components.PropertiesPanel('Tool properties');
       panel.onChange((p, v) => this._setToolProperty(p, v));
 
       this._domLayout.left.appendChild(panel.dom);

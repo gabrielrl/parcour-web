@@ -101,7 +101,7 @@ body {
   cursor: default;
 }
 
-#propertiesPanelRoot {
+.prkr-props-root {
   /* column */
   display: flex;
   flex-direction: column;
@@ -110,7 +110,7 @@ body {
   justify-content: space-between;
 }
 
-#propertiesPanelRoot.empty {
+.prkr-props-root.empty {
   display: none;
 }
 
@@ -129,7 +129,7 @@ body {
   flex-grow: 1;
 }
 
-#propertiesPanelTitle {
+.prkr-props-title {
   height: 40px;
   line-height: 40px;
   user-select: none;
@@ -137,22 +137,7 @@ body {
   font-weight: 700;
 }
 
-#propertiesPanelClose {
-  margin: 4px;
-  width: 40px;
-  height: 40px;
-  line-height: 40px;
-  text-align: center;
-  cursor: pointer;
-  border-radius: 50%;
-}
-
-#propertiesPanelClose:hover {
-  background-color: hsla(0, 50%, 0%, 0.5);
-  color: white;
-}
-
-#propertiesPanelBody {
+.prkr-props-body {
   /* column */
   display: flex;
   flex-direction: column;
