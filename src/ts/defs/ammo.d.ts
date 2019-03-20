@@ -234,6 +234,14 @@ declare namespace Ammo {
     constructor(radius: number)
   }
 
+  interface btCylinderShape extends btCollisionShape {
+    setMargin(margin: number): void;
+    getMargin(): number;
+  }
+  class btCylinderShape {
+    constructor(halfExtents: btVector3);
+  }
+
   interface btDefaultCollisionConstructionInfo {
     btDefaultCollisionConstructionInfo(): void;
   }

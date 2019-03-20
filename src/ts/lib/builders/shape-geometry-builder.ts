@@ -14,7 +14,7 @@ namespace PRKR.Builders {
      * @param halfExtents Half extents, 
      */
     public static buildGeometry(shape: Model.Shape, halfExtents: Vector3): THREE.Geometry {
-      
+
       switch (shape) {
 
         case Model.Shape.Box:
@@ -30,14 +30,18 @@ namespace PRKR.Builders {
 
         case Model.Shape.Sphere:
 
-          let radius = Math.min(
-            halfExtents.x,
-            halfExtents.y,
-            halfExtents.z,
-          );
-          return new THREE.SphereGeometry(radius, 24, 18);
+          let r = Math.min(halfExtents.x, halfExtents.y, halfExtents.z);
+          return new THREE.SphereGeometry(r, 24, 18);
 
           // break;
+
+        case Model.Shape.Cylinder:
+
+          r = Math.min(halfExtents.x, halfExtents.z);
+          return new THREE.CylinderGeometry(r, r, halfExtents.y * 2, 24);
+
+          // break;
+          
       }
 
     }

@@ -221,6 +221,17 @@ namespace PRKR {
           );
 
           // break;
+
+        case Model.Shape.Cylinder:
+
+          r = Math.min(halfExtents.x, halfExtents.z);
+          return new Box3(
+            new Vector3(-r, -halfExtents.y, -r),
+            new Vector3(r, halfExtents.y, r)
+          );
+
+          // break;
+
       }
     }
 

@@ -77,13 +77,27 @@ namespace PRKR.Player.Model {
 
           body = physics.createSphere({
             mass: 0,
-            radius: radius,
+            radius,
             position,
             rotation: this._model.rotation,
             friction: Constants.StaticObjects.DefaultFriction
           });
 
           break;
+        }
+
+        case PRKR.Model.Shape.Cylinder: {
+          let s = this._model.size;
+          let radius = Math.min(s.x, s.z);
+
+          body = physics.createCylinder({
+            mass: 0,
+            radius,
+            height: size.y,
+            position,
+            rotation: this._model.rotation,
+            friction: Constants.StaticObjects.DefaultFriction
+          });
         }
       }
 

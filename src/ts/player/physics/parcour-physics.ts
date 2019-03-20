@@ -72,6 +72,15 @@ namespace PRKR.Player.Physics {
       return this._createRigidBody(shape, data);
     }
 
+    public createCylinder(data: CylinderDescription): Ammo.btRigidBody {
+      if (!data) throw new Error('"data" is required.');
+
+      let halfExtents = new Ammo.btVector3(data.radius, data.height / 2, data.radius);
+      let shape = new Ammo.btCylinderShape(halfExtents);
+
+      return this._createRigidBody(shape, data);
+    }
+
     public createCapsule(data: CapsuleDescription): Ammo.btRigidBody {
       if (!data) throw new Error('"data" is required.');
 

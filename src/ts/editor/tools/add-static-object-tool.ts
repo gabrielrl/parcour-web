@@ -103,6 +103,10 @@ namespace PRKR.Editor.Tools {
           {
             value: Model.Shape.Sphere,
             display: 'Sphere'
+          },
+          {
+            value: Model.Shape.Cylinder,
+            display: 'Cylinder'
           }
         ],
         getValue: t => t instanceof AddStaticObjectTool && t._shape,
