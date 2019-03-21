@@ -89,6 +89,14 @@ namespace PRKR.Player.Physics {
       return this._createRigidBody(shape, data);
     }
 
+    public createCone(data: ConeDescription): Ammo.btRigidBody {
+      if (!data) throw new Error('"data" is required.');
+
+      let shape = new Ammo.btConeShape(data.radius, data.height);
+
+      return this._createRigidBody(shape, data);
+    }
+
     public add(obj: Model.RuntimeObject) {
       if (obj && obj.physicBodies) {
         obj.physicBodies.forEach(b => {

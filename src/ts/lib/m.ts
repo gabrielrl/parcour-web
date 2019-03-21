@@ -224,6 +224,7 @@ namespace PRKR {
 
         case Model.Shape.Cylinder:
         case Model.Shape.Capsule:
+        case Model.Shape.Cone:
 
           r = Math.min(halfExtents.x, halfExtents.z);
           return new Box3(

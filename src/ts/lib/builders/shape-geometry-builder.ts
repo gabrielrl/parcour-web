@@ -58,6 +58,13 @@ namespace PRKR.Builders {
           return g;
         
           // break;
+
+        case Model.Shape.Cone:
+
+          r = Math.min(halfExtents.x, halfExtents.z);
+          return new THREE.ConeGeometry(r, halfExtents.y * 2, 24);
+
+          // break;
       }
 
     }

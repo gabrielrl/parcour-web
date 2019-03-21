@@ -111,6 +111,10 @@ namespace PRKR.Editor.Tools {
           {
             value: Model.Shape.Capsule,
             display: 'Capsule'
+          },
+          {
+            value: Model.Shape.Cone,
+            display: 'Cone'
           }
         ],
         getValue: t => t instanceof AddStaticObjectTool && t._shape,

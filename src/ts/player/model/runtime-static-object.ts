@@ -118,6 +118,22 @@ namespace PRKR.Player.Model {
 
           break;
         }
+
+        case PRKR.Model.Shape.Cone: {
+
+          let s = this._model.size;
+          let radius = Math.min(s.x, s.z);
+
+          body = physics.createCone({
+            mass: 0,
+            radius,
+            height: size.y,
+            position,
+            rotation: this._model.rotation,
+            friction: Constants.StaticObjects.DefaultFriction
+          });
+          break;
+        }
       }
 
       

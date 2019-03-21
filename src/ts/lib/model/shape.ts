@@ -4,7 +4,8 @@ namespace PRKR.Model {
     Box = 1,
     Sphere = 2,
     Cylinder = 3,
-    Capsule = 4
+    Capsule = 4,
+    Cone = 5
   }
   
 }
