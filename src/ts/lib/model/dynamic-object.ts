@@ -159,11 +159,11 @@ namespace PRKR.Model {
     }
 
     /** Water = 1000 kg/m^3.  */
-    private static DefaultDensity: number = 1000;
+    private static DefaultDensity: number = 200;
     /** Just around cork which is estimated at 240. */
-    private static MinDensity: number = 200;
-    /** Just aroud gold, which is 19320 */
-    private static MaxDensity: number = 20000;
+    private static MinDensity: number = 2;
+    /** Just aroud concrete, which is 2400 */
+    private static MaxDensity: number = 2000;
 
     private static DensityRange = DynamicObject.MaxDensity - DynamicObject.MinDensity;
 
