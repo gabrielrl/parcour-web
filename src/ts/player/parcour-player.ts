@@ -744,7 +744,8 @@ namespace PRKR.Player {
       capsuleMesh.position.set(0, C.Character.Height - height, 0);
 
       // HIDDEN mesh does not display that well... :( needs more work.
-      // IT'S because of the composition of meshes.
+      // We must be a able to choose behind which objects it appears -- as an example, it shouldn't display for
+      // doorway frames.
       // let hiddenMaterial = new THREE.MeshBasicMaterial({
       //   color: 0x000088,
       //   depthTest: true,
