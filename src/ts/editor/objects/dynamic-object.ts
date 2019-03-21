@@ -189,11 +189,7 @@ namespace PRKR.Editor.Objects {
 
     private _buildGeometry() {
       let model = <DynamicModel>this.model;
-      return new THREE.CubeGeometry(
-        model.size.x * 2,
-        model.size.y * 2,
-        model.size.z * 2
-      );
+      return Builders.ShapeGeometryBuilder.buildGeometry(model.shape, model.size);
     }
 
     private _buildMesh() {

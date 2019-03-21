@@ -81,10 +81,15 @@ namespace PRKR.Player.Physics {
       return this._createRigidBody(shape, data);
     }
 
+    /**
+     * Creates a rigid body having the shape of a capsule.
+     * 
+     * @param data Capsule definition
+     */
     public createCapsule(data: CapsuleDescription): Ammo.btRigidBody {
       if (!data) throw new Error('"data" is required.');
 
-      let shape = new Ammo.btCapsuleShape(data.radius, data.height);
+      let shape = new Ammo.btCapsuleShape(data.radius, data.height - data.radius * 2);
 
       return this._createRigidBody(shape, data);
     }

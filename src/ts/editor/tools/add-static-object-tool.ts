@@ -88,7 +88,7 @@ namespace PRKR.Editor.Tools {
       return KeyboardMatcher.for({ keyCode: 71 /* G */ });
     }
 
-    private static PROPERTIES: Model.Property[] = [
+    private static Properties: Model.Property[] = [
       {
         name: 'shape',
         display: 'Shape',
@@ -127,7 +127,7 @@ namespace PRKR.Editor.Tools {
     ];
 
     get properties(): Model.Property[] {
-      return AddStaticObjectTool.PROPERTIES;
+      return AddStaticObjectTool.Properties;
     }
 
     /** 
