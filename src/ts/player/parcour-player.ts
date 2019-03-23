@@ -210,26 +210,6 @@ namespace PRKR.Player {
 
         handled = true;
 
-      } else if (e.which === 69 /* E */) {
-
-        let radius = 0.30;
-        if (e.ctrlKey) radius = 0.15;
-        if (e.shiftKey) radius = 0.40;
-
-        this._spawnSphere(radius);
-
-        handled = true;
-
-      } else if (e.which === 82 /* R */) {
-
-        let size = 0.60;
-        if (e.ctrlKey) size = 0.30;
-        if (e.shiftKey) size = 0.80;
-
-        this._spawnCube(size);
-
-        handled = true;
-
       } else if (e.which === 37 /* Left arrow */) {
 
         // Rotate camera, a quarter turn to the left.
