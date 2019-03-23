@@ -513,14 +513,20 @@ namespace PRKR.Editor {
       let ids = this._selectedObjects.map(o => o.id);
       let step = new SetPropertyStep(ids, prop.name, value);
 
-      // TODO There should be some validation here!!
-
-      this.addEditStep(step);
+      let validation = this.validateEditStep(step);
+      if (_.some(validation, Validators.isError)) {
+        console.error('Unable to set property value. Edit step results in validation error(s)');
+        console.log('step=', step);
+        console.log('validation=', validation);
+      } else {
+        this.addEditStep(step);
+      }
 
     }
 
     /**
-     * TODO comment
+     * Sets property value on the active tool. Called back when the author changes a property from the tool properties
+     * panel.
      */
     private _setToolProperty(prop: Model.Property, value: any) {
 
