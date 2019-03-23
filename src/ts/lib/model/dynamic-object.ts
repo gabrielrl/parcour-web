@@ -6,11 +6,11 @@ namespace PRKR.Model {
     
     size?: Vector3 | number[];
 
+    shape?: Shape;
+
     /** Object's density. */
     density?: number;
 
-    // TODO...
-    // shape
   }
 
   export class DynamicObject extends AreaElement {
@@ -22,6 +22,9 @@ namespace PRKR.Model {
 
     /** Object's half extents. */
     private _size = new Vector3();
+
+    /** Object shape. */
+    private _shape: Shape = Shape.Box;
 
     private _density: number = DynamicObject.DefaultDensity;
 
@@ -39,6 +42,9 @@ namespace PRKR.Model {
         if (data.density != null) {
           this._density = data.density;
         }
+        if (data.shape) {
+          this._shape = data.shape;
+        }
       }
 
     }
@@ -47,6 +53,11 @@ namespace PRKR.Model {
 
     /** Gets the size of the current dynamic object. */
     get size() { return this._size; }
+
+    /**
+     * Gets the shape of the current static object.
+     */
+    get shape() { return this._shape; }
 
     /** Gets the density in kg/m^3. */
     get density() { return this._density; }
@@ -58,7 +69,48 @@ namespace PRKR.Model {
 
     /** Gets the object's volume in m^3 */
     get volume() {
-      return this._size.x * this._size.y * this._size.z;
+      let he = this._size;
+
+      switch(this._shape) {
+        default:
+        case Model.Shape.Box: {
+          return 8 * he.x * he.y * he.z;
+          // break; 
+
+        }
+
+        case Model.Shape.Sphere: { 
+          let r = Math.min(he.x, he.y, he.z);
+          return 4 / 3 * Math.PI * Math.pow(r, 3);
+          // break; 
+        }
+
+        case Model.Shape.Cylinder: { 
+          let r = Math.min(he.x, he.z);
+          return Math.PI * r * r * he.y * 2;
+          // break;
+        }
+        case Model.Shape.Capsule: { 
+          let r = Math.min(he.x, he.z);
+
+          return (
+            // The sphere component
+            4 / 3 * Math.PI * Math.pow(r, 3)
+            +
+            // The cylinder component
+            Math.PI * r * r * 2 * (he.y - r)
+          );
+          // break;
+        }
+
+        case Model.Shape.Cone: { 
+          let r = Math.min(he.x, he.z);
+          return 1 / 3 * Math.PI * r * r * he.y * 2
+          // break;
+        }
+    
+      }
+
     }
 
     // Override.
@@ -88,6 +140,7 @@ namespace PRKR.Model {
       return _.assign(super.toObject(), {
         $type: this.type,
         size: this.size.toArray(),
+        shape: this.shape,
         density: this.density
       });
     }
@@ -96,6 +149,7 @@ namespace PRKR.Model {
     protected _copy(source: DynamicObject) {
       super._copy(source);
       this._size.copy(source.size);
+      this._shape = source.shape;
       this._density = source.density;
     }
 
@@ -105,11 +159,11 @@ namespace PRKR.Model {
     }
 
     /** Water = 1000 kg/m^3.  */
-    private static DefaultDensity: number = 1000;
+    private static DefaultDensity: number = 200;
     /** Just around cork which is estimated at 240. */
-    private static MinDensity: number = 200;
-    /** Just aroud gold, which is 19320 */
-    private static MaxDensity: number = 20000;
+    private static MinDensity: number = 2;
+    /** Just aroud concrete, which is 2400 */
+    private static MaxDensity: number = 2000;
 
     private static DensityRange = DynamicObject.MaxDensity - DynamicObject.MinDensity;
 

@@ -123,8 +123,11 @@ namespace PRKR.Editor {
     /** The ribbon menu. */
     private _ribbon: Components.Ribbon;
 
-    /** The properties panel. */
-    private _propertiesPanel: Components.PropertiesPanel;
+    /** The selected objects' properties panel. */
+    private _objectsPanel: Components.PropertiesPanel;
+
+    /** The active tool's properties panel. */
+    private _toolPanel: Components.PropertiesPanel;
 
     /** jQuery wrapper around the status bar DIV.  */
     private _$statusBar: JQuery;
@@ -132,7 +135,7 @@ namespace PRKR.Editor {
     /** The three.js WebGL scene. */
     private _scene: THREE.Scene;
 
-    /** Three three.js WebGL renderer. */
+    /** The three.js WebGL renderer. */
     private _renderer: THREE.WebGLRenderer;
 
     /** Dual camera rig orbit rig. */
@@ -146,7 +149,7 @@ namespace PRKR.Editor {
 
     /** Author defined temporary start location. */
     private _startLocation: THREE.Vector3;
-    
+
     public init() {
       console.debug('ParcourEditor#init');
 
@@ -223,7 +226,8 @@ namespace PRKR.Editor {
       this._initDomLayout();
       
       this._initRibbon();
-      this._initPropertiesPanel();
+      this._initToolPanel();
+      this._initObjectsPanel();
       this._initStatusBar();
 
       this._initThreeJs();
@@ -241,7 +245,7 @@ namespace PRKR.Editor {
     public run() {
 
       this._ribbon.update();
-      this._propertiesPanel.update();
+      this._updateObjectsPanel();
 
       // Set-up listeners on viewport element.
       let $main = $(this._domLayout.main);
@@ -404,7 +408,7 @@ namespace PRKR.Editor {
       this._selectedObjects = selected;
 
       this._ribbon.update();
-      this._propertiesPanel.update();
+      this._updateObjectsPanel();
 
       this.requestRender();
 
@@ -454,7 +458,7 @@ namespace PRKR.Editor {
       this._selectedObjects = selected;
 
       this._ribbon.update();
-      this._propertiesPanel.update();
+      this._updateObjectsPanel();
 
       this.requestRender();
 
@@ -480,7 +484,7 @@ namespace PRKR.Editor {
       this._selectedObjects = selected;
 
       this._ribbon.update();
-      this._propertiesPanel.update();
+      this._updateObjectsPanel();
 
       this.requestRender();
 
@@ -504,15 +508,33 @@ namespace PRKR.Editor {
      * all selected objects.
      * @param prop 
      */
-    public setPropertyValue(prop: Model.Property, value: any) {
+    private _setPropertyValue(prop: Model.Property, value: any) {
 
       let ids = this._selectedObjects.map(o => o.id);
       let step = new SetPropertyStep(ids, prop.name, value);
 
-      this.addEditStep(step);
+      let validation = this.validateEditStep(step);
+      if (_.some(validation, Validators.isError)) {
+        console.error('Unable to set property value. Edit step results in validation error(s)');
+        console.log('step=', step);
+        console.log('validation=', validation);
+      } else {
+        this.addEditStep(step);
+      }
 
     }
 
+    /**
+     * Sets property value on the active tool. Called back when the author changes a property from the tool properties
+     * panel.
+     */
+    private _setToolProperty(prop: Model.Property, value: any) {
+
+      if (this._activeTool) {
+        prop.setValue(this._activeTool, value);
+      }
+
+    }
 
     private _raycaster: THREE.Raycaster = new THREE.Raycaster();
 
@@ -723,7 +745,7 @@ namespace PRKR.Editor {
       this._sanitizeSelection();
 
       this._ribbon.update();
-      this._propertiesPanel.update();
+      this._updateObjectsPanel();
 
       this.requestRender();
 
@@ -750,7 +772,7 @@ namespace PRKR.Editor {
       this._sanitizeSelection();
 
       this._ribbon.update();
-      this._propertiesPanel.update();
+      this._updateObjectsPanel();
 
       this.requestRender();
 
@@ -786,7 +808,7 @@ namespace PRKR.Editor {
       this._doorwayPlacer = null;
 
       this._ribbon.update();
-      this._propertiesPanel.update();
+      this._updateObjectsPanel();
 
       this.requestRender();
 
@@ -931,7 +953,7 @@ namespace PRKR.Editor {
             }
             this._modelIsDirty = false;
             this._ribbon.update();
-            this._propertiesPanel.update();
+            this._updateObjectsPanel();
           },
           (xhr, status, err) => {
             console.error('Error saving parcour', err);
@@ -983,6 +1005,46 @@ namespace PRKR.Editor {
       this._renderRequested = false;
     }
 
+    private _updateObjectsPanel() {
+
+      let props: Property[] = [];
+
+      let sel = this.selectedObjects;
+      if (sel.length !== 0) {
+        sel.forEach(object => {
+          let objectProps = object.getProperties();
+          objectProps.forEach(prop => {
+            let p = props.find(p => p.name === prop.name);
+            if (!p) {
+              props.push(prop);
+            }
+          });
+        });
+      }
+
+      let values = props.map(p => this.getPropertyValue(p));
+
+      this._objectsPanel.setProperties(props, values);
+
+    }
+
+    private _updateToolPanel() {
+
+      if (this._activeTool) {
+
+        let props = this._activeTool.properties;
+        let values = props.map(p => p.getValue(this._activeTool));
+
+        this._toolPanel.setProperties(props, values);
+
+      } else {
+
+        this._toolPanel.setProperties(null);
+
+      }
+
+    }
+
     private _computeModelCenter() {
       // Computes the center of all the areas.
       let c = new Vector3();
@@ -1005,8 +1067,7 @@ namespace PRKR.Editor {
       if (this._activeTool) this._activeTool.activate();
 
       this._ribbon.update();
-      // this._updateToolBar();
-      // this._updateAssetPalette();
+      this._updateToolPanel();
     }
 
     private _onKeyDown(e: JQueryKeyEventObject) {
@@ -1181,8 +1242,8 @@ namespace PRKR.Editor {
       this._domLayout = layout;
 
       this._viewport.appendChild(top);
-      this._viewport.appendChild(left);
       this._viewport.appendChild(main);
+      this._viewport.appendChild(left);
       this._viewport.appendChild(right);
       this._viewport.appendChild(bottom);
 
@@ -1342,15 +1403,26 @@ namespace PRKR.Editor {
       this._ribbon = ribbon;
     }
 
-    ///// PROPERTIES PANEL /////
+    private _initObjectsPanel() {
 
-    private _initPropertiesPanel() {
+      let panel = new Components.PropertiesPanel('Object properties');
+      panel.onChange((p, v) => this._setPropertyValue(p, v));
 
-      let props = new Components.PropertiesPanel(this);
+      this._domLayout.right.appendChild(panel.dom);
 
-      this._domLayout.right.appendChild(props.dom);
+      this._objectsPanel = panel;
 
-      this._propertiesPanel = props;
+    }
+
+    private _initToolPanel() {
+
+      let panel = new Components.PropertiesPanel('Tool properties');
+      panel.onChange((p, v) => this._setToolProperty(p, v));
+
+      this._domLayout.left.appendChild(panel.dom);
+
+      this._toolPanel = panel;
+
     }
 
     private _initStatusBar() {

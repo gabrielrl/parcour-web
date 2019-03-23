@@ -56,6 +56,9 @@ namespace PRKR.Editor.Tools {
     /** Drawn rectangle (adjusted, final) size. */
     private _size: Vector3 = new Vector3();
 
+    /** Shape of the object to create. */
+    private _shape: Model.Shape = Model.Shape.Box;
+
     /** Rectangle on the floor helper. */
     private _embeddedRectanglesHelper: EmbeddedRectanglesHelper = new EmbeddedRectanglesHelper();
 
@@ -83,6 +86,49 @@ namespace PRKR.Editor.Tools {
     get keyboardShortcut() {
       return KeyboardMatcher.for({ keyCode: 72 /* H */ });
     }
+
+    private static Properties: Model.Property[] = [
+      {
+        name: 'shape',
+        display: 'Shape',
+        info: 'Select the shape of the object to create',
+        type: 'number',
+        editor: 'select',
+        options: [
+          {
+            value: Model.Shape.Box,
+            display: 'Box'
+          },
+          {
+            value: Model.Shape.Sphere,
+            display: 'Sphere'
+          },
+          {
+            value: Model.Shape.Cylinder,
+            display: 'Cylinder'
+          },
+          {
+            value: Model.Shape.Capsule,
+            display: 'Capsule'
+          },
+          {
+            value: Model.Shape.Cone,
+            display: 'Cone'
+          }
+        ],
+        getValue: t => t instanceof AddDynamicObjectTool && t._shape,
+        setValue: (t, v) => {
+          if (t instanceof AddDynamicObjectTool) {
+            t._shape = v;
+          }
+        }
+      }
+    ];
+
+    get properties(): Model.Property[] {
+      return AddDynamicObjectTool.Properties;
+    }
+
 
     /** 
      * Gets if the add dynamic object tool is enabled.
@@ -437,11 +483,14 @@ namespace PRKR.Editor.Tools {
       let halfExtents = new Vector3();
       halfExtents.copy(this._size).multiplyScalar(0.5);      
 
+      let minBox = M.getEffectiveBox(this._shape, halfExtents);
+      
       return new AddObjectStep({
         $type: 'DynamicObject',
         areaId: this._start.area.id,
         location: center.toArray(),
-        size: halfExtents.toArray()
+        size: minBox.max.toArray(),
+        shape: this._shape
       });
     }
 

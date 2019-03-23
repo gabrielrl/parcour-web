@@ -6,8 +6,8 @@ namespace PRKR.Model {
 
     size?: Vector3 | number[];
 
-    // TODO...
-    // shape, size
+    shape?: Shape;
+
   }
 
   export class StaticObject extends AreaElement {
@@ -20,6 +20,9 @@ namespace PRKR.Model {
     /** Object's half extents. */
     private _size = new Vector3();
 
+    /** Object shape. */
+    private _shape: Shape = Shape.Box;
+
     constructor(data?: StaticObjectData) {
       super(data);
 
@@ -30,6 +33,10 @@ namespace PRKR.Model {
           } else {
             this._size.copy(data.size);
           }
+        }
+
+        if (data.shape) {
+          this._shape = data.shape;
         }
       }
 
@@ -42,12 +49,17 @@ namespace PRKR.Model {
      */
     get size() { return this._size; }
 
+    /**
+     * Gets the shape of the current static object.
+     */
+    get shape() { return this._shape; }
+
     // Override.
     public clone() {
       let clone = new StaticObject();
       clone._copy(this);
       return clone;
-    }    
+    }
 
     // Override
     public getBoundingBox(): THREE.Box3 {
@@ -67,7 +79,8 @@ namespace PRKR.Model {
      */
     public toObject(): any {
       return _.assign(super.toObject(), {
-        size: this.size.toArray()
+        size: this.size.toArray(),
+        shape: this.shape
       });
     }
 
@@ -75,6 +88,7 @@ namespace PRKR.Model {
     protected _copy(source: StaticObject) {
       super._copy(source);
       this._size.copy(source.size);
+      this._shape = source.shape;
     }
   }
 }

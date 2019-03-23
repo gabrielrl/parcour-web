@@ -40,17 +40,22 @@ body {
   background-color: #444;
 }
 
-/*#prkred-left {
+#prkred-left {
   position: absolute;
   top: 120px;
-  left: 0px;
-  width: 80px;
+  left: 0;
   bottom: 0;
   overflow: hidden;
 
-  color: #fff;
-  background-color: #444;
-}*/
+  /* column */
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  justify-content: flex-start;
+  
+  background: rgba(255, 255, 255, 0.5);  
+}
 
 #prkred-main {
   position: absolute;
@@ -96,7 +101,7 @@ body {
   cursor: default;
 }
 
-#propertiesPanelRoot {
+.prkr-props-root {
   /* column */
   display: flex;
   flex-direction: column;
@@ -105,7 +110,7 @@ body {
   justify-content: space-between;
 }
 
-#propertiesPanelRoot.empty {
+.prkr-props-root.empty {
   display: none;
 }
 
@@ -124,7 +129,7 @@ body {
   flex-grow: 1;
 }
 
-#propertiesPanelTitle {
+.prkr-props-title {
   height: 40px;
   line-height: 40px;
   user-select: none;
@@ -132,22 +137,7 @@ body {
   font-weight: 700;
 }
 
-#propertiesPanelClose {
-  margin: 4px;
-  width: 40px;
-  height: 40px;
-  line-height: 40px;
-  text-align: center;
-  cursor: pointer;
-  border-radius: 50%;
-}
-
-#propertiesPanelClose:hover {
-  background-color: hsla(0, 50%, 0%, 0.5);
-  color: white;
-}
-
-#propertiesPanelBody {
+.prkr-props-body {
   /* column */
   display: flex;
   flex-direction: column;
@@ -188,6 +178,33 @@ body {
 .prkr-proped.prkr-proped-range .prkr-proped-field input {
   width: 100%;
 }
+
+/* *** Select property editor *** */
+/* --- layout --- */
+.prkr-proped-select .prkr-proped-field {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+
+}
+
+.prkr-proped-select .prkr-proped-field .prkr-option {
+  border: none;
+
+  padding: 8px;
+}
+
+
+/* --- colors --- */
+
+.prkr-proped-select .prkr-proped-field .prkr-option {
+  background-color: darkgrey;
+}
+
+.prkr-proped-select .prkr-proped-field .prkr-option.active {
+  background-color: lightgray;
+}
+
 
 
 /*#prkred-toolbox {

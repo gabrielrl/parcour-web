@@ -1,7 +1,7 @@
 namespace PRKR.Editor.Tools {
 
   /** A tool to let the author start playing from anywhere. */
-  export class PlayFromTool implements Tool {
+  export class PlayFromTool extends Tool {
 
     //** Character representation. */
     private _helper: Helpers.CharacterHelper = null;
@@ -9,6 +9,8 @@ namespace PRKR.Editor.Tools {
     private _location: THREE.Vector3 = null;
 
     constructor(private _editor: ParcourEditor) {
+      super();
+      
       if (_editor == null) throw new Error('editor can not be null or undefined');
 
       this._buildHelper();

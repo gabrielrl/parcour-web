@@ -18,7 +18,7 @@ namespace PRKR.Helpers {
 
       // Add a character capsule.
       let radius = 0.25;
-      let height = 1 - radius * 2;
+      let height = 1;
       let capsuleMesh = this._buildCapsuleMesh(radius, height, this._material);
       capsuleMesh.position.set(0, 1.5 - height, 0);
 
@@ -30,27 +30,14 @@ namespace PRKR.Helpers {
 
     private _buildCapsuleMesh(radius: number, height: number, material: THREE.Material): THREE.Mesh {
 
-      let cylinderGeometry = new THREE.CylinderBufferGeometry(radius, radius, height);
-      let sphereGeometry = new THREE.SphereBufferGeometry(radius);
-
-      let capsuleMesh = new THREE.Mesh(cylinderGeometry, material);
-      capsuleMesh.castShadow = true;
-      capsuleMesh.receiveShadow = true;
       
-      // Top sphere.
-      let sphereMesh = new THREE.Mesh(sphereGeometry, material);
-      sphereMesh.position.set(0, height / 2, 0);
-      sphereMesh.castShadow = true;
-      sphereMesh.receiveShadow = true;
-      capsuleMesh.add(sphereMesh);
-      // Bottom sphere.
-      sphereMesh = new THREE.Mesh(sphereGeometry, material);
-      sphereMesh.position.set(0, height / -2, 0);
-      sphereMesh.castShadow = true;
-      sphereMesh.receiveShadow = true;
-      capsuleMesh.add(sphereMesh);
+      let g = Builders.ShapeGeometryBuilder.buildGeometry(
+        PRKR.Model.Shape.Capsule, new THREE.Vector3(radius, height * .5, radius));
+      let m = new THREE.Mesh(g, material);
+      m.castShadow = true;
+      m.receiveShadow = true;
+      return m;
 
-      return capsuleMesh;
     }
 
   }

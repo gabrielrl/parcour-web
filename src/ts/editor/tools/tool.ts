@@ -16,6 +16,12 @@ namespace PRKR.Editor.Tools {
     /** Gets the current tool's keyboard shortcut. */
     keyboardShortcut: KeyboardMatcher;
 
+    /**
+     * Gets the current tool's editable properties.
+     * Override if necessary, extend super's result.
+     */
+    get properties(): Model.Property[] { return []; }
+
     /** Informs the Tool that it's being activated. */
     activate() { }
 
@@ -31,5 +37,6 @@ namespace PRKR.Editor.Tools {
     notifyClick(event: JQueryMouseEventObject): void { }
 
     notifyKeyDown(event: JQueryKeyEventObject): void { }
+
   }
 }

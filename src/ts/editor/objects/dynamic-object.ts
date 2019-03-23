@@ -86,22 +86,6 @@ namespace PRKR.Editor.Objects {
       return target;
     }
 
-    /**
-     * from https://en.wikipedia.org/wiki/Density#Various_materials
-     */
-    private static DensityExamples: {value: number; text: string}[] = [
-      { value: 1.2, text: 'air' },
-      { value: 240, text: 'cork' },
-      { value: 700, text: 'wood' },
-      { value: 1000, text: 'water' },
-      { value: 2400, text: 'concrete' },
-      { value: 3500, text: 'diamond' },
-      { value: 7870, text: 'iron' },
-      { value: 8940, text: 'copper' },
-      { value: 10500, text: 'silver' },
-      { value: 19320, text: 'gold' }
-    ];
-
     private static Properties: PRKR.Model.Property[] = [
       {
         name: 'densityValue',
@@ -111,23 +95,7 @@ namespace PRKR.Editor.Objects {
         editor: 'display',
         getValue: o => {
           if (o instanceof DynamicModel) {
-            let v = o.density;
-            let ex = DynamicObject.DensityExamples
-            let diff = Infinity;
-            let candidate = null;
-            for (let i = 0; i < ex.length; i++) {
-              let d = Math.abs(ex[i].value - v);
-              if (d < diff) {
-                diff = d;
-                candidate = ex[i];
-              }
-            }
-
-            if (candidate) {
-              return v.toFixed(3) + ' kg/m³ similar to ' + candidate.text + ' (' + candidate.value + ')';
-            } else {
-              return v.toFixed(3) + ' kg/m³';
-            }
+            return o.density.toFixed(3) + ' kg/m³';
           }
         }
       },
@@ -189,11 +157,7 @@ namespace PRKR.Editor.Objects {
 
     private _buildGeometry() {
       let model = <DynamicModel>this.model;
-      return new THREE.CubeGeometry(
-        model.size.x * 2,
-        model.size.y * 2,
-        model.size.z * 2
-      );
+      return Builders.ShapeGeometryBuilder.buildGeometry(model.shape, model.size);
     }
 
     private _buildMesh() {

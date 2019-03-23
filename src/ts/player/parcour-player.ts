@@ -738,13 +738,14 @@ namespace PRKR.Player {
 
       // Add a character capsule.
       let radius = C.Character.CapsuleRadius;
-      let height = C.Character.CapsuleHeight - radius * 2;
+      let height = C.Character.CapsuleHeight;
       let capsuleMaterial = new THREE.MeshPhongMaterial({ color: 0x0000ff });
       let capsuleMesh = this._buildCapsuleMesh(radius, height, capsuleMaterial);
       capsuleMesh.position.set(0, C.Character.Height - height, 0);
 
       // HIDDEN mesh does not display that well... :( needs more work.
-      // IT'S because of the composition of meshes.
+      // We must be a able to choose behind which objects it appears -- as an example, it shouldn't display for
+      // doorway frames.
       // let hiddenMaterial = new THREE.MeshBasicMaterial({
       //   color: 0x000088,
       //   depthTest: true,
@@ -773,29 +774,18 @@ namespace PRKR.Player {
       this._physics.add(this._character);
     }
 
+    /**
+     * Builds a capsule mesh.
+     */
     private _buildCapsuleMesh(radius: number, height: number, material: THREE.Material): THREE.Mesh {
 
-      let cylinderGeometry = new THREE.CylinderBufferGeometry(radius, radius, height);
-      let sphereGeometry = new THREE.SphereBufferGeometry(radius);
+      let g = Builders.ShapeGeometryBuilder.buildGeometry(
+        PRKR.Model.Shape.Capsule, new Vector3(radius, height * .5, radius));
+      let m = new THREE.Mesh(g, material);
+      m.castShadow = true;
+      m.receiveShadow = true;
+      return m;
 
-      let capsuleMesh = new THREE.Mesh(cylinderGeometry, material);
-      capsuleMesh.castShadow = true;
-      capsuleMesh.receiveShadow = true;
-      
-      // Top sphere.
-      let sphereMesh = new THREE.Mesh(sphereGeometry, material);
-      sphereMesh.position.set(0, height / 2, 0);
-      sphereMesh.castShadow = true;
-      sphereMesh.receiveShadow = true;
-      capsuleMesh.add(sphereMesh);
-      // Bottom sphere.
-      sphereMesh = new THREE.Mesh(sphereGeometry, material);
-      sphereMesh.position.set(0, height / -2, 0);
-      sphereMesh.castShadow = true;
-      sphereMesh.receiveShadow = true;
-      capsuleMesh.add(sphereMesh);
-
-      return capsuleMesh;
     }
 
     private static SPHERE_MATERIAL = new THREE.MeshPhongMaterial({ color: 0xff0000 });
