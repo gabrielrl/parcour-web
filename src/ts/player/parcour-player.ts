@@ -45,6 +45,9 @@ namespace PRKR.Player {
     /** The player character runtime object. */
     private _character: RuntimeObject;
 
+    /** Debug helper to expose the character stand point. */
+    private _standPoint: THREE.Object3D;
+
     /** Current force applied from player input. */
     private _activeForce: Ammo.btVector3 = new Ammo.btVector3();
 
@@ -91,6 +94,7 @@ namespace PRKR.Player {
       this._initThreeJs();
       // this._initGrid();
       this._initPhysics();
+      this._initDebug();
 
       this._keyboard = new KeyboardState();
 
@@ -376,6 +380,9 @@ namespace PRKR.Player {
           this._activeForce.z() * coeff
         );
         characterBody.applyCentralForce(characterForce);
+
+        /** Update debug info */
+        this._standPoint.visible = false;
         
       } else {
 
@@ -460,6 +467,12 @@ namespace PRKR.Player {
           }
         }
 
+        /** Update debug info */
+
+        this._standPoint.visible = true;
+        this._standPoint.position.copy(legRayResult.location);
+        this._standPoint.quaternion.setFromUnitVectors(M.Vector3.PositiveY, legRayResult.normal);
+
       }
       this._jumpTriggered = false;
 
@@ -523,8 +536,7 @@ namespace PRKR.Player {
         x: 0, z: -(radius - .05)
       }];
 
-      let highest: Vector3 = null;
-      let object: RuntimeObject = null;
+      let highest: Physics.RayResult = null;
 
       rays.forEach(ray => {
 
@@ -541,14 +553,12 @@ namespace PRKR.Player {
           && hit.normal.y > .7071
           && (
             !highest
-            || hit.position.y > highest.y
+            || hit.position.y > highest.position.y
           )
         ) {
 
-          if (!highest) highest = new Vector3();
+          highest = hit;
 
-          highest.copy(hit.position);
-          object = hit.object;
         }
   
       });
@@ -559,14 +569,15 @@ namespace PRKR.Player {
       let currentLegGap = 
         this._character.renderObject.position.y
         - C.Character.CapsuleHeight * .5
-        - highest.y;
+        - highest.position.y;
 
       // console.log('_castLegRays: Found a highest hit. Its position is', highest, 'Determined legGap is', legGap);
 
       return {
         currentLegGap,
-        location: highest,
-        object
+        location: highest.position,
+        normal: highest.normal,
+        object: highest.object
       };
 
     }
@@ -752,6 +763,29 @@ namespace PRKR.Player {
         updateRenderObject: true
       };
       this._physics.add(this._character);
+
+
+    }
+
+    private _initDebug() {
+
+      // Expose character standing point.
+      // 
+
+      
+      let g = new THREE.CylinderBufferGeometry(0.125, 0.125, 0.05, 24);
+      let m = new THREE.MeshBasicMaterial({
+        color: 0x0000ff,
+      });
+      let standPoint = new THREE.Mesh(g, m);
+      standPoint.castShadow = false;
+      standPoint.receiveShadow = false;
+      standPoint.visible = false;
+
+      this._standPoint = standPoint;
+
+      this._scene.add(this._standPoint);
+
     }
 
     /**
