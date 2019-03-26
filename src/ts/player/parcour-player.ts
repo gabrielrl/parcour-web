@@ -46,7 +46,7 @@ namespace PRKR.Player {
     private _character: RuntimeObject;
 
     /** Debug helper to expose the character stand point. */
-    private _standPoint: THREE.Object3D;
+    private _standPointDisplay: THREE.Object3D;
 
     /** Current force applied from player input. */
     private _activeForce: Ammo.btVector3 = new Ammo.btVector3();
@@ -368,6 +368,7 @@ namespace PRKR.Player {
 
       // Compute legs component.
       const legRayResult = this._castLegRays();
+      let dynamicStandPoint: Vector3 = null;
       if (legRayResult == null) {
 
         // The character isn't standing on anything (free falling).
@@ -380,15 +381,16 @@ namespace PRKR.Player {
           this._activeForce.z() * coeff
         );
         characterBody.applyCentralForce(characterForce);
-
+        
         /** Update debug info */
-        this._standPoint.visible = false;
+        this._standPointDisplay.visible = false;
         
       } else {
 
         // The character is standing on something.
+
         const targetLegGap = C.Character.LegGap;
-        const currentLegGap = legRayResult.currentLegGap;
+        const currentLegGap = legRayResult.legGap;
 
         let coeff = this._crouching ? C.Character.CrouchingLegGapCoefficient : 1;
 
@@ -465,20 +467,52 @@ namespace PRKR.Player {
             jumpImpulse.setY(y);  
   
           }
+
+          // Keep track of dynamic object relative location of the standing point.
+          dynamicStandPoint = legRayResult.object.renderObject.worldToLocal(legLocation.clone());
         }
 
         /** Update debug info */
 
-        this._standPoint.visible = true;
-        this._standPoint.position.copy(legRayResult.location);
-        this._standPoint.quaternion.setFromUnitVectors(M.Vector3.PositiveY, legRayResult.normal);
+        this._standPointDisplay.visible = true;
+        this._standPointDisplay.position.copy(legRayResult.location);
+        this._standPointDisplay.quaternion.setFromUnitVectors(M.Vector3.PositiveY, legRayResult.normal);
 
       }
+
       this._jumpTriggered = false;
 
       // Step physic simulation.
       this._physics.simulate(delta);
       this._lastSimulate = now;
+
+      // HACKy, update character location if it was standing on a dynamic object.
+      // This approach works OK for now ... 
+      if (dynamicStandPoint != null) {
+
+        let ro = legRayResult.object.renderObject;
+        ro.updateMatrixWorld(true);
+
+        dynamicStandPoint = ro.localToWorld(dynamicStandPoint);
+        let diff = dynamicStandPoint.clone().sub(legRayResult.location); // .setY(0);
+        let l = diff.length();
+
+        if (l > 0.001) {
+
+          // TODO Test and adjust this arbitrary max speed.
+          let max = ( 1 /* m/s */ ) * delta;
+          if (l > max) {
+            diff = diff.multiplyScalar(max / l);
+          }
+
+          this._physics.translateBodies(this._character.physicBodies, diff);
+          this._character.renderObject.position.add(diff);
+        }
+
+        this._physics.translateBodies(this._character.physicBodies, diff);
+        this._character.renderObject.position.add(diff);
+
+      }
 
       this._testGameLogic();
 
@@ -518,7 +552,7 @@ namespace PRKR.Player {
     private static __ray1 = new Vector3();
 
     /** Cast leg rays for the character and return current "leg gap" value. */
-    private _castLegRays() {
+    private _castLegRays(): LegRayResult {
       const v1 = ParcourPlayer.__ray0;
       const v2 = ParcourPlayer.__ray1;
       const halfCapsuleHeight = C.Character.CapsuleHeight * .5;
@@ -574,7 +608,7 @@ namespace PRKR.Player {
       // console.log('_castLegRays: Found a highest hit. Its position is', highest, 'Determined legGap is', legGap);
 
       return {
-        currentLegGap,
+        legGap: currentLegGap,
         location: highest.position,
         normal: highest.normal,
         object: highest.object
@@ -782,9 +816,9 @@ namespace PRKR.Player {
       standPoint.receiveShadow = false;
       standPoint.visible = false;
 
-      this._standPoint = standPoint;
+      this._standPointDisplay = standPoint;
 
-      this._scene.add(this._standPoint);
+      this._scene.add(this._standPointDisplay);
 
     }
 
