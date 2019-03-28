@@ -7,5 +7,8 @@ namespace PRKR.Player {
     object: Model.RuntimeObject;
     legGap: number;
 
+    /** Whether the current hit is stable or not, stable meaning: "not sliding". */
+    stable: boolean;
+
   }
 }

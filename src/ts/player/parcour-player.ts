@@ -48,6 +48,9 @@ namespace PRKR.Player {
     /** Debug helper to expose the character stand point. */
     private _standPointDisplay: THREE.Object3D;
 
+    /** Material for the debug helper to expose the character stand point */
+    private _standPointDisplayMaterial: THREE.MeshBasicMaterial;
+
     /** Current force applied from player input. */
     private _activeForce: Ammo.btVector3 = new Ammo.btVector3();
 
@@ -365,6 +368,7 @@ namespace PRKR.Player {
       const characterForce = ParcourPlayer.__simulate_force;
       const characterBody = this._character.physicBodies[0];
       const velocity = characterBody.getLinearVelocity();
+      const jumpImpulse = ParcourPlayer.JumpImpulse;
 
       // Compute legs component.
       const legRayResult = this._castLegRays();
@@ -384,7 +388,62 @@ namespace PRKR.Player {
         
         /** Update debug info */
         this._standPointDisplay.visible = false;
-        
+
+      } else if (!legRayResult.stable) {
+
+        // The character is sliding on something.
+        // Applies a fraction of the active force so the player still has "some" control.
+        const coeff = C.Character.FreeFallingDirectionCoefficient;
+        characterForce.setValue(
+          this._activeForce.x() * coeff,
+          this._activeForce.y() * coeff,
+          this._activeForce.z() * coeff
+        );
+        characterBody.applyCentralForce(characterForce);
+
+        if (this._jumpTriggered) {    
+          
+          let j = legRayResult.normal.clone().lerp(M.Vector3.PositiveY, 0.5).normalize();
+
+          let a = jumpImpulse.y();   
+          // let n = legRayResult.normal;
+          let jump = new Ammo.btVector3(j.x * a, j.y * a, j.z * a);
+          //legRayResult.normal
+
+          characterBody.applyImpulse(jump, ParcourPlayer.AmmoVector0);
+
+          // Apply the character's jump counter-force on the object on which the character stands (if it is dynamic).
+          if (legRayResult.object && legRayResult.object.updateRenderObject) {
+
+            let legLocation = legRayResult.location;
+            let body = legRayResult.object.physicBodies[0];
+            let origin = body.getWorldTransform().getOrigin();
+            let relativePosition = ParcourPlayer.__simulate_relativePosition;
+  
+            relativePosition.setValue(
+              legLocation.x - origin.x(),
+              legLocation.y - origin.y(),
+              legLocation.z - origin.z()
+            );
+
+            jump.setValue(-jump.x(), -jump.y(), -jump.z());
+ 
+            body.applyImpulse(
+              jump,
+              relativePosition
+            );
+
+          }
+        }
+
+
+        /** Update debug info */
+        // TODO Display that we're slidindg.
+        this._standPointDisplay.visible = true;
+        this._standPointDisplayMaterial.color.set(0xff0000);
+        this._standPointDisplay.position.copy(legRayResult.location);
+        this._standPointDisplay.quaternion.setFromUnitVectors(M.Vector3.PositiveY, legRayResult.normal);
+
       } else {
 
         // The character is standing on something.
@@ -423,8 +482,6 @@ namespace PRKR.Player {
         // Apply control + leg forces on character.
         characterBody.activate();
         characterBody.applyCentralForce(characterForce);
-
-        const jumpImpulse = ParcourPlayer.JumpImpulse;
 
         if (this._jumpTriggered) {
 
@@ -473,8 +530,8 @@ namespace PRKR.Player {
         }
 
         /** Update debug info */
-
         this._standPointDisplay.visible = true;
+        this._standPointDisplayMaterial.color.set(0x0000ff);
         this._standPointDisplay.position.copy(legRayResult.location);
         this._standPointDisplay.quaternion.setFromUnitVectors(M.Vector3.PositiveY, legRayResult.normal);
 
@@ -570,7 +627,8 @@ namespace PRKR.Player {
         x: 0, z: -(radius - .05)
       }];
 
-      let highest: Physics.RayResult = null;
+      let highestStable: Physics.RayResult = null;
+      let lowestUnstable: Physics.RayResult = null;
 
       rays.forEach(ray => {
 
@@ -581,37 +639,53 @@ namespace PRKR.Player {
         v2.copy(v1).addScaledVector(M.Vector3.NegativeY, legGap + radius);
 
         let hit = this._physics.rayCast(v1, v2);
-  
-        if (
-          hit
-          && hit.normal.y > .7071
-          && (
-            !highest
-            || hit.position.y > highest.position.y
-          )
-        ) {
 
-          highest = hit;
+        if (hit) {
 
+          if (hit.normal.y > .7071) {
+
+            if (!highestStable || hit.position.y > highestStable.position.y) {
+              highestStable = hit;
+            }
+
+          } else {
+
+            if (!lowestUnstable || hit.position.y < lowestUnstable.position.y) {
+              lowestUnstable = hit;
+            }
+            
+          }          
         }
   
       });
 
-      if (!highest) return null;
+      let result: Physics.RayResult;
+      let stable: boolean;
+
+      if (highestStable) {
+        result = highestStable;
+        stable = true;
+      } else if (lowestUnstable) {
+        result = lowestUnstable;
+        stable = false;
+      }
+
+      if (!result) return null;
 
       // determine leg gap.
       let currentLegGap = 
         this._character.renderObject.position.y
         - C.Character.CapsuleHeight * .5
-        - highest.position.y;
+        - result.position.y;
 
       // console.log('_castLegRays: Found a highest hit. Its position is', highest, 'Determined legGap is', legGap);
 
       return {
         legGap: currentLegGap,
-        location: highest.position,
-        normal: highest.normal,
-        object: highest.object
+        location: result.position,
+        normal: result.normal,
+        object: result.object,
+        stable
       };
 
     }
@@ -804,9 +878,6 @@ namespace PRKR.Player {
     private _initDebug() {
 
       // Expose character standing point.
-      // 
-
-      
       let g = new THREE.CylinderBufferGeometry(0.125, 0.125, 0.05, 24);
       let m = new THREE.MeshBasicMaterial({
         color: 0x0000ff,
@@ -817,6 +888,7 @@ namespace PRKR.Player {
       standPoint.visible = false;
 
       this._standPointDisplay = standPoint;
+      this._standPointDisplayMaterial = m;
 
       this._scene.add(this._standPointDisplay);
 
