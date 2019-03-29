@@ -17,10 +17,16 @@ namespace PRKR.Player {
         throw new Error('"configuration" is mandatory.');
       }
       this._configuration = configuration;
+
+      this._localConfiguration = LocalConfiguration.get();
+      LocalConfiguration.addChangeListener(cfg => this._onLocalConfigurationChange(cfg));
     }
 
-    /** Global configuration. */
+    /** Global configuration. Like application wide URLs and paths. */
     private _configuration: PRKR.Configuration;
+
+    /** Local configuration. Like debug options and user preferences. */
+    private _localConfiguration: PRKR.Player.LocalConfiguration;
 
     /** Currently loaded parcour. */
     private _parcour: Model.RuntimeParcour;
@@ -28,6 +34,8 @@ namespace PRKR.Player {
     /** The player's top-level viewport. Includes the HTML and WebGL. */
     private _viewport: HTMLElement;
     private _domRoot: HTMLElement;
+
+    private _menu: Menu;
 
     /** Keyboard state */
     private _keyboard: KeyboardState;
@@ -201,6 +209,10 @@ namespace PRKR.Player {
       this._parcour = null;
     }
 
+    private _onLocalConfigurationChange(cfg: LocalConfiguration) {
+      this._localConfiguration = cfg;
+    }
+
     private _onKeyPress(e: JQueryKeyEventObject) {
       // console.debug('key pressed', e.which);
       let handled = false;
@@ -228,6 +240,11 @@ namespace PRKR.Player {
 
         // Rotate camera, a quarter turn to the right.
         this._cameras.rotateBy(PRKR.M.PI_OVER_TWO);
+
+        handled = true;
+      } else if (e.which === 27 /* Escape */) {
+
+        this._menu.toggle();
 
         handled = true;
       }
@@ -385,9 +402,6 @@ namespace PRKR.Player {
           this._activeForce.z() * coeff
         );
         characterBody.applyCentralForce(characterForce);
-        
-        /** Update debug info */
-        this._standPointDisplay.visible = false;
 
       } else if (!legRayResult.stable) {
 
@@ -435,14 +449,6 @@ namespace PRKR.Player {
 
           }
         }
-
-
-        /** Update debug info */
-        // TODO Display that we're slidindg.
-        this._standPointDisplay.visible = true;
-        this._standPointDisplayMaterial.color.set(0xff0000);
-        this._standPointDisplay.position.copy(legRayResult.location);
-        this._standPointDisplay.quaternion.setFromUnitVectors(M.Vector3.PositiveY, legRayResult.normal);
 
       } else {
 
@@ -529,12 +535,24 @@ namespace PRKR.Player {
           dynamicStandPoint = legRayResult.object.renderObject.worldToLocal(legLocation.clone());
         }
 
-        /** Update debug info */
+      }
+
+      // Update debug info
+      // Stand-point
+      if (!this._localConfiguration.displayStandingPoint) {
+        this._standPointDisplay.visible = false;
+      } else if (legRayResult == null) {
+        this._standPointDisplay.visible = false;
+      } else if (!legRayResult.stable) {
+        this._standPointDisplay.visible = true;
+        this._standPointDisplayMaterial.color.set(0xff0000);
+        this._standPointDisplay.position.copy(legRayResult.location);
+        this._standPointDisplay.quaternion.setFromUnitVectors(M.Vector3.PositiveY, legRayResult.normal);
+      } else {
         this._standPointDisplay.visible = true;
         this._standPointDisplayMaterial.color.set(0x0000ff);
         this._standPointDisplay.position.copy(legRayResult.location);
         this._standPointDisplay.quaternion.setFromUnitVectors(M.Vector3.PositiveY, legRayResult.normal);
-
       }
 
       this._jumpTriggered = false;
@@ -754,9 +772,12 @@ namespace PRKR.Player {
         <div class="prpl-overlay-caption" />
         <div class="prpl-overlay-body" />
         <div class="prpl-overlay-footer" />
-      </div>`)
+      </div>`);
 
       main.appendChild(overlay[0]);
+
+      this._menu = new Menu();
+      main.appendChild(this._menu.dom);
 
       this._domRoot = main;
     }
