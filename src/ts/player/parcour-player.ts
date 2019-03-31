@@ -889,7 +889,6 @@ namespace PRKR.Player {
       };
       this._physics.add(this._character);
 
-
     }
 
     private _initDebug() {
