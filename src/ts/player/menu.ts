@@ -36,6 +36,10 @@ namespace PRKR.Player {
       this.visible = !this._visible;
     }
 
+    private _onCloseClicked(evt: JQueryMouseEventObject) {
+      this.hide();
+    }
+
     private _onInputChange(evt: JQueryEventObject) {
 
       let $target = $(evt.target);
@@ -62,20 +66,22 @@ namespace PRKR.Player {
 
       this._$dom = $(
         `<div id="prpl-menu" class="prpl-menu hidden">
-          <div class="menu-title">Menu</div>
-          <div class="menu-close"><i class="fa fa-times" /></div>
-          <div class="menu-section">
-            <div class="menu-section-title">Debug options</div>
-            <div class="menu-option">
-              <input id="displayStandingPoint" name="displayStandingPoint" type="checkbox" ${ cfg.displayStandingPoint ? checked : '' } />
-              <label for="displayStandingPoint">Display standing point</label>
+          <div class="menu-content">
+            <div class="menu-close"><i class="fa fa-times" /></div>
+            <div class="menu-title">Menu</div>
+            <div class="menu-section">
+              <div class="menu-section-title">Debug options</div>
+              <div class="menu-option">
+                <input id="displayStandingPoint" name="displayStandingPoint" type="checkbox" ${ cfg.displayStandingPoint ? checked : '' } />
+                <label for="displayStandingPoint">Display standing point</label>
+              </div>
             </div>
           </div>
         </div>`
       );
 
       this._$dom.find('input').on('change', evt => this._onInputChange(evt));
-
+      this._$dom.find('.menu-close').on('click', evt => this._onCloseClicked(evt));
     }
 
   }
