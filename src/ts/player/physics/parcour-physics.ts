@@ -142,6 +142,27 @@ namespace PRKR.Player.Physics {
       ms.setWorldTransform(t);
     }
 
+    public translateBodies(bodies: Ammo.btRigidBody[], delta: THREE.Vector3) {
+
+      if (!bodies) return;
+
+      bodies.forEach(b => {
+        let ms = b.getMotionState();
+
+        let t = ParcourPhysics.__transform;
+
+        ms.getWorldTransform(t);
+        let o = t.getOrigin();
+        o.setValue(o.x() + delta.x, o.y() + delta.y, o.z() + delta.z);
+        t.setOrigin(o);
+
+        b.setWorldTransform(t);
+        ms.setWorldTransform(t);
+        
+      });
+
+    }
+
     private static __castOrigin = new Ammo.btVector3();
     private static __castDestination = new Ammo.btVector3();
 

@@ -2,7 +2,6 @@
 /// <reference path="../defs/ammo.d.ts" />
 /// <reference path="./constants.ts" />
 
-
 namespace PRKR.Player {
 
   import Vector3 = THREE.Vector3;
@@ -17,10 +16,16 @@ namespace PRKR.Player {
         throw new Error('"configuration" is mandatory.');
       }
       this._configuration = configuration;
+
+      this._localConfiguration = LocalConfiguration.get();
+      LocalConfiguration.addChangeListener(cfg => this._onLocalConfigurationChange(cfg));
     }
 
-    /** Global configuration. */
+    /** Global configuration. Like application wide URLs and paths. */
     private _configuration: PRKR.Configuration;
+
+    /** Local configuration. Like debug options and user preferences. */
+    private _localConfiguration: PRKR.Player.LocalConfiguration;
 
     /** Currently loaded parcour. */
     private _parcour: Model.RuntimeParcour;
@@ -28,6 +33,8 @@ namespace PRKR.Player {
     /** The player's top-level viewport. Includes the HTML and WebGL. */
     private _viewport: HTMLElement;
     private _domRoot: HTMLElement;
+
+    private _menu: Menu;
 
     /** Keyboard state */
     private _keyboard: KeyboardState;
@@ -44,6 +51,12 @@ namespace PRKR.Player {
 
     /** The player character runtime object. */
     private _character: RuntimeObject;
+
+    /** Debug helper to expose the character stand point. */
+    private _standPointDisplay: THREE.Object3D;
+
+    /** Material for the debug helper to expose the character stand point */
+    private _standPointDisplayMaterial: THREE.MeshBasicMaterial;
 
     /** Current force applied from player input. */
     private _activeForce: Ammo.btVector3 = new Ammo.btVector3();
@@ -91,6 +104,7 @@ namespace PRKR.Player {
       this._initThreeJs();
       // this._initGrid();
       this._initPhysics();
+      this._initDebug();
 
       this._keyboard = new KeyboardState();
 
@@ -194,6 +208,10 @@ namespace PRKR.Player {
       this._parcour = null;
     }
 
+    private _onLocalConfigurationChange(cfg: LocalConfiguration) {
+      this._localConfiguration = cfg;
+    }
+
     private _onKeyPress(e: JQueryKeyEventObject) {
       // console.debug('key pressed', e.which);
       let handled = false;
@@ -221,6 +239,11 @@ namespace PRKR.Player {
 
         // Rotate camera, a quarter turn to the right.
         this._cameras.rotateBy(PRKR.M.PI_OVER_TWO);
+
+        handled = true;
+      } else if (e.which === 27 /* Escape */) {
+
+        this._menu.toggle();
 
         handled = true;
       }
@@ -361,9 +384,11 @@ namespace PRKR.Player {
       const characterForce = ParcourPlayer.__simulate_force;
       const characterBody = this._character.physicBodies[0];
       const velocity = characterBody.getLinearVelocity();
+      const jumpImpulse = ParcourPlayer.JumpImpulse;
 
       // Compute legs component.
       const legRayResult = this._castLegRays();
+      let dynamicStandPoint: Vector3 = null;
       if (legRayResult == null) {
 
         // The character isn't standing on anything (free falling).
@@ -376,12 +401,57 @@ namespace PRKR.Player {
           this._activeForce.z() * coeff
         );
         characterBody.applyCentralForce(characterForce);
-        
+
+      } else if (!legRayResult.stable) {
+
+        // The character is sliding on something.
+        // Applies a fraction of the active force so the player still has "some" control.
+        const coeff = C.Character.FreeFallingDirectionCoefficient;
+        characterForce.setValue(
+          this._activeForce.x() * coeff,
+          this._activeForce.y() * coeff,
+          this._activeForce.z() * coeff
+        );
+        characterBody.applyCentralForce(characterForce);
+
+        if (this._jumpTriggered) {    
+          
+          let j = legRayResult.normal.clone().lerp(M.Vector3.PositiveY, 0.5).normalize();
+          let a = jumpImpulse.y();
+          let jump = new Ammo.btVector3(j.x * a, j.y * a, j.z * a);
+
+          characterBody.applyImpulse(jump, ParcourPlayer.AmmoVector0);
+
+          // Apply the character's jump counter-force on the object on which the character stands (if it is dynamic).
+          if (legRayResult.object && legRayResult.object.updateRenderObject) {
+
+            let legLocation = legRayResult.location;
+            let body = legRayResult.object.physicBodies[0];
+            let origin = body.getWorldTransform().getOrigin();
+            let relativePosition = ParcourPlayer.__simulate_relativePosition;
+  
+            relativePosition.setValue(
+              legLocation.x - origin.x(),
+              legLocation.y - origin.y(),
+              legLocation.z - origin.z()
+            );
+
+            jump.setValue(-jump.x(), -jump.y(), -jump.z());
+ 
+            body.applyImpulse(
+              jump,
+              relativePosition
+            );
+
+          }
+        }
+
       } else {
 
         // The character is standing on something.
+
         const targetLegGap = C.Character.LegGap;
-        const currentLegGap = legRayResult.currentLegGap;
+        const currentLegGap = legRayResult.legGap;
 
         let coeff = this._crouching ? C.Character.CrouchingLegGapCoefficient : 1;
 
@@ -414,8 +484,6 @@ namespace PRKR.Player {
         // Apply control + leg forces on character.
         characterBody.activate();
         characterBody.applyCentralForce(characterForce);
-
-        const jumpImpulse = ParcourPlayer.JumpImpulse;
 
         if (this._jumpTriggered) {
 
@@ -458,14 +526,64 @@ namespace PRKR.Player {
             jumpImpulse.setY(y);  
   
           }
+
+          // Keep track of dynamic object relative location of the standing point.
+          dynamicStandPoint = legRayResult.object.renderObject.worldToLocal(legLocation.clone());
         }
 
       }
+
+      // Update debug info
+      // Stand-point
+      if (!this._localConfiguration.displayStandingPoint) {
+        this._standPointDisplay.visible = false;
+      } else if (legRayResult == null) {
+        this._standPointDisplay.visible = false;
+      } else if (!legRayResult.stable) {
+        this._standPointDisplay.visible = true;
+        this._standPointDisplayMaterial.color.set(0xff0000);
+        this._standPointDisplay.position.copy(legRayResult.location);
+        this._standPointDisplay.quaternion.setFromUnitVectors(M.Vector3.PositiveY, legRayResult.normal);
+      } else {
+        this._standPointDisplay.visible = true;
+        this._standPointDisplayMaterial.color.set(0x0000ff);
+        this._standPointDisplay.position.copy(legRayResult.location);
+        this._standPointDisplay.quaternion.setFromUnitVectors(M.Vector3.PositiveY, legRayResult.normal);
+      }
+
       this._jumpTriggered = false;
 
       // Step physic simulation.
       this._physics.simulate(delta);
       this._lastSimulate = now;
+
+      // HACKy, update character location if it was standing on a dynamic object.
+      // This approach works OK for now ... 
+      if (dynamicStandPoint != null) {
+
+        let ro = legRayResult.object.renderObject;
+        ro.updateMatrixWorld(true);
+
+        dynamicStandPoint = ro.localToWorld(dynamicStandPoint);
+        let diff = dynamicStandPoint.clone().sub(legRayResult.location); // .setY(0);
+        let l = diff.length();
+
+        if (l > 0.001) {
+
+          // TODO Test and adjust this arbitrary max speed.
+          let max = ( 1 /* m/s */ ) * delta;
+          if (l > max) {
+            diff = diff.multiplyScalar(max / l);
+          }
+
+          this._physics.translateBodies(this._character.physicBodies, diff);
+          this._character.renderObject.position.add(diff);
+        }
+
+        this._physics.translateBodies(this._character.physicBodies, diff);
+        this._character.renderObject.position.add(diff);
+
+      }
 
       this._testGameLogic();
 
@@ -505,7 +623,7 @@ namespace PRKR.Player {
     private static __ray1 = new Vector3();
 
     /** Cast leg rays for the character and return current "leg gap" value. */
-    private _castLegRays() {
+    private _castLegRays(): LegRayResult {
       const v1 = ParcourPlayer.__ray0;
       const v2 = ParcourPlayer.__ray1;
       const halfCapsuleHeight = C.Character.CapsuleHeight * .5;
@@ -523,8 +641,8 @@ namespace PRKR.Player {
         x: 0, z: -(radius - .05)
       }];
 
-      let highest: Vector3 = null;
-      let object: RuntimeObject = null;
+      let highestStable: Physics.RayResult = null;
+      let lowestUnstable: Physics.RayResult = null;
 
       rays.forEach(ray => {
 
@@ -535,38 +653,53 @@ namespace PRKR.Player {
         v2.copy(v1).addScaledVector(M.Vector3.NegativeY, legGap + radius);
 
         let hit = this._physics.rayCast(v1, v2);
-  
-        if (
-          hit
-          && hit.normal.y > .7071
-          && (
-            !highest
-            || hit.position.y > highest.y
-          )
-        ) {
 
-          if (!highest) highest = new Vector3();
+        if (hit) {
 
-          highest.copy(hit.position);
-          object = hit.object;
+          if (hit.normal.y > .7071) {
+
+            if (!highestStable || hit.position.y > highestStable.position.y) {
+              highestStable = hit;
+            }
+
+          } else {
+
+            if (!lowestUnstable || hit.position.y < lowestUnstable.position.y) {
+              lowestUnstable = hit;
+            }
+            
+          }          
         }
   
       });
 
-      if (!highest) return null;
+      let result: Physics.RayResult;
+      let stable: boolean;
+
+      if (highestStable) {
+        result = highestStable;
+        stable = true;
+      } else if (lowestUnstable) {
+        result = lowestUnstable;
+        stable = false;
+      }
+
+      if (!result) return null;
 
       // determine leg gap.
       let currentLegGap = 
         this._character.renderObject.position.y
         - C.Character.CapsuleHeight * .5
-        - highest.y;
+        - result.position.y;
 
       // console.log('_castLegRays: Found a highest hit. Its position is', highest, 'Determined legGap is', legGap);
 
       return {
-        currentLegGap,
-        location: highest,
-        object
+        legGap: currentLegGap,
+        location: result.position,
+        normal: result.normal,
+        object: result.object,
+        stable
       };
 
     }
@@ -635,9 +768,12 @@ namespace PRKR.Player {
         <div class="prpl-overlay-caption" />
         <div class="prpl-overlay-body" />
         <div class="prpl-overlay-footer" />
-      </div>`)
+      </div>`);
 
       main.appendChild(overlay[0]);
+
+      this._menu = new Menu();
+      main.appendChild(this._menu.dom);
 
       this._domRoot = main;
     }
@@ -752,6 +888,26 @@ namespace PRKR.Player {
         updateRenderObject: true
       };
       this._physics.add(this._character);
+
+    }
+
+    private _initDebug() {
+
+      // Expose character standing point.
+      let g = new THREE.CylinderBufferGeometry(0.125, 0.125, 0.05, 24);
+      let m = new THREE.MeshBasicMaterial({
+        color: 0x0000ff,
+      });
+      let standPoint = new THREE.Mesh(g, m);
+      standPoint.castShadow = false;
+      standPoint.receiveShadow = false;
+      standPoint.visible = false;
+
+      this._standPointDisplay = standPoint;
+      this._standPointDisplayMaterial = m;
+
+      this._scene.add(this._standPointDisplay);
+
     }
 
     /**

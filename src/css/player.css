@@ -2,6 +2,10 @@ body {
   font-family: "Roboto";
 }
 
+* {
+  box-sizing: border-box;
+}
+
 #prpl-main {
   position: absolute;
   left: 0;
@@ -20,7 +24,7 @@ body {
   overflow: hidden;
 
   display: none;
-  
+
   color: white;
   background-color: rgba(0, 0, 0, 0.5);
   text-shadow: 0 0 4px black, 0 0 1.69em black;
@@ -47,6 +51,70 @@ body {
   max-width: 600px;
 
   text-align: right;
+}
+
+#prpl-menu {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  color: white;
+  background-color: rgba(0, 0, 0, 0.5);
+  text-shadow: 0 0 4px black, 0 0 1.69em black;
+
+  opacity: 1;
+  transition: opacity 125ms ease-in;
+}
+
+#prpl-menu.hidden {
+  opacity: 0;
+}
+
+#prpl-menu .menu-close {
+  align-self: flex-end;
+  font-size: 50px;
+  cursor: pointer;
+}
+
+#prpl-menu .menu-close:hover {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+#prpl-menu .menu-content {
+  display: flex;
+  flex-direction: column;
+
+  min-width: 300px;
+  max-width: 800px;
+  height: 100%;
+  padding: 10px;
+
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+#prpl-menu .menu-title {
+  font-size: 80px;
+  margin-top: 175px;
+}
+
+#prpl-menu .menu-section {
+  margin-top: 20px;
+}
+
+#prpl-menu .menu-option {
+  margin-top: 14px;
+}
+
+#prpl-menu .menu-section-title {
+  font-size: 36px;
+  color: rgba(255, 255, 255, 0.75);
 }
 
 .number {
