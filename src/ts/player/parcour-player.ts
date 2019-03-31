@@ -2,7 +2,6 @@
 /// <reference path="../defs/ammo.d.ts" />
 /// <reference path="./constants.ts" />
 
-
 namespace PRKR.Player {
 
   import Vector3 = THREE.Vector3;
@@ -418,11 +417,8 @@ namespace PRKR.Player {
         if (this._jumpTriggered) {    
           
           let j = legRayResult.normal.clone().lerp(M.Vector3.PositiveY, 0.5).normalize();
-
-          let a = jumpImpulse.y();   
-          // let n = legRayResult.normal;
+          let a = jumpImpulse.y();
           let jump = new Ammo.btVector3(j.x * a, j.y * a, j.z * a);
-          //legRayResult.normal
 
           characterBody.applyImpulse(jump, ParcourPlayer.AmmoVector0);
 
