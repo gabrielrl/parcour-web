@@ -1,5 +1,5 @@
 /// <reference path="./tool.ts" />
-/// <reference path="./resize-handle.ts" />
+/// <reference path="./plane-resize-handle.ts" />
 
 /// <reference path="../objects/editor-object.ts" />
 /// <reference path="../edit-steps/resize-step.ts" />
@@ -40,14 +40,9 @@ namespace PRKR.Editor.Tools {
 
     /** Gets if the current tool is enabled. Computed from the editor's state. */
     public get enabled(): boolean {
-      let selection = this._editor.selectedObjects;
-      if (selection.length === 0) return false;
 
-      // Return true if we can find a resizable object.
-      for (let i = 0; i < selection.length; i++) {
-        if (selection[i].resizable) return true;
-      }
-      return false;
+      return _.some(this._editor.selectedObjects, o => o.resizable);
+
     }
 
     /** Gets the current tool's keyboard shortcut. */
@@ -126,13 +121,13 @@ namespace PRKR.Editor.Tools {
         // Update active helper state.
         if (hit) {
           if (this._activeHit && this._activeHit.handle !== hit.handle) {
-            this._activeHit.helper.setHovered(event, null);
+            this._activeHit.helper.setHovered(null);
           }
-          hit.helper.setHovered(event, hit);
+          hit.helper.setHovered(hit);
           this._editor.requestRender();
         } else { // !hit
           if (this._activeHit) { 
-            this._activeHit.helper.setHovered(event, null);
+            this._activeHit.helper.setHovered(null);
             this._editor.requestRender();
           }
         }
@@ -193,7 +188,7 @@ namespace PRKR.Editor.Tools {
 
       // Clean up if necessary.
       if (this._helpers) {
-        this._helpers.forEach(h => { this._editor.removeFromScene(h); });
+        this._helpers.forEach(h => this._editor.removeFromScene(h));
       }
 
       // Build resize helpers for every resizable selected object.

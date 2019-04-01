@@ -19,10 +19,10 @@ namespace PRKR.Editor.Tools {
     minDelta?: Vector3;
     maxDelta?: Vector3;
 
-    applyDelta?: Function;
+    applyDelta?: (v: Vector3) => ResizeDelta;
   }
 
-  export class ResizeHandle extends THREE.Object3D {
+  export class PlaneResizeHandle extends THREE.Object3D implements ResizeHandle {
 
     private static Geometry = new THREE.PlaneGeometry(1, 1);
 
@@ -73,7 +73,7 @@ namespace PRKR.Editor.Tools {
     private _maxDelta: Vector3 = null;
 
     /** User provided function to apply the handle delta. */
-    private _applyDelta: Function = null;
+    private _applyDelta: (v: Vector3) => ResizeDelta = null;
 
     private _hovered: boolean = false;
 
@@ -86,12 +86,10 @@ namespace PRKR.Editor.Tools {
     private _origin: THREE.Vector3 = null;
 
     /** The handle mesh. */
-    private _handleMesh: THREE.Mesh = new THREE.Mesh(ResizeHandle.Geometry, ResizeHandle.BaseMaterial);
+    private _handleMesh: THREE.Mesh = new THREE.Mesh(PlaneResizeHandle.Geometry, PlaneResizeHandle.BaseMaterial);
 
-    constructor(
-      private _editor: ParcourEditor,
-      options: ResizeHandleOptions
-    ) {
+    constructor(options: ResizeHandleOptions) {
+
       super();
 
       if (!options) throw new Error('"options" must be defined');
@@ -125,6 +123,8 @@ namespace PRKR.Editor.Tools {
       this._updateHandleObject();
     }
 
+    public get sceneObject() { return this; }
+
     public get width() { return this._width; }
     public set width(value) { this._width = value; }
 
@@ -133,16 +133,19 @@ namespace PRKR.Editor.Tools {
 
     public get location() { return this._location; }
 
-    public applyDelta(...args) {
+    public applyDelta(handleDelta: Vector3): ResizeDelta {
       if (this._applyDelta) {
-        return this._applyDelta(...args);
+        return this._applyDelta(handleDelta);
       } else {
         return null;
       }
     }
 
     public get hovered() { return this._hovered; }
-    public set hovered(value: boolean) { this._hovered = value; }
+    public set hovered(value: boolean) {
+      this._hovered = value;
+      this._updateHandleObject();
+    }
 
     /**
      * Updates the object. Call after modifying any property.
@@ -165,13 +168,13 @@ namespace PRKR.Editor.Tools {
     /**
      * Returns the current resize delta.
      */
-    public resizeMove(mouseEvent: JQueryMouseEventObject) {
+    public resizeMove(mouseEvent: JQueryMouseEventObject, editor: ParcourEditor) {
       if (!mouseEvent) throw new Error('"mouseEvent" can not be null or undefined');
       if (!this._resizing) return;
 
       // let intersection = this._editor.projectMouseOnFloor(new THREE.Vector2(mouseEvent.clientX, mouseEvent.clientY));
       let intersection =
-        this._editor.projectMouseOnPlane(
+        editor.projectMouseOnPlane(
           new THREE.Vector2(mouseEvent.clientX, mouseEvent.clientY),
           this._location,
           this._normal || Helpers.getNormalFromOrthoPlane(this._plane)
@@ -209,7 +212,7 @@ namespace PRKR.Editor.Tools {
     /**
      * Returns the current resize delta.
      */
-    public resizeEnd(mouseEvent: JQueryMouseEventObject) {
+    public resizeEnd(mouseEvent: JQueryMouseEventObject): Vector3 {
       if (!mouseEvent) throw new Error('"mouseEvent" can not be null or undefined');
 
       this._resizing = false;
@@ -227,11 +230,11 @@ namespace PRKR.Editor.Tools {
       let handle = this._handleMesh;
 
       // Set handle material from current state.
-      let material = ResizeHandle.BaseMaterial;
+      let material = PlaneResizeHandle.BaseMaterial;
       if (this._resizing) {
-        material = ResizeHandle.ResizingMaterial;
+        material = PlaneResizeHandle.ResizingMaterial;
       } else if (this._hovered) {
-        material = ResizeHandle.HoveredMaterial;
+        material = PlaneResizeHandle.HoveredMaterial;
       }
 
       handle.material = material;

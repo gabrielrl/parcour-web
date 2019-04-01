@@ -129,6 +129,12 @@ namespace PRKR.Editor.Objects {
      */
     get resizable(): boolean { return false; }
 
+    /**
+     * Gets an array of resize handles if the object supports resizing.
+     * Override, don't call super. Defaults to an empty array.
+     */
+    get resizeHandles(): Tools.ResizeHandle[] { return []; }
+
     private _bbox: THREE.Box3;
 
     /**
