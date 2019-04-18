@@ -28,6 +28,119 @@ namespace PRKR.Editor.Objects {
     /** Override. */
     get resizable(): boolean { return true; }
 
+    get resizeHandles(): Tools.ResizeHandle[] {
+
+      let model = <StaticModel>this.model;
+      let origin = this.getWorldPosition();
+      let halfExtents = (<StaticModel>this.model).size;
+
+      let handles = [];
+      let radius = 0.25;
+
+      function applyDeltaGenerator(locationFactor: Vector3, sizeFactor: Vector3) {
+        return (delta: number) => {
+          return {
+            location: new Vector3(
+              delta * locationFactor.x,
+              delta * locationFactor.y,
+              delta * locationFactor.z              
+            ),
+            size: new Vector3(
+              delta * sizeFactor.x,
+              delta * sizeFactor.y,
+              delta * sizeFactor.z              
+            )
+          };          
+        };
+      }
+
+      // + X
+      let axis = M.Vector3.PositiveX.clone().applyQuaternion(model.rotation);
+      let location = new Vector3(halfExtents.x, 0, 0).applyQuaternion(model.rotation).add(origin);
+
+      handles.push(new Tools.AxisResizeHandle({
+        radius,
+        axis,
+        location,
+        applyDelta: applyDeltaGenerator(
+          axis.clone().multiplyScalar(.5),
+          new Vector3(.5, 0, 0)
+        )
+      }));
+
+      // - X
+      axis = M.Vector3.NegativeX.clone().applyQuaternion(model.rotation);
+      location = new Vector3(-halfExtents.x, 0, 0).applyQuaternion(model.rotation).add(origin);
+
+      handles.push(new Tools.AxisResizeHandle({
+        radius,
+        axis,
+        location,
+        applyDelta: applyDeltaGenerator(
+          axis.clone().multiplyScalar(.5),
+          new Vector3(.5, 0, 0)
+        )
+      }));
+
+      // + Y
+      axis = M.Vector3.PositiveY.clone().applyQuaternion(model.rotation);
+      location = new Vector3(0, halfExtents.y, 0).applyQuaternion(model.rotation).add(origin);
+
+      handles.push(new Tools.AxisResizeHandle({
+        radius,
+        axis,
+        location,
+        applyDelta: applyDeltaGenerator(
+          axis.clone().multiplyScalar(.5),
+          new Vector3(0, .5, 0)
+        )
+      }));
+
+      // - Y
+      axis = M.Vector3.NegativeY.clone().applyQuaternion(model.rotation);
+      location = new Vector3(0, -halfExtents.y, 0).applyQuaternion(model.rotation).add(origin);
+
+      handles.push(new Tools.AxisResizeHandle({
+        radius,
+        axis,
+        location,
+        applyDelta: applyDeltaGenerator(
+          axis.clone().multiplyScalar(.5),
+          new Vector3(0, .5, 0)
+        )
+      }));
+
+      // + Z
+      axis = M.Vector3.PositiveZ.clone().applyQuaternion(model.rotation);
+      location = new Vector3(0, 0, halfExtents.z).applyQuaternion(model.rotation).add(origin);
+
+      handles.push(new Tools.AxisResizeHandle({
+        radius,
+        axis,
+        location,
+        applyDelta: applyDeltaGenerator(
+          axis.clone().multiplyScalar(.5),
+          new Vector3(0, 0, .5)
+        )
+      }));
+
+      // - Z
+      axis = M.Vector3.NegativeZ.clone().applyQuaternion(model.rotation);
+      location = new Vector3(0, 0, -halfExtents.z).applyQuaternion(model.rotation).add(origin);
+
+      handles.push(new Tools.AxisResizeHandle({
+        radius,
+        axis,
+        location,
+        applyDelta: applyDeltaGenerator(
+          axis.clone().multiplyScalar(.5),
+          new Vector3(0, 0, .5)
+        )
+      }));
+
+      return handles;
+    }
+
     get geometry(): THREE.Geometry {
       if (!this._geometry) {
         this._geometry = this._buildGeometry();

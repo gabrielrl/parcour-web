@@ -5,7 +5,7 @@ namespace PRKR.Editor.Tools {
   import Vector3 = THREE.Vector3;
 
   /** Option object passed to `ResizeHandle`'s constructor. */
-  export interface ResizeHandleOptions {
+  export interface PlaneResizeHandleOptions {
     width: number;
     height: number;
     /** Axes on which the handle can move. Each component should be either 0 or 1. */
@@ -88,7 +88,7 @@ namespace PRKR.Editor.Tools {
     /** The handle mesh. */
     private _handleMesh: THREE.Mesh = new THREE.Mesh(PlaneResizeHandle.Geometry, PlaneResizeHandle.BaseMaterial);
 
-    constructor(options: ResizeHandleOptions) {
+    constructor(options: PlaneResizeHandleOptions) {
 
       super();
 
@@ -129,7 +129,7 @@ namespace PRKR.Editor.Tools {
     public set width(value) { this._width = value; }
 
     public get height() { return this._height; }
-    public set height(value) { this._height = value;}
+    public set height(value) { this._height = value; }
 
     public get location() { return this._location; }
 

@@ -18,11 +18,25 @@ namespace PRKR.Editor.Tools {
 
     resizeStart(hit: ResizeHelperHit);
 
-    resizeMove(mouseEvent: JQueryMouseEventObject, editor: ParcourEditor): THREE.Vector3;
+    // TODO ?? Shouldn't they all just return ResizeDelta instances ??
 
-    resizeEnd(mouseEvent: JQueryMouseEventObject): THREE.Vector3;
+    /**
+     * @returns the current "handle delta". Type depends on implementation.
+     */ 
+    // TODO comment better
+    resizeMove(mouseEvent: JQueryMouseEventObject, editor: ParcourEditor): any;
 
-    applyDelta(handleDelta: THREE.Vector3): ResizeDelta;
+    /**
+     * @returns the current "handle delta". Type depends on implementation.
+     */ 
+    // TODO comment better
+    resizeEnd(mouseEvent: JQueryMouseEventObject): any;
+
+    /**
+     * @param handleDelta The "handle delta" to apply/convert. Type depends on implementation.
+     */ 
+    // TODO comment better    
+    applyDelta(handleDelta: any): ResizeDelta;
 
   }
 }

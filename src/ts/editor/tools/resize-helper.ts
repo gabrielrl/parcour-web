@@ -23,8 +23,8 @@ namespace PRKR.Editor.Tools {
 
     private _handles: ResizeHandle[] = [];
 
-    private _resizingHelper: PRKR.Helpers.BoundingBoxHelper;
-    private _resizingAdjustedHelper: PRKR.Helpers.BoundingBoxHelper;
+    private _resizingHelper: Tools.EditorObjectHelper;
+    private _resizingAdjustedHelper: Tools.EditorObjectHelper;
 
     private _hovered: boolean = false;
 
@@ -49,28 +49,14 @@ namespace PRKR.Editor.Tools {
       }
 
       // Build the resizing helpers.
-      var unitBox = new THREE.Box3(M.Vector3.Zero, M.Vector3.OneOneOne)
-      this._resizingHelper = new PRKR.Helpers.BoundingBoxHelper(
-        unitBox, {
-          useFaces: false,
-          useLines: true,
-          lineMaterial: new THREE.LineDashedMaterial({
-            color: Colors.TOOL_SUCCESS_COLOR,
-            dashSize: 0.25,
-            gapSize: 0.125
-          })
-        });
+      this._resizingHelper = new Tools.EditorObjectHelper(this._editorObject);
+      this._resizingHelper.position.copy(this._editorObject.getWorldPosition());
+      this._resizingHelper.setRestRotation(this._editorObject.getRotation());
+
       this._resizingHelper.visible = false;
-      this._resizingAdjustedHelper = new PRKR.Helpers.BoundingBoxHelper(
-        unitBox, {
-          useFaces: true,
-          useLines: false,
-        faceMaterial: new THREE.MeshBasicMaterial({
-            color: Colors.TOOL_SUCCESS_COLOR,
-            transparent: true,
-            opacity: 0.333
-          })
-        });
+      this._resizingAdjustedHelper = new Tools.EditorObjectHelper(this._editorObject);
+      this._resizingAdjustedHelper.position.copy(this._editorObject.getWorldPosition());
+      this._resizingAdjustedHelper.setRestRotation(this._editorObject.getRotation());
       this._resizingAdjustedHelper.visible = false;
 
       this.add(this._resizingHelper);
@@ -87,15 +73,20 @@ namespace PRKR.Editor.Tools {
         this._handles.map(h => h.sceneObject));
 
       if (intersections.length > 0) {
+
+        // Using the closest intersection.
         let intersection = intersections[0];
 
         // Find out which handle was hit.
         let handle: ResizeHandle = null;
         for (var i = 0; i < this._handles.length; i++) {
           
-          // FRAGILE. Assusmes the hit was with a child object of the handle
-          // itself... TODO better
-          if (this._handles[i].sceneObject === intersection.object.parent ) {
+          // FRAGILE. Assumes too much... TODO better
+          if (
+            this._handles[i].sceneObject === intersection.object
+              ||
+            this._handles[i].sceneObject === intersection.object.parent
+          ) {
             handle = this._handles[i];
             break;
           }
@@ -219,56 +210,24 @@ namespace PRKR.Editor.Tools {
 
     private _updateResizingHelpers(resizeDelta: ResizeDelta, adjustedDelta: ResizeDelta) {
 
-      let bbox = this._editorObject.boundingBox;
-      let size = bbox.getSize();
-
       if (resizeDelta) {
       
-        this._resizingHelper.scale.set(
-          size.x + resizeDelta.size.x,
-          size.y + resizeDelta.size.y,
-          size.z + resizeDelta.size.z
-        );
-        this._resizingHelper.position
-          .addVectors(bbox.min, this._editorObject.getWorldPosition())
-          .add(resizeDelta.location);
-
-      } else {
-
-        this._resizingHelper.scale.copy(size);
-        this._resizingHelper.position
-          .addVectors(bbox.min, this._editorObject.getWorldPosition());
+        this._resizingHelper.setMoveBy(resizeDelta.location);
+        this._resizingHelper.setResizeBy(resizeDelta.size);
 
       }
       
       if (adjustedDelta) {
 
-        this._resizingAdjustedHelper.scale.set(
-          size.x + adjustedDelta.size.x,
-          size.y + adjustedDelta.size.y,
-          size.z + adjustedDelta.size.z
-        );
-        this._resizingAdjustedHelper.position
-          .addVectors(bbox.min, this._editorObject.getWorldPosition())
-          .add(adjustedDelta.location);
+        this._resizingAdjustedHelper.setMoveBy(adjustedDelta.location);
+        this._resizingAdjustedHelper.setResizeBy(adjustedDelta.size);
 
-      } else {
-
-        this._resizingAdjustedHelper.scale.copy(size);
-        this._resizingAdjustedHelper.position
-          .addVectors(bbox.min, this._editorObject.getWorldPosition());
-        
       }
     }
 
     private _updateResizingHelpersColor() {
-      if (this._resizeValid) {
-        this._resizingHelper.setColor(Colors.TOOL_SUCCESS_COLOR);
-        this._resizingAdjustedHelper.setColor(Colors.TOOL_SUCCESS_COLOR);
-      } else {
-        this._resizingHelper.setColor(Colors.TOOL_ERROR_COLOR);
-        this._resizingAdjustedHelper.setColor(Colors.TOOL_ERROR_COLOR);
-      }
+      this._resizingHelper.setValidState(this._resizeValid);
+      this._resizingAdjustedHelper.setValidState(this._resizeValid);
     }
 
   }
