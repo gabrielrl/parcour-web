@@ -123,7 +123,11 @@ namespace PRKR.Editor.Tools {
       this._updateHandleObject();
     }
 
+    /** The Object3D to add to the scene to display. */
     public get sceneObject() { return this; }
+
+    /** The Object3D to use for hit test. */
+    public get hitObject() { return this; }
 
     public get width() { return this._width; }
     public set width(value) { this._width = value; }

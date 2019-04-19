@@ -4,8 +4,11 @@ namespace PRKR.Editor.Tools {
 
     // ...
 
-    /** The Object3D to add to the scene. */
+    /** The Object3D to add to the scene to display. */
     sceneObject: THREE.Object3D;
+
+    /** The Object3D to use for hit test. */
+    hitObject: THREE.Object3D;
 
     /** Gets or sets if the handle is currently hovered by the mouse. */
     hovered: boolean;

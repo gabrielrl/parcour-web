@@ -125,11 +125,15 @@ namespace PRKR.Editor.Tools {
 
 
 
-    /** The Object3D to add to the scene. */
+    /** The Object3D to add to the scene to display. */
     get sceneObject(): THREE.Object3D {
-      return this._root; // this._handleMesh;
+      return this._root;
     }
 
+    /** The Object3D to use for hit test. */
+    get hitObject(): THREE.Object3D {
+      return this._handleMesh;
+    }
 
     // update() ??
 

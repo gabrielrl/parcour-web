@@ -70,7 +70,7 @@ namespace PRKR.Editor.Tools {
       // hit test all the handles.
       let intersections = this._editor.projectMouseOnObjects(
         new THREE.Vector2(event.clientX, event.clientY),
-        this._handles.map(h => h.sceneObject));
+        this._handles.map(h => h.hitObject));
 
       if (intersections.length > 0) {
 
