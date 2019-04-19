@@ -97,7 +97,7 @@ namespace PRKR.Editor.Objects {
      * Gets the current object's move constraints.
      * No need to override.
      */
-    get moveConstraints(): MoveConstraints { 
+    get moveConstraints(): VectorConstraints { 
       return getMoveConstraints(this.model);
     }
 
@@ -128,6 +128,14 @@ namespace PRKR.Editor.Objects {
      * Override.
      */
     get resizable(): boolean { return false; }
+
+    /**
+     * Gets the current object's size constraint.
+     * No need to override.
+     */
+    get sizeConstraints(): VectorConstraints {
+      return getSizeConstraints(this.model);
+    }
 
     /**
      * Gets an array of resize handles if the object supports resizing.

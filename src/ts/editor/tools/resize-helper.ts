@@ -198,14 +198,17 @@ namespace PRKR.Editor.Tools {
     private _computeAdjustedDelta(delta: ResizeDelta): ResizeDelta {
       if (!delta) return null;
 
-      return {
-        location: delta.location.clone().round(),
-        size: new Vector3(
-          Math.round(delta.size.x),
-          Math.round(delta.size.y * 4) / 4,
-          Math.round(delta.size.z)
-        )
-      };
+      let location = delta.location.clone();
+      if (this._editorObject.moveConstraints) {
+        this._editorObject.moveConstraints.apply(location);
+      }
+
+      let size = delta.size.clone();
+      if (this._editorObject.sizeConstraints) {
+        this._editorObject.sizeConstraints.apply(size);
+      }
+
+      return { location, size };
     }
 
     private _updateResizingHelpers(resizeDelta: ResizeDelta, adjustedDelta: ResizeDelta) {

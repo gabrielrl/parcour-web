@@ -45,6 +45,7 @@ namespace PRKR.Editor.Objects {
       if (this._mesh) {
         this.sceneObject.remove(this._mesh);
       }
+      this._geometry = null;
       this._mesh = this._buildMesh();
       this.sceneObject.add(this._mesh);
       this.getWorldPosition(this.sceneObject.position);
