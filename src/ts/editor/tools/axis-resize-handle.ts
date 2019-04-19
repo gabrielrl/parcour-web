@@ -45,6 +45,13 @@ namespace PRKR.Editor.Tools {
       side: THREE.FrontSide
     });
 
+    private static ArrowMaterial = new THREE.MeshBasicMaterial({
+      color: 0x0000ff,
+      depthTest: false,
+      transparent: false,
+      side: THREE.FrontSide
+    });
+
     /** The handle's radius. */
     private _radius: number;
 
@@ -89,7 +96,7 @@ namespace PRKR.Editor.Tools {
       let cone = new THREE.ConeGeometry(0.15, .333, 12);
       cone.translate(0, 0.55, 0);
       cylinder.merge(cone);
-      let arrow = new THREE.Mesh(cylinder, AxisResizeHandle.BaseMaterial);
+      let arrow = new THREE.Mesh(cylinder, AxisResizeHandle.ArrowMaterial);
       arrow.position.set(0, 0.666, 0);
       this._arrows.add(arrow);
 
@@ -98,7 +105,7 @@ namespace PRKR.Editor.Tools {
       cone.translate(0, 0.55, 0);
       cylinder.merge(cone);
       cylinder.scale(1, -1, 1);
-      arrow = new THREE.Mesh(cylinder, AxisResizeHandle.BaseMaterial);
+      arrow = new THREE.Mesh(cylinder, AxisResizeHandle.ArrowMaterial);
       arrow.position.set(0, -0.666, 0);
       this._arrows.add(arrow);
 
@@ -237,10 +244,12 @@ namespace PRKR.Editor.Tools {
       this._arrows.visible = false;
       if (this._resizing) {
         handleMaterial = AxisResizeHandle.ResizingMaterial;
-        arrowsMaterial = AxisResizeHandle.ResizingMaterial;
+        arrowsMaterial = AxisResizeHandle.ArrowMaterial;
+        // arrowsMaterial = AxisResizeHandle.ResizingMaterial;
       } else if (this._hovered) {
         handleMaterial = AxisResizeHandle.HoveredMaterial;
-        arrowsMaterial = AxisResizeHandle.BaseMaterial;
+        arrowsMaterial = AxisResizeHandle.ArrowMaterial;
+        // arrowsMaterial = AxisResizeHandle.BaseMaterial;
       }
 
       handle.material = handleMaterial;
