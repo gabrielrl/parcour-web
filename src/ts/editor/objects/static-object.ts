@@ -54,89 +54,243 @@ namespace PRKR.Editor.Objects {
         };
       }
 
-      // + X
-      let axis = M.Vector3.PositiveX.clone().applyQuaternion(model.rotation);
-      let location = new Vector3(halfExtents.x, 0, 0).applyQuaternion(model.rotation).add(origin);
+      switch (model.shape) {
+        case Model.Shape.Box:
+        default: {
+          // + X
+          let axis = M.Vector3.PositiveX.clone().applyQuaternion(model.rotation);
+          let location = new Vector3(halfExtents.x, 0, 0).applyQuaternion(model.rotation).add(origin);
 
-      handles.push(new Tools.AxisResizeHandle({
-        radius,
-        axis,
-        location,
-        applyDelta: applyDeltaGenerator(
-          axis.clone().multiplyScalar(.5),
-          new Vector3(.5, 0, 0)
-        )
-      }));
+          handles.push(new Tools.AxisResizeHandle({
+            radius,
+            axis,
+            location,
+            applyDelta: applyDeltaGenerator(
+              axis.clone().multiplyScalar(.5),
+              new Vector3(.5, 0, 0)
+            )
+          }));
 
-      // - X
-      axis = M.Vector3.NegativeX.clone().applyQuaternion(model.rotation);
-      location = new Vector3(-halfExtents.x, 0, 0).applyQuaternion(model.rotation).add(origin);
+          // - X
+          axis = M.Vector3.NegativeX.clone().applyQuaternion(model.rotation);
+          location = new Vector3(-halfExtents.x, 0, 0).applyQuaternion(model.rotation).add(origin);
 
-      handles.push(new Tools.AxisResizeHandle({
-        radius,
-        axis,
-        location,
-        applyDelta: applyDeltaGenerator(
-          axis.clone().multiplyScalar(.5),
-          new Vector3(.5, 0, 0)
-        )
-      }));
+          handles.push(new Tools.AxisResizeHandle({
+            radius,
+            axis,
+            location,
+            applyDelta: applyDeltaGenerator(
+              axis.clone().multiplyScalar(.5),
+              new Vector3(.5, 0, 0)
+            )
+          }));
 
-      // + Y
-      axis = M.Vector3.PositiveY.clone().applyQuaternion(model.rotation);
-      location = new Vector3(0, halfExtents.y, 0).applyQuaternion(model.rotation).add(origin);
+          // + Y
+          axis = M.Vector3.PositiveY.clone().applyQuaternion(model.rotation);
+          location = new Vector3(0, halfExtents.y, 0).applyQuaternion(model.rotation).add(origin);
 
-      handles.push(new Tools.AxisResizeHandle({
-        radius,
-        axis,
-        location,
-        applyDelta: applyDeltaGenerator(
-          axis.clone().multiplyScalar(.5),
-          new Vector3(0, .5, 0)
-        )
-      }));
+          handles.push(new Tools.AxisResizeHandle({
+            radius,
+            axis,
+            location,
+            applyDelta: applyDeltaGenerator(
+              axis.clone().multiplyScalar(.5),
+              new Vector3(0, .5, 0)
+            )
+          }));
 
-      // - Y
-      axis = M.Vector3.NegativeY.clone().applyQuaternion(model.rotation);
-      location = new Vector3(0, -halfExtents.y, 0).applyQuaternion(model.rotation).add(origin);
+          // - Y
+          axis = M.Vector3.NegativeY.clone().applyQuaternion(model.rotation);
+          location = new Vector3(0, -halfExtents.y, 0).applyQuaternion(model.rotation).add(origin);
 
-      handles.push(new Tools.AxisResizeHandle({
-        radius,
-        axis,
-        location,
-        applyDelta: applyDeltaGenerator(
-          axis.clone().multiplyScalar(.5),
-          new Vector3(0, .5, 0)
-        )
-      }));
+          handles.push(new Tools.AxisResizeHandle({
+            radius,
+            axis,
+            location,
+            applyDelta: applyDeltaGenerator(
+              axis.clone().multiplyScalar(.5),
+              new Vector3(0, .5, 0)
+            )
+          }));
 
-      // + Z
-      axis = M.Vector3.PositiveZ.clone().applyQuaternion(model.rotation);
-      location = new Vector3(0, 0, halfExtents.z).applyQuaternion(model.rotation).add(origin);
+          // + Z
+          axis = M.Vector3.PositiveZ.clone().applyQuaternion(model.rotation);
+          location = new Vector3(0, 0, halfExtents.z).applyQuaternion(model.rotation).add(origin);
 
-      handles.push(new Tools.AxisResizeHandle({
-        radius,
-        axis,
-        location,
-        applyDelta: applyDeltaGenerator(
-          axis.clone().multiplyScalar(.5),
-          new Vector3(0, 0, .5)
-        )
-      }));
+          handles.push(new Tools.AxisResizeHandle({
+            radius,
+            axis,
+            location,
+            applyDelta: applyDeltaGenerator(
+              axis.clone().multiplyScalar(.5),
+              new Vector3(0, 0, .5)
+            )
+          }));
 
-      // - Z
-      axis = M.Vector3.NegativeZ.clone().applyQuaternion(model.rotation);
-      location = new Vector3(0, 0, -halfExtents.z).applyQuaternion(model.rotation).add(origin);
+          // - Z
+          axis = M.Vector3.NegativeZ.clone().applyQuaternion(model.rotation);
+          location = new Vector3(0, 0, -halfExtents.z).applyQuaternion(model.rotation).add(origin);
 
-      handles.push(new Tools.AxisResizeHandle({
-        radius,
-        axis,
-        location,
-        applyDelta: applyDeltaGenerator(
-          axis.clone().multiplyScalar(.5),
-          new Vector3(0, 0, .5)
-        )
-      }));
+          handles.push(new Tools.AxisResizeHandle({
+            radius,
+            axis,
+            location,
+            applyDelta: applyDeltaGenerator(
+              axis.clone().multiplyScalar(.5),
+              new Vector3(0, 0, .5)
+            )
+          }));
+        } break;
+
+        case Model.Shape.Sphere: {
+
+          let radiusDelta = new Vector3(.5, .5, .5);
+
+          // + X
+          let axis = M.Vector3.PositiveX.clone().applyQuaternion(model.rotation);
+          let location = new Vector3(halfExtents.x, 0, 0).applyQuaternion(model.rotation).add(origin);
+
+          handles.push(new Tools.AxisResizeHandle({
+            radius,
+            axis,
+            location,
+            applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), radiusDelta)
+          }));
+
+          // - X
+          axis = M.Vector3.NegativeX.clone().applyQuaternion(model.rotation);
+          location = new Vector3(-halfExtents.x, 0, 0).applyQuaternion(model.rotation).add(origin);
+
+          handles.push(new Tools.AxisResizeHandle({
+            radius,
+            axis,
+            location,
+            applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), radiusDelta)
+          }));
+
+          // + Y
+          axis = M.Vector3.PositiveY.clone().applyQuaternion(model.rotation);
+          location = new Vector3(0, halfExtents.y, 0).applyQuaternion(model.rotation).add(origin);
+
+          handles.push(new Tools.AxisResizeHandle({
+            radius,
+            axis,
+            location,
+            applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), radiusDelta)
+          }));
+
+          // - Y
+          axis = M.Vector3.NegativeY.clone().applyQuaternion(model.rotation);
+          location = new Vector3(0, -halfExtents.y, 0).applyQuaternion(model.rotation).add(origin);
+
+          handles.push(new Tools.AxisResizeHandle({
+            radius,
+            axis,
+            location,
+            applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), radiusDelta)
+          }));
+
+          // + Z
+          axis = M.Vector3.PositiveZ.clone().applyQuaternion(model.rotation);
+          location = new Vector3(0, 0, halfExtents.z).applyQuaternion(model.rotation).add(origin);
+
+          handles.push(new Tools.AxisResizeHandle({
+            radius,
+            axis,
+            location,
+            applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), radiusDelta)
+          }));
+
+          // - Z
+          axis = M.Vector3.NegativeZ.clone().applyQuaternion(model.rotation);
+          location = new Vector3(0, 0, -halfExtents.z).applyQuaternion(model.rotation).add(origin);
+
+          handles.push(new Tools.AxisResizeHandle({
+            radius,
+            axis,
+            location,
+            applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), radiusDelta)
+          }));
+
+        } break;
+
+        case Model.Shape.Capsule:
+        case Model.Shape.Cone:
+        case Model.Shape.Cylinder: {
+
+          let radiusDelta = new Vector3(.5, 0, .5);
+
+          // + X
+          let axis = M.Vector3.PositiveX.clone().applyQuaternion(model.rotation);
+          let location = new Vector3(halfExtents.x, 0, 0).applyQuaternion(model.rotation).add(origin);
+
+          handles.push(new Tools.AxisResizeHandle({
+            radius,
+            axis,
+            location,
+            applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), radiusDelta)
+          }));
+
+          // - X
+          axis = M.Vector3.NegativeX.clone().applyQuaternion(model.rotation);
+          location = new Vector3(-halfExtents.x, 0, 0).applyQuaternion(model.rotation).add(origin);
+
+          handles.push(new Tools.AxisResizeHandle({
+            radius,
+            axis,
+            location,
+            applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), radiusDelta)
+          }));
+
+          // + Y
+          axis = M.Vector3.PositiveY.clone().applyQuaternion(model.rotation);
+          location = new Vector3(0, halfExtents.y, 0).applyQuaternion(model.rotation).add(origin);
+
+          handles.push(new Tools.AxisResizeHandle({
+            radius,
+            axis,
+            location,
+            applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), new Vector3(0, .5, 0))
+          }));
+
+          // - Y
+          axis = M.Vector3.NegativeY.clone().applyQuaternion(model.rotation);
+          location = new Vector3(0, -halfExtents.y, 0).applyQuaternion(model.rotation).add(origin);
+
+          handles.push(new Tools.AxisResizeHandle({
+            radius,
+            axis,
+            location,
+            applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), new Vector3(0, .5, 0))
+          }));
+
+          // + Z
+          axis = M.Vector3.PositiveZ.clone().applyQuaternion(model.rotation);
+          location = new Vector3(0, 0, halfExtents.z).applyQuaternion(model.rotation).add(origin);
+
+          handles.push(new Tools.AxisResizeHandle({
+            radius,
+            axis,
+            location,
+            applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), radiusDelta)
+          }));
+
+          // - Z
+          axis = M.Vector3.NegativeZ.clone().applyQuaternion(model.rotation);
+          location = new Vector3(0, 0, -halfExtents.z).applyQuaternion(model.rotation).add(origin);
+
+          handles.push(new Tools.AxisResizeHandle({
+            radius,
+            axis,
+            location,
+            applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), radiusDelta)
+          }));
+
+        } break;
+
+
+      }
+
 
       return handles;
     }
