@@ -32,7 +32,7 @@ namespace PRKR.Editor.Objects {
 
       let model = <StaticModel>this.model;
       let origin = this.getWorldPosition();
-      let halfExtents = (<StaticModel>this.model).size;
+      let halfExtents = model.size;
 
       let handles = [];
       let radius = 0.25;
@@ -60,6 +60,8 @@ namespace PRKR.Editor.Objects {
           // + X
           let axis = M.Vector3.PositiveX.clone().applyQuaternion(model.rotation);
           let location = new Vector3(halfExtents.x, 0, 0).applyQuaternion(model.rotation).add(origin);
+          let m = Model.StaticObject.GridSize / 2;
+          let min = halfExtents.clone().multiplyScalar(2).subScalar(m).negate();
 
           handles.push(new Tools.AxisResizeHandle({
             radius,
@@ -68,7 +70,8 @@ namespace PRKR.Editor.Objects {
             applyDelta: applyDeltaGenerator(
               axis.clone().multiplyScalar(.5),
               new Vector3(.5, 0, 0)
-            )
+            ),
+            minDelta: min.x
           }));
 
           // - X
@@ -82,7 +85,8 @@ namespace PRKR.Editor.Objects {
             applyDelta: applyDeltaGenerator(
               axis.clone().multiplyScalar(.5),
               new Vector3(.5, 0, 0)
-            )
+            ),
+            minDelta: min.x
           }));
 
           // + Y
@@ -96,7 +100,8 @@ namespace PRKR.Editor.Objects {
             applyDelta: applyDeltaGenerator(
               axis.clone().multiplyScalar(.5),
               new Vector3(0, .5, 0)
-            )
+            ),
+            minDelta: min.y
           }));
 
           // - Y
@@ -110,7 +115,8 @@ namespace PRKR.Editor.Objects {
             applyDelta: applyDeltaGenerator(
               axis.clone().multiplyScalar(.5),
               new Vector3(0, .5, 0)
-            )
+            ),
+            minDelta: min.y
           }));
 
           // + Z
@@ -124,7 +130,8 @@ namespace PRKR.Editor.Objects {
             applyDelta: applyDeltaGenerator(
               axis.clone().multiplyScalar(.5),
               new Vector3(0, 0, .5)
-            )
+            ),
+            minDelta: min.z
           }));
 
           // - Z
@@ -138,7 +145,8 @@ namespace PRKR.Editor.Objects {
             applyDelta: applyDeltaGenerator(
               axis.clone().multiplyScalar(.5),
               new Vector3(0, 0, .5)
-            )
+            ),
+            minDelta: min.z
           }));
         } break;
 
@@ -149,12 +157,14 @@ namespace PRKR.Editor.Objects {
           // + X
           let axis = M.Vector3.PositiveX.clone().applyQuaternion(model.rotation);
           let location = new Vector3(halfExtents.x, 0, 0).applyQuaternion(model.rotation).add(origin);
+          let min = halfExtents.clone().multiplyScalar(2).subScalar(Model.StaticObject.GridSize).negate();
 
           handles.push(new Tools.AxisResizeHandle({
             radius,
             axis,
             location,
-            applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), radiusDelta)
+            applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), radiusDelta),
+            minDelta: min.x
           }));
 
           // - X
@@ -165,7 +175,8 @@ namespace PRKR.Editor.Objects {
             radius,
             axis,
             location,
-            applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), radiusDelta)
+            applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), radiusDelta),
+            minDelta: min.x
           }));
 
           // + Y
@@ -176,7 +187,8 @@ namespace PRKR.Editor.Objects {
             radius,
             axis,
             location,
-            applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), radiusDelta)
+            applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), radiusDelta),
+            minDelta: min.y
           }));
 
           // - Y
@@ -187,7 +199,8 @@ namespace PRKR.Editor.Objects {
             radius,
             axis,
             location,
-            applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), radiusDelta)
+            applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), radiusDelta),
+            minDelta: min.y
           }));
 
           // + Z
@@ -198,7 +211,8 @@ namespace PRKR.Editor.Objects {
             radius,
             axis,
             location,
-            applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), radiusDelta)
+            applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), radiusDelta),
+            minDelta: min.z
           }));
 
           // - Z
@@ -209,7 +223,8 @@ namespace PRKR.Editor.Objects {
             radius,
             axis,
             location,
-            applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), radiusDelta)
+            applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), radiusDelta),
+            minDelta: min.z
           }));
 
         } break;
@@ -223,12 +238,15 @@ namespace PRKR.Editor.Objects {
           // + X
           let axis = M.Vector3.PositiveX.clone().applyQuaternion(model.rotation);
           let location = new Vector3(halfExtents.x, 0, 0).applyQuaternion(model.rotation).add(origin);
+          let m = new Vector3(Model.StaticObject.GridSize, Model.StaticObject.GridSize / 2, Model.StaticObject.GridSize);
+          let min = halfExtents.clone().multiplyScalar(2).sub(m).negate();
 
           handles.push(new Tools.AxisResizeHandle({
             radius,
             axis,
             location,
-            applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), radiusDelta)
+            applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), radiusDelta),
+            minDelta: min.x
           }));
 
           // - X
@@ -239,7 +257,8 @@ namespace PRKR.Editor.Objects {
             radius,
             axis,
             location,
-            applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), radiusDelta)
+            applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), radiusDelta),
+            minDelta: min.x
           }));
 
           // + Y
@@ -250,7 +269,8 @@ namespace PRKR.Editor.Objects {
             radius,
             axis,
             location,
-            applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), new Vector3(0, .5, 0))
+            applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), new Vector3(0, .5, 0)),
+            minDelta: min.y
           }));
 
           // - Y
@@ -261,7 +281,8 @@ namespace PRKR.Editor.Objects {
             radius,
             axis,
             location,
-            applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), new Vector3(0, .5, 0))
+            applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), new Vector3(0, .5, 0)),
+            minDelta: min.y
           }));
 
           // + Z
@@ -272,7 +293,8 @@ namespace PRKR.Editor.Objects {
             radius,
             axis,
             location,
-            applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), radiusDelta)
+            applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), radiusDelta),
+            minDelta: min.z
           }));
 
           // - Z
@@ -283,7 +305,8 @@ namespace PRKR.Editor.Objects {
             radius,
             axis,
             location,
-            applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), radiusDelta)
+            applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), radiusDelta),
+            minDelta: min.z
           }));
 
         } break;

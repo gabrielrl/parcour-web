@@ -15,6 +15,9 @@ namespace PRKR.Editor.Tools {
 
     /** User provided function to apply the handle movement on the axis as a resize operation. */
     applyDelta: (v: number) => ResizeDelta;
+
+    /** Minimum valid delta value. */
+    minDelta?: number;
   }
 
   export class AxisResizeHandle implements ResizeHandle {
@@ -64,6 +67,9 @@ namespace PRKR.Editor.Tools {
     /** User provided function to apply the handle movement on the axis as a resize operation. */
     private _applyDelta: (v: number) => ResizeDelta = null;
 
+    /** Minimum valid delta value. */
+    private _minDelta?: number;
+
     private _hovered: boolean = false;
 
     private _resizing: boolean = false;
@@ -89,6 +95,12 @@ namespace PRKR.Editor.Tools {
       this._axis.copy(options.axis);
       this._location.copy(options.location);
       this._applyDelta = options.applyDelta;
+
+      if (options.minDelta != null) {
+        this._minDelta = options.minDelta;
+      } else {
+        this._minDelta = null;
+      }
 
       this._handleMesh.scale.set(this._radius, this._radius, this._radius);
 
@@ -142,9 +154,6 @@ namespace PRKR.Editor.Tools {
       return this._handleMesh;
     }
 
-    // update() ??
-
-
     resizeStart(hit: ResizeHelperHit) {
       if (!hit) throw new Error('"hitInfo" parameter can not be null or undefined');
 
@@ -154,7 +163,6 @@ namespace PRKR.Editor.Tools {
 
       this._updateHandleObject();
     }
-
 
     resizeMove(mouseEvent: JQueryMouseEventObject, editor: ParcourEditor): number {
       if (!mouseEvent) throw new Error('"mouseEvent" can not be null or undefined');
@@ -189,25 +197,6 @@ namespace PRKR.Editor.Tools {
         let dot = delta.clone().dot(this._axis);
         if (dot < 0) this._delta *= -1;
 
-        // Adjust delta keeping only supported axis.
-        // TODO
-        // delta.set(
-        //   delta.x * this._axes.x,
-        //   delta.y * this._axes.y,
-        //   delta.z * this._axes.z
-        // );
-  
-        // // Apply the minimal allowed delta.
-        // if (this._minDelta) {
-        //   delta.max(this._minDelta);
-        // }
-        // // Apply the maximal allowed delta.
-        // if (this._maxDelta) {
-        //   delta.min(this._maxDelta);
-        // }
-  
-        // console.debug('delta restricted to direction and minimum = ', restricted);
-  
         // Update state.
         this._updateHandleObject();
   
@@ -226,6 +215,11 @@ namespace PRKR.Editor.Tools {
     }
 
     applyDelta(handleDelta: number): ResizeDelta {
+
+      if (this._minDelta != null && handleDelta < this._minDelta) {
+        handleDelta = this._minDelta;
+      }
+
       if (this._applyDelta) {
         return this._applyDelta(handleDelta);
       } else {
