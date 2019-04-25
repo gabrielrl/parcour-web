@@ -28,6 +28,16 @@ namespace PRKR.Editor.Objects {
     /** Override. */
     get resizable(): boolean { return true; }
 
+    get resizeHandles(): Tools.ResizeHandle[] {
+
+      let model = <DynamicModel>this.model;
+
+      return generateResizeHandlesByShape(
+        model.shape, model.size, this.getWorldPosition(), model.rotation
+      );
+
+    }
+
     get geometry(): THREE.Geometry {
       if (!this._geometry) {
         this._geometry = this._buildGeometry();
