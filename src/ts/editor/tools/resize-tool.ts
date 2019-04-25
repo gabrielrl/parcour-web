@@ -219,7 +219,16 @@ namespace PRKR.Editor.Tools {
         }
       } else {
         if (resizeDelta) {
-          let newSize = this._targets[0].boundingBox.getSize().add(resizeDelta.size);
+
+          let po = this._targets[0].model;
+
+          let newSize = new THREE.Vector3();
+          if (po instanceof Model.RoomArea) {
+            newSize.copy(po.size).add(resizeDelta.size);
+          } else if (po instanceof Model.StaticObject || po instanceof Model.DynamicObject) {
+            newSize.copy(po.size).add(resizeDelta.size).multiplyScalar(2);
+          }
+
           this._editor.setStatus('Release to resize. New dimensions: [' +
             newSize.x.toFixed(2) + ', ' + 
             newSize.y.toFixed(2) + ', ' + 
