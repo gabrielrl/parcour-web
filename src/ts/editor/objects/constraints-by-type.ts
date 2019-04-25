@@ -24,9 +24,9 @@ namespace PRKR.Editor.Objects {
         Model.DynamicObject.GridSize * .5
       )),
       size: new SteppedConstraints(new Vector3(
-        Model.DynamicObject.GridSize,
-        Model.DynamicObject.GridSize,
-        Model.DynamicObject.GridSize
+        Model.DynamicObject.GridSize * .5,
+        Model.DynamicObject.GridSize * .5,
+        Model.DynamicObject.GridSize * .5
       )),
       rotate: new RotateConstraints(PI_OVER_8)
     },
@@ -48,9 +48,9 @@ namespace PRKR.Editor.Objects {
         Model.DynamicObject.GridSize * .5
       )),
       size: new SteppedConstraints(new Vector3(
-        Model.DynamicObject.GridSize,
-        Model.DynamicObject.GridSize,
-        Model.DynamicObject.GridSize
+        Model.DynamicObject.GridSize * .5,
+        Model.DynamicObject.GridSize * .5,
+        Model.DynamicObject.GridSize * .5
       )),
       rotate: new RotateConstraints(PI_OVER_8)
     }
