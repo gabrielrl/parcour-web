@@ -44,7 +44,7 @@ namespace PRKR.Builders {
 
         case Model.Shape.Capsule:
 
-          r = Math.min(halfExtents.x, halfExtents.z);
+          r = Math.min(halfExtents.x, halfExtents.y, halfExtents.z);
           let g = new THREE.CylinderGeometry(r, r, (halfExtents.y - r) * 2, 24, 1, true);
           let s = new THREE.SphereGeometry(r, 24, 9, 0, M.TWO_PI, 0, M.PI_OVER_TWO);
           s.translate(0, halfExtents.y - r, 0);
