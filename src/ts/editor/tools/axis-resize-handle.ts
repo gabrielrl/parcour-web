@@ -18,42 +18,16 @@ namespace PRKR.Editor.Tools {
 
     /** Minimum valid delta value. */
     minDelta?: number;
+
+    /** Axis color. */
+    color?: number;
   }
 
   export class AxisResizeHandle implements ResizeHandle {
 
     private static Geometry = new THREE.SphereBufferGeometry(1, 22, 12);
 
-    private static BaseMaterial = new THREE.MeshBasicMaterial({
-      color: 0x0000ff,
-      depthTest: false,
-      transparent: true,
-      opacity: 0.8,
-      side: THREE.FrontSide
-    });
-
-    private static HoveredMaterial = new THREE.MeshBasicMaterial({
-      color: 0x00ffff,
-      depthTest: false,
-      transparent: true,
-      opacity: 0.8,
-      side: THREE.FrontSide
-    });
-
-    private static ResizingMaterial = new THREE.MeshBasicMaterial({
-      color: 0x00ff00,
-      depthTest: false,
-      transparent: true,
-      opacity: 0.8,
-      side: THREE.FrontSide
-    });
-
-    private static ArrowMaterial = new THREE.MeshBasicMaterial({
-      color: 0x0000ff,
-      depthTest: false,
-      transparent: false,
-      side: THREE.FrontSide
-    });
+    private static DefaultColor = 0x0000ff;
 
     /** The handle's radius. */
     private _radius: number;
@@ -80,10 +54,17 @@ namespace PRKR.Editor.Tools {
     /** The movement's origin. It is the world location of the hit point on the handle. */
     private _origin: THREE.Vector3 = null;
 
+    /** The handle's color. */
+    private _color: THREE.Color;
+
     private _root: THREE.Group = new THREE.Group();
 
+    private _handleMaterial: THREE.MeshBasicMaterial;
+
+    private _arrowMaterial: THREE.MeshBasicMaterial;
+
     /** The handle mesh. */
-    private _handleMesh: THREE.Mesh = new THREE.Mesh(AxisResizeHandle.Geometry, AxisResizeHandle.BaseMaterial);
+    private _handleMesh: THREE.Mesh;
 
     private _arrows: THREE.Group = new THREE.Group();
 
@@ -102,39 +83,20 @@ namespace PRKR.Editor.Tools {
         this._minDelta = null;
       }
 
-      this._handleMesh.scale.set(this._radius, this._radius, this._radius);
+      if (options.color != null) {
+        this._color = new THREE.Color(options.color);
+      } else {
+        this._color = new THREE.Color(AxisResizeHandle.DefaultColor);
+      }
 
-      let cylinder = new THREE.CylinderGeometry(0.1, 0.1, 0.666, 12);
-      let cone = new THREE.ConeGeometry(0.15, .333, 12);
-      cone.translate(0, 0.55, 0);
-      cylinder.merge(cone);
-      let arrow = new THREE.Mesh(cylinder, AxisResizeHandle.ArrowMaterial);
-      arrow.position.set(0, 0.666, 0);
-      this._arrows.add(arrow);
+      this._build();
 
-      cylinder = new THREE.CylinderGeometry(0.1, 0.1, 0.666, 12);
-      cone = new THREE.ConeGeometry(0.15, .333, 12);
-      cone.translate(0, 0.55, 0);
-      cylinder.merge(cone);
-      cylinder.scale(1, -1, 1);
-      arrow = new THREE.Mesh(cylinder, AxisResizeHandle.ArrowMaterial);
-      arrow.position.set(0, -0.666, 0);
-      this._arrows.add(arrow);
-
-      this._arrows.visible = false;
-      
-//      this._handleMesh.add(arrows);
-
-      this._root.add(this._handleMesh);
-      this._root.add(this._arrows);
-      this._root.position.copy(this._location);
-      this._root.quaternion.setFromUnitVectors(M.Vector3.PositiveY, this._axis);
     }
 
     public get hovered() { return this._hovered; }
     public set hovered(value: boolean) {
       this._hovered = value;
-      this._updateHandleObject();
+      this._update();
     }
 
     public get visible() { return this._handleMesh.visible; }
@@ -161,7 +123,7 @@ namespace PRKR.Editor.Tools {
       this._resizing = true;
       this._delta = 0;
 
-      this._updateHandleObject();
+      this._update();
     }
 
     resizeMove(mouseEvent: JQueryMouseEventObject, editor: ParcourEditor): number {
@@ -198,7 +160,7 @@ namespace PRKR.Editor.Tools {
         if (dot < 0) this._delta *= -1;
 
         // Update state.
-        this._updateHandleObject();
+        this._update();
   
         return this._delta;
       }
@@ -209,7 +171,7 @@ namespace PRKR.Editor.Tools {
       this._resizing = false;
       this._origin = null;
 
-      this._updateHandleObject();
+      this._update();
 
       return this._delta;
     }
@@ -228,41 +190,20 @@ namespace PRKR.Editor.Tools {
     }
 
 
-    private _updateHandleObject() {
+    private _update() {
 
-      let handle = this._handleMesh;
-
-      // Set handle material from current state.
-      let handleMaterial = AxisResizeHandle.BaseMaterial;
-      let arrowsMaterial = null;
-      this._arrows.visible = false;
       if (this._resizing) {
-        handleMaterial = AxisResizeHandle.ResizingMaterial;
-        arrowsMaterial = AxisResizeHandle.ArrowMaterial;
-        // arrowsMaterial = AxisResizeHandle.ResizingMaterial;
-      } else if (this._hovered) {
-        handleMaterial = AxisResizeHandle.HoveredMaterial;
-        arrowsMaterial = AxisResizeHandle.ArrowMaterial;
-        // arrowsMaterial = AxisResizeHandle.BaseMaterial;
-      }
-
-      handle.material = handleMaterial;
-      if (!arrowsMaterial) {
-        this._arrows.visible = false;
-      } else {
+        this._handleMaterial.opacity = 1;
+        this._arrowMaterial.opacity = 1;
         this._arrows.visible = true;
-        this._arrows.traverse(o3d => {
-          if (o3d instanceof THREE.Mesh) {
-            o3d.material = arrowsMaterial;
-          }
-        });
+      } else if (this._hovered) {
+        this._handleMaterial.opacity = 1;
+        this._arrowMaterial.opacity = 0.333;
+        this._arrows.visible = true;
+      } else {
+        this._handleMaterial.opacity = 0.333;
+        this._arrows.visible = false;
       }
-
-      // // Set rotation and scale from current state.
-      // handle.scale.set(this._width, this._height, 1);
-      // //handle.rotation
-      // let normal = this._normal || Helpers.getNormalFromOrthoPlane(this._plane);
-      // handle.quaternion.setFromUnitVectors(M.Vector3.PositiveZ, normal);
 
       // Update our position.
       this._root.position.copy(this._location);
@@ -273,5 +214,56 @@ namespace PRKR.Editor.Tools {
 
     }
 
+    private _build() {
+
+      this._handleMaterial = new THREE.MeshBasicMaterial({
+        color: this._color || 0x0000ff,
+        depthTest: false,
+        transparent: true,
+        opacity: 0.333,
+        side: THREE.FrontSide
+      }); 
+
+      this._handleMesh = new THREE.Mesh(AxisResizeHandle.Geometry, this._handleMaterial);
+
+      this._handleMesh.scale.set(this._radius, this._radius, this._radius);
+
+      this._arrowMaterial = new THREE.MeshBasicMaterial({
+        color: this._color,
+        depthTest: false,
+        transparent: true,
+        opacity: 0.333,
+        side: THREE.FrontSide
+      });       
+
+      // let cylinder = new THREE.CylinderGeometry(0.1, 0.1, 0.666, 12);
+      let cone = new THREE.ConeGeometry(0.2, .5, 12);
+      // cone.translate(0, 0.5, 0);
+      // cylinder.merge(cone);
+      // let arrow = new THREE.Mesh(cylinder, this._arrowMaterial);
+      let arrow = new THREE.Mesh(cone, this._arrowMaterial);
+      arrow.position.set(0, 0.666, 0);
+      this._arrows.add(arrow);
+
+      // cylinder = new THREE.CylinderGeometry(0.1, 0.1, 0.666, 12);
+      cone = new THREE.ConeGeometry(0.2, .5, 12);
+      // cone.translate(0, 0.5, 0);
+      // cylinder.merge(cone);
+      cone.scale(1, -1, 1);
+      arrow = new THREE.Mesh(cone, this._arrowMaterial);
+      arrow.position.set(0, -0.666, 0);
+      this._arrows.add(arrow);
+
+      this._arrows.visible = false;
+
+      this._root.add(this._handleMesh);
+      this._root.add(this._arrows);
+      this._root.position.copy(this._location);
+      this._root.quaternion.setFromUnitVectors(M.Vector3.PositiveY, this._axis);
+
+    }
+  
+
   }
+
 }

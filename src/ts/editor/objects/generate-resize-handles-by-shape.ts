@@ -55,7 +55,8 @@ namespace PRKR.Editor.Objects {
             axis.clone().multiplyScalar(.5),
             new Vector3(.5, 0, 0)
           ),
-          minDelta: min.x
+          minDelta: min.x,
+          color: 0xff0000
         }));
 
         // - X
@@ -70,7 +71,8 @@ namespace PRKR.Editor.Objects {
             axis.clone().multiplyScalar(.5),
             new Vector3(.5, 0, 0)
           ),
-          minDelta: min.x
+          minDelta: min.x,
+          color: 0xff0000
         }));
 
         // + Y
@@ -85,7 +87,8 @@ namespace PRKR.Editor.Objects {
             axis.clone().multiplyScalar(.5),
             new Vector3(0, .5, 0)
           ),
-          minDelta: min.y
+          minDelta: min.y,
+          color: 0x00ff00
         }));
 
         // - Y
@@ -100,7 +103,8 @@ namespace PRKR.Editor.Objects {
             axis.clone().multiplyScalar(.5),
             new Vector3(0, .5, 0)
           ),
-          minDelta: min.y
+          minDelta: min.y,
+          color: 0x00ff00
         }));
 
         // + Z
@@ -115,7 +119,8 @@ namespace PRKR.Editor.Objects {
             axis.clone().multiplyScalar(.5),
             new Vector3(0, 0, .5)
           ),
-          minDelta: min.z
+          minDelta: min.z,
+          color: 0x0000ff
         }));
 
         // - Z
@@ -130,7 +135,8 @@ namespace PRKR.Editor.Objects {
             axis.clone().multiplyScalar(.5),
             new Vector3(0, 0, .5)
           ),
-          minDelta: min.z
+          minDelta: min.z,
+          color: 0x0000ff
         }));
       } break;
 
@@ -148,7 +154,8 @@ namespace PRKR.Editor.Objects {
           axis,
           location,
           applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), radiusDelta),
-          minDelta: min.x
+          minDelta: min.x,
+          color: 0xff0000
         }));
 
         // - X
@@ -160,7 +167,8 @@ namespace PRKR.Editor.Objects {
           axis,
           location,
           applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), radiusDelta),
-          minDelta: min.x
+          minDelta: min.x,
+          color: 0xff0000
         }));
 
         // + Y
@@ -172,7 +180,8 @@ namespace PRKR.Editor.Objects {
           axis,
           location,
           applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), radiusDelta),
-          minDelta: min.y
+          minDelta: min.y,
+          color: 0x00ff00
         }));
 
         // - Y
@@ -184,7 +193,8 @@ namespace PRKR.Editor.Objects {
           axis,
           location,
           applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), radiusDelta),
-          minDelta: min.y
+          minDelta: min.y,
+          color: 0x00ff00
         }));
 
         // + Z
@@ -196,7 +206,8 @@ namespace PRKR.Editor.Objects {
           axis,
           location,
           applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), radiusDelta),
-          minDelta: min.z
+          minDelta: min.z,
+          color: 0x0000ff
         }));
 
         // - Z
@@ -208,7 +219,8 @@ namespace PRKR.Editor.Objects {
           axis,
           location,
           applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), radiusDelta),
-          minDelta: min.z
+          minDelta: min.z,
+          color: 0x0000ff
         }));
 
       } break;
@@ -230,7 +242,8 @@ namespace PRKR.Editor.Objects {
           axis,
           location,
           applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), radiusDelta),
-          minDelta: min.x
+          minDelta: min.x,
+          color: 0xff0000
         }));
 
         // - X
@@ -242,7 +255,8 @@ namespace PRKR.Editor.Objects {
           axis,
           location,
           applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), radiusDelta),
-          minDelta: min.x
+          minDelta: min.x,
+          color: 0xff0000
         }));
 
         // + Y
@@ -254,7 +268,8 @@ namespace PRKR.Editor.Objects {
           axis,
           location,
           applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), new Vector3(0, .5, 0)),
-          minDelta: min.y
+          minDelta: min.y,
+          color: 0x00ff00
         }));
 
         // - Y
@@ -266,7 +281,8 @@ namespace PRKR.Editor.Objects {
           axis,
           location,
           applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), new Vector3(0, .5, 0)),
-          minDelta: min.y
+          minDelta: min.y,
+          color: 0x00ff00
         }));
 
         // + Z
@@ -278,7 +294,8 @@ namespace PRKR.Editor.Objects {
           axis,
           location,
           applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), radiusDelta),
-          minDelta: min.z
+          minDelta: min.z,
+          color: 0x0000ff
         }));
 
         // - Z
@@ -290,7 +307,8 @@ namespace PRKR.Editor.Objects {
           axis,
           location,
           applyDelta: applyDeltaGenerator(axis.clone().multiplyScalar(.5), radiusDelta),
-          minDelta: min.z
+          minDelta: min.z,
+          color: 0x0000ff
         }));
 
       } break;
