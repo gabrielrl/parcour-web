@@ -29,6 +29,8 @@ namespace PRKR.Validators {
       this._validateAreaElements(parcour, results);
       this._validateWallElements(parcour, results);
 
+      this._validateShapedObjects(parcour, results);
+
       return results;
     }
 
@@ -174,6 +176,27 @@ namespace PRKR.Validators {
 
         });
       }
+    }
+
+    private _validateShapedObjects(parcour: Parcour, results: IValidationResult[]) {
+
+      let shapedObjects: (Model.StaticObject | Model.DynamicObject)[] =
+        <any>parcour.objects.filter(
+          o => o instanceof Model.StaticObject || o instanceof Model.DynamicObject);
+
+      shapedObjects.forEach(o => {
+        
+        if (o.size.x <= 0 || o.size.y <= 0 || o.size.z <= 0) {
+          results.push(new ValidationResult(
+            ResultLevel.Error,
+            'invalid-shaped-object-size',
+            `${ o.type } ${ o.id } has an invalid size of [${ o.size.x }, ${ o.size.y },` +
+            ` ${ o.size.z }]. One or more of its components is/are negative or zero.`
+          ));
+        }
+
+      });
+
     }
 
     // private _validateLocations(parcour: Parcour, results: IValidationResult[]) {
