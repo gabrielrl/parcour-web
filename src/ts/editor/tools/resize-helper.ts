@@ -98,18 +98,16 @@ namespace PRKR.Editor.Tools {
     /** Sets hovered state. */
     public setHovered(hit: ResizeHelperHit) {
 
-      if (hit && hit.helper === this) {
-
-        this._hovered = true;
-
-        let handle = hit.handle;
-        handle.hovered = true;
-
-      } else {
-
+      if (!hit) {
         this.unsetHovered();
+      } else {
+        this._hovered = hit.helper === this;
 
+        this._handles.forEach(handle => {
+          handle.hovered = handle.isCompatible(hit.handle);
+        });
       }
+
     }
 
     /** Unsets hovered state. */
@@ -162,6 +160,8 @@ namespace PRKR.Editor.Tools {
      * Only does something if the current resize helper has a matching "compatible" handle.
      */
     public setResizeDelta(handle: ResizeHandle, delta: ResizeDelta) {
+
+      this._handles.forEach(h => h.visible = false);
 
       if (this.isCompatible(handle)) {
         let adjustedDelta = this.computeAdjustedDelta(delta);

@@ -118,19 +118,9 @@ namespace PRKR.Editor.Tools {
           helper = hit.helper;
         }
 
-        // Update active helper state.
-        if (hit) {
-          if (this._activeHit && this._activeHit.handle !== hit.handle) {
-            this._activeHit.helper.setHovered(null);
-          }
-          hit.helper.setHovered(hit);
-          this._editor.requestRender();
-        } else { // !hit
-          if (this._activeHit) { 
-            this._activeHit.helper.setHovered(null);
-            this._editor.requestRender();
-          }
-        }
+        // Update helpers and keep active hit (if any).
+        this._helpers.forEach(h => h.setHovered(hit));
+        this._editor.requestRender();
         this._activeHit = hit;
         this._updateEditor();
 
@@ -142,7 +132,11 @@ namespace PRKR.Editor.Tools {
           
           // Adjust helpers
           let deltas = this._buildResizeDeltas(resizeDelta);
-          this._helpers.forEach((h, i) => deltas[i] ? h.setResizeDelta(this._activeHit.handle, resizeDelta) : null);
+          this._helpers.forEach((h, i) => 
+            h !== this._activeHit.helper && deltas[i]
+              ? h.setResizeDelta(this._activeHit.handle, resizeDelta)
+              : null
+          );
 
           // Build the corresponding edit step.
           let editStep = this._buildEditStep(deltas);
