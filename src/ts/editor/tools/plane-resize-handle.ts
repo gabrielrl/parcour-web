@@ -6,6 +6,8 @@ namespace PRKR.Editor.Tools {
 
   /** Option object passed to `ResizeHandle`'s constructor. */
   export interface PlaneResizeHandleOptions {
+    /** A short string used to identify the handle in a set and to match it across helpers. */
+    label: string;
     width: number;
     height: number;
     /** Axes on which the handle can move. Each component should be either 0 or 1. */
@@ -49,6 +51,9 @@ namespace PRKR.Editor.Tools {
       opacity: 0.8,
       side: THREE.FrontSide
     });
+
+    /** A short string used to identify the handle in a set and to match it across helpers. */
+    private _label: string;
 
     private _width: number;
 
@@ -94,6 +99,7 @@ namespace PRKR.Editor.Tools {
 
       if (!options) throw new Error('"options" must be defined');
 
+      this._label = options.label;
       this._width = options.width;
       this._height = options.height;
 
@@ -128,6 +134,9 @@ namespace PRKR.Editor.Tools {
 
     /** The Object3D to use for hit test. */
     public get hitObject() { return this; }
+
+    /** Gets a short string used to identify the handle in a set and to match it across helpers. */
+    public get label() { return this._label; }
 
     public get width() { return this._width; }
     public set width(value) { this._width = value; }
@@ -225,6 +234,15 @@ namespace PRKR.Editor.Tools {
       this._updateHandleObject();
 
       return this._delta.clone();
+    }
+
+    /**
+     * Checks if another resize handle is compatible with the current one.
+     * 
+     * @param handle Another resize handle to check for compatibility.
+     */
+    isCompatible(handle: ResizeHandle): boolean {
+      return handle instanceof PlaneResizeHandle && handle.label === this._label;
     }
 
     /**

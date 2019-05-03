@@ -4,6 +4,9 @@ namespace PRKR.Editor.Tools {
 
   export interface AxisResizeHandleOptions {
 
+    /** A short string used to identify the handle in a set and to match it across helpers. */
+    label: string;
+
     /** The handle's radius. */
     radius: number;
 
@@ -28,6 +31,9 @@ namespace PRKR.Editor.Tools {
     private static Geometry = new THREE.SphereBufferGeometry(1, 22, 12);
 
     private static DefaultColor = 0x0000ff;
+
+    /** A short string used to identify the handle in a set and to match it across helpers. */
+    private _label: string;
 
     /** The handle's radius. */
     private _radius: number;
@@ -72,6 +78,7 @@ namespace PRKR.Editor.Tools {
 
       if (!options) throw new Error('"options" must be defined');
 
+      this._label = options.label;
       this._radius = options.radius;
       this._axis.copy(options.axis);
       this._location.copy(options.location);
@@ -104,7 +111,10 @@ namespace PRKR.Editor.Tools {
       this._handleMesh.visible = value;
     }
 
-
+    /** A short string used to identify the handle in a set and to match it across helpers. */
+    get label() {
+      return this._label;
+    }
 
     /** The Object3D to add to the scene to display. */
     get sceneObject(): THREE.Object3D {
@@ -187,6 +197,15 @@ namespace PRKR.Editor.Tools {
       } else {
         return null;
       }
+    }
+
+    /**
+     * Checks if another resize handle is compatible with the current one.
+     * 
+     * @param handle Another resize handle to check for compatibility.
+     */
+    isCompatible(handle: ResizeHandle): boolean {
+      return handle instanceof AxisResizeHandle && handle.label === this._label;
     }
 
 

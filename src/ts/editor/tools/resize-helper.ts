@@ -23,8 +23,7 @@ namespace PRKR.Editor.Tools {
 
     private _handles: ResizeHandle[] = [];
 
-    private _resizingHelper: Tools.EditorObjectHelper;
-    private _resizingAdjustedHelper: Tools.EditorObjectHelper;
+    private _helper: Tools.EditorObjectHelper;
 
     private _hovered: boolean = false;
 
@@ -48,19 +47,12 @@ namespace PRKR.Editor.Tools {
         this.add(this._handles[i].sceneObject);
       }
 
-      // Build the resizing helpers.
-      this._resizingHelper = new Tools.EditorObjectHelper(this._editorObject);
-      this._resizingHelper.position.copy(this._editorObject.getWorldPosition());
-      this._resizingHelper.setRestRotation(this._editorObject.getRotation());
+      this._helper = new Tools.EditorObjectHelper(this._editorObject);
+      this._helper.position.copy(this._editorObject.getWorldPosition());
+      this._helper.setRestRotation(this._editorObject.getRotation());
+      this._helper.visible = false;
 
-      this._resizingHelper.visible = false;
-      this._resizingAdjustedHelper = new Tools.EditorObjectHelper(this._editorObject);
-      this._resizingAdjustedHelper.position.copy(this._editorObject.getWorldPosition());
-      this._resizingAdjustedHelper.setRestRotation(this._editorObject.getRotation());
-      this._resizingAdjustedHelper.visible = false;
-
-      this.add(this._resizingHelper);
-      this.add(this._resizingAdjustedHelper);
+      this.add(this._helper);
     }
 
     public get editorObject() { return this._editorObject; }
@@ -112,7 +104,6 @@ namespace PRKR.Editor.Tools {
 
         let handle = hit.handle;
         handle.hovered = true;
-        // handle.update();
 
       } else {
 
@@ -127,7 +118,6 @@ namespace PRKR.Editor.Tools {
       this._handles.forEach(h => {
         if (h.hovered) {
           h.hovered = false;
-          // h.update();
         }
       });
     }
@@ -145,34 +135,55 @@ namespace PRKR.Editor.Tools {
       this._handles.forEach(h => {
         if (hit.handle !== h) h.visible = false;
       });
-      this._resizingHelper.visible = true;
-      this._resizingAdjustedHelper.visible = true;
-      this._updateResizingHelpers(ResizeDelta.Empty, ResizeDelta.Empty);
-      this._updateResizingHelpersColor();
+      // !! This is dangerous...
+      this._editorObject.sceneObject.visible = false;
+      this._helper.visible = true;
+      this._updateHelper(ResizeDelta.Empty);
+      this._updateHelperColor();
       
     }
 
     public resizeMove(mouseEvent: JQueryMouseEventObject): ResizeDelta {
       if (this._resizeStartHit) {
         let handle = this._resizeStartHit.handle;
-        let delta = handle.resizeMove(mouseEvent, this._editor);
-        let resizeDelta = handle.applyDelta(delta);
-        let adjustedDelta = this._computeAdjustedDelta(resizeDelta);
-        this._updateResizingHelpers(resizeDelta, adjustedDelta);
+        let handleDelta = handle.resizeMove(mouseEvent, this._editor);
+        let delta = handle.applyDelta(handleDelta);
+        let adjustedDelta = this.computeAdjustedDelta(delta);
+        this._updateHelper(adjustedDelta);
         return adjustedDelta;
       } else {
         return null;
       }
     }
 
+    /**
+     * Sets the current state (copy) from an other `handle` in another `ResizeHelper`.
+     * 
+     * Only does something if the current resize helper has a matching "compatible" handle.
+     */
+    public setResizeDelta(handle: ResizeHandle, delta: ResizeDelta) {
+
+      if (this.isCompatible(handle)) {
+        let adjustedDelta = this.computeAdjustedDelta(delta);
+        this._helper.visible = true;
+        this._updateHelper(adjustedDelta);
+        return adjustedDelta;
+      } else {
+        this._helper.visible = false;
+        return null;
+      }
+  
+    }
+
+
     public setError() {
       this._resizeValid = false;
-      this._updateResizingHelpersColor();
+      this._updateHelperColor();
     } 
 
     public unsetError() {
       this._resizeValid = true;
-      this._updateResizingHelpersColor();
+      this._updateHelperColor();
     } 
   
 
@@ -182,20 +193,33 @@ namespace PRKR.Editor.Tools {
         let handle = this._resizeStartHit.handle;
         let delta = handle.resizeEnd(mouseEvent);
         let resizeDelta = handle.applyDelta(delta);
-        adjustedDelta = this._computeAdjustedDelta(resizeDelta);
+        adjustedDelta = this.computeAdjustedDelta(resizeDelta);
       }
 
       this._resizeStartHit = null;
       this._resizeValid = true;
 
       this._handles.forEach(h => { h.visible = true; });
-      this._resizingHelper.visible = false;
-      this._resizingAdjustedHelper.visible = false;
+      // !! This is dangerous...
+      this._editorObject.sceneObject.visible = true;
+      this._helper.visible = false;
 
       return adjustedDelta;
     }
 
-    private _computeAdjustedDelta(delta: ResizeDelta): ResizeDelta {
+    /**
+     * Checks whether the current helper is compatible with the specified handle.
+     * 
+     * If it **is** compatible, it means a resize delta originating from that `handle` could be adjusted using
+     * `computeAdjustedDelta` and applied to the object for which this helper was created.
+     * 
+     * @param handle A resize handle to test.
+     */
+    public isCompatible(handle: ResizeHandle) {
+      return _.some(this._handles, h => h.isCompatible(handle));
+    }
+
+    public computeAdjustedDelta(delta: ResizeDelta): ResizeDelta {
       if (!delta) return null;
 
       let location = delta.location.clone();
@@ -211,26 +235,18 @@ namespace PRKR.Editor.Tools {
       return { location, size };
     }
 
-    private _updateResizingHelpers(resizeDelta: ResizeDelta, adjustedDelta: ResizeDelta) {
-
-      if (resizeDelta) {
+    private _updateHelper(delta: ResizeDelta) {
       
-        this._resizingHelper.setMoveBy(resizeDelta.location);
-        this._resizingHelper.setResizeBy(resizeDelta.size);
+      if (delta) {
 
-      }
-      
-      if (adjustedDelta) {
-
-        this._resizingAdjustedHelper.setMoveBy(adjustedDelta.location);
-        this._resizingAdjustedHelper.setResizeBy(adjustedDelta.size);
+        this._helper.setMoveBy(delta.location);
+        this._helper.setResizeBy(delta.size);
 
       }
     }
 
-    private _updateResizingHelpersColor() {
-      this._resizingHelper.setValidState(this._resizeValid);
-      this._resizingAdjustedHelper.setValidState(this._resizeValid);
+    private _updateHelperColor() {
+      this._helper.setValidState(this._resizeValid);
     }
 
   }

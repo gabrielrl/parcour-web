@@ -69,6 +69,7 @@ namespace PRKR.Editor.Objects {
         // X-axis handles
         // from x max (adjusting size).
         new Tools.PlaneResizeHandle({
+          label: 'X max',
           width: 1,
           height: size.z - 1,
           axes: M.Vector3.PositiveX,
@@ -82,6 +83,7 @@ namespace PRKR.Editor.Objects {
         }),
         // form x min (adjusting location and size).
         new Tools.PlaneResizeHandle({
+          label: 'X min',
           width: 1,
           height: size.z - 1,
           axes: M.Vector3.PositiveX,
@@ -97,6 +99,7 @@ namespace PRKR.Editor.Objects {
 
         // from z max (adjusting size)
         new Tools.PlaneResizeHandle({
+          label: 'Z max',
           width: size.x - 1,
           height: 1,
           axes: M.Vector3.PositiveZ,
@@ -112,6 +115,7 @@ namespace PRKR.Editor.Objects {
 
         // from z min (adjusting location and size)
         new Tools.PlaneResizeHandle({
+          label: 'Z min',
           width: size.x - 1,
           height: 1,
           axes: M.Vector3.PositiveZ,
@@ -127,6 +131,7 @@ namespace PRKR.Editor.Objects {
 
         // from xz max (adjusting size).
         new Tools.PlaneResizeHandle({
+          label: 'XZ max',
           width: 1, 
           height: 1,
           axes: new Vector3(1, 0, 1),
@@ -146,6 +151,7 @@ namespace PRKR.Editor.Objects {
 
         // xz min (adjust location and size)
         new Tools.PlaneResizeHandle({
+          label: 'XZ min',
           width: 1, 
           height: 1,
           axes: new Vector3(1, 0, 1),
@@ -165,6 +171,7 @@ namespace PRKR.Editor.Objects {
 
         // from x max (adjusting size) z min (adjusting location and size)
         new Tools.PlaneResizeHandle({
+          label: 'X max',
           width: 1, 
           height: 1,
           axes: new Vector3(1, 0, 1),
@@ -187,6 +194,7 @@ namespace PRKR.Editor.Objects {
 
         // x min z max
         new Tools.PlaneResizeHandle({
+          label: 'X min Z max',
           width: 1, 
           height: 1,
           axes: new Vector3(1, 0, 1),
@@ -209,6 +217,7 @@ namespace PRKR.Editor.Objects {
 
         // from top of x max wall.
         new Tools.PlaneResizeHandle({
+          label: 'X max top',
           width: size.z,
           height: 1,
           axes: new Vector3(0, 1, 0),
@@ -229,6 +238,7 @@ namespace PRKR.Editor.Objects {
 
         // from top of x min wall.
         new Tools.PlaneResizeHandle({
+          label: 'X min top',
           width: size.z,
           height: 1,
           axes: new Vector3(0, 1, 0),
@@ -249,6 +259,7 @@ namespace PRKR.Editor.Objects {
 
         // from top of z max wall.
         new Tools.PlaneResizeHandle({
+          label: 'Z max top',
           width: size.x,
           height: 1,
           axes: new Vector3(0, 1, 0),
@@ -268,6 +279,7 @@ namespace PRKR.Editor.Objects {
 
         // from top of z min wall.
         new Tools.PlaneResizeHandle({
+          label: 'Z min top',
           width: size.x,
           height: 1,
           axes: new Vector3(0, 1, 0),

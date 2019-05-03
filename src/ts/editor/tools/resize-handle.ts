@@ -2,7 +2,8 @@ namespace PRKR.Editor.Tools {
 
   export interface ResizeHandle {
 
-    // ...
+    /** A short string used to identify the handle in a set and to match it across helpers. */
+    label: string;
 
     /** The Object3D to add to the scene to display. */
     sceneObject: THREE.Object3D;
@@ -15,9 +16,6 @@ namespace PRKR.Editor.Tools {
 
     /** Gets or sets if the handle is currently visible. */
     visible: boolean;
-
-    // update() ??
-
 
     resizeStart(hit: ResizeHelperHit);
 
@@ -40,6 +38,13 @@ namespace PRKR.Editor.Tools {
      */ 
     // TODO comment better    
     applyDelta(handleDelta: any): ResizeDelta;
+
+    /**
+     * Checks if another resize handle is compatible with the current one.
+     * 
+     * @param handle Another resize handle to check for compatibility.
+     */
+    isCompatible(handle: ResizeHandle): boolean;
 
   }
 }

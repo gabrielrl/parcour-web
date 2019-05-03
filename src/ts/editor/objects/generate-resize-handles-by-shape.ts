@@ -48,6 +48,7 @@ namespace PRKR.Editor.Objects {
         let min = halfExtents.clone().multiplyScalar(2).subScalar(m).negate();
 
         handles.push(new Tools.AxisResizeHandle({
+          label: '+X',
           radius,
           axis,
           location,
@@ -64,6 +65,7 @@ namespace PRKR.Editor.Objects {
         location = new Vector3(-halfExtents.x, 0, 0).applyQuaternion(rotation).add(origin);
 
         handles.push(new Tools.AxisResizeHandle({
+          label: '-X',
           radius,
           axis,
           location,
@@ -80,6 +82,7 @@ namespace PRKR.Editor.Objects {
         location = new Vector3(0, halfExtents.y, 0).applyQuaternion(rotation).add(origin);
 
         handles.push(new Tools.AxisResizeHandle({
+          label: '+Y',
           radius,
           axis,
           location,
@@ -96,6 +99,7 @@ namespace PRKR.Editor.Objects {
         location = new Vector3(0, -halfExtents.y, 0).applyQuaternion(rotation).add(origin);
 
         handles.push(new Tools.AxisResizeHandle({
+          label: '-Y',
           radius,
           axis,
           location,
@@ -112,6 +116,7 @@ namespace PRKR.Editor.Objects {
         location = new Vector3(0, 0, halfExtents.z).applyQuaternion(rotation).add(origin);
 
         handles.push(new Tools.AxisResizeHandle({
+          label: '+Z',
           radius,
           axis,
           location,
@@ -128,6 +133,7 @@ namespace PRKR.Editor.Objects {
         location = new Vector3(0, 0, -halfExtents.z).applyQuaternion(rotation).add(origin);
 
         handles.push(new Tools.AxisResizeHandle({
+          label: '-Z',
           radius,
           axis,
           location,
@@ -150,6 +156,7 @@ namespace PRKR.Editor.Objects {
         let min = halfExtents.clone().multiplyScalar(2).subScalar(Model.StaticObject.GridSize).negate();
 
         handles.push(new Tools.AxisResizeHandle({
+          label: '+Xr3',
           radius,
           axis,
           location,
@@ -163,6 +170,7 @@ namespace PRKR.Editor.Objects {
         location = new Vector3(-halfExtents.x, 0, 0).applyQuaternion(rotation).add(origin);
 
         handles.push(new Tools.AxisResizeHandle({
+          label: '-Xr3',
           radius,
           axis,
           location,
@@ -176,6 +184,7 @@ namespace PRKR.Editor.Objects {
         location = new Vector3(0, halfExtents.y, 0).applyQuaternion(rotation).add(origin);
 
         handles.push(new Tools.AxisResizeHandle({
+          label: '+Yr3',
           radius,
           axis,
           location,
@@ -189,6 +198,7 @@ namespace PRKR.Editor.Objects {
         location = new Vector3(0, -halfExtents.y, 0).applyQuaternion(rotation).add(origin);
 
         handles.push(new Tools.AxisResizeHandle({
+          label: '-Yr3',
           radius,
           axis,
           location,
@@ -202,6 +212,7 @@ namespace PRKR.Editor.Objects {
         location = new Vector3(0, 0, halfExtents.z).applyQuaternion(rotation).add(origin);
 
         handles.push(new Tools.AxisResizeHandle({
+          label: '+Zr3',
           radius,
           axis,
           location,
@@ -215,6 +226,7 @@ namespace PRKR.Editor.Objects {
         location = new Vector3(0, 0, -halfExtents.z).applyQuaternion(rotation).add(origin);
 
         handles.push(new Tools.AxisResizeHandle({
+          label: '-Zr3',
           radius,
           axis,
           location,
@@ -238,6 +250,7 @@ namespace PRKR.Editor.Objects {
         let min = halfExtents.clone().multiplyScalar(2).sub(m).negate();
 
         handles.push(new Tools.AxisResizeHandle({
+          label: '+Xr2',
           radius,
           axis,
           location,
@@ -251,6 +264,7 @@ namespace PRKR.Editor.Objects {
         location = new Vector3(-halfExtents.x, 0, 0).applyQuaternion(rotation).add(origin);
 
         handles.push(new Tools.AxisResizeHandle({
+          label: '-Xr2',
           radius,
           axis,
           location,
@@ -264,6 +278,7 @@ namespace PRKR.Editor.Objects {
         location = new Vector3(0, halfExtents.y, 0).applyQuaternion(rotation).add(origin);
 
         handles.push(new Tools.AxisResizeHandle({
+          label: '+Y',
           radius,
           axis,
           location,
@@ -277,6 +292,7 @@ namespace PRKR.Editor.Objects {
         location = new Vector3(0, -halfExtents.y, 0).applyQuaternion(rotation).add(origin);
 
         handles.push(new Tools.AxisResizeHandle({
+          label: '-Y',
           radius,
           axis,
           location,
@@ -290,6 +306,7 @@ namespace PRKR.Editor.Objects {
         location = new Vector3(0, 0, halfExtents.z).applyQuaternion(rotation).add(origin);
 
         handles.push(new Tools.AxisResizeHandle({
+          label: '+Zr2',
           radius,
           axis,
           location,
@@ -303,6 +320,7 @@ namespace PRKR.Editor.Objects {
         location = new Vector3(0, 0, -halfExtents.z).applyQuaternion(rotation).add(origin);
 
         handles.push(new Tools.AxisResizeHandle({
+          label: '-Zr2',
           radius,
           axis,
           location,
