@@ -316,7 +316,7 @@ namespace PRKR.Editor.Tools {
       // Build visual helper for all the targets.
       this._helpers = this._targets.map(t => {
         let h = new EditorObjectHelper(t);
-        t.getWorldPivot(h.position);
+        t.getWorldPosition(h.position);
         h.setRestRotation(t.getRotation());
         h.setMoveBy(M.Vector3.Zero);
         this._editor.addToScene(h);

@@ -5,7 +5,7 @@ namespace PRKR.Editor.Objects {
    * Movement constraint that makes an object move only by certain steps. Move steps are defined per axis. Movement
    * can be turned off on any axis by setting the corresponding step to zero.
    */
-  export class SteppedMoveConstraints implements MoveConstraints {
+  export class SteppedConstraints implements VectorConstraints {
 
     /**
      * Move steps for an object. Step is defined per-axis. Moving is disabled along axis with a value of zero.

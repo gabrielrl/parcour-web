@@ -37,13 +37,17 @@ namespace PRKR.Editor.EditSteps {
       this._targetIds.forEach(targetId => {
         let target = parcour.getObjectById(targetId);
 
-        if (target instanceof PRKR.Model.Area) {
+        if (
+          target instanceof PRKR.Model.Area ||
+          target instanceof PRKR.Model.StaticObject ||
+          target instanceof PRKR.Model.DynamicObject
+        ) {
           memento.push(...target.location.toArray());
           memento.push(...target.size.toArray());
           target.location.add(this._locationDelta);
           target.size.add(this._sizeDelta);
         } else {
-          memento.push(null);
+          memento.push(null, null, null, null, null, null);
         }
 
       });
@@ -61,7 +65,11 @@ namespace PRKR.Editor.EditSteps {
 
         this._targetIds.forEach((targetId, index) => {
           let po = parcour.getObjectById(targetId);          
-          if (po instanceof Area) {
+          if (
+            po instanceof Area ||
+            po instanceof PRKR.Model.StaticObject ||
+            po instanceof PRKR.Model.DynamicObject
+          ) {
             po.location.set(
               dataArray[index * 6],
               dataArray[index * 6 + 1],

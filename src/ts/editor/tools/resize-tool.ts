@@ -1,5 +1,5 @@
 /// <reference path="./tool.ts" />
-/// <reference path="./resize-handle.ts" />
+/// <reference path="./plane-resize-handle.ts" />
 
 /// <reference path="../objects/editor-object.ts" />
 /// <reference path="../edit-steps/resize-step.ts" />
@@ -40,14 +40,9 @@ namespace PRKR.Editor.Tools {
 
     /** Gets if the current tool is enabled. Computed from the editor's state. */
     public get enabled(): boolean {
-      let selection = this._editor.selectedObjects;
-      if (selection.length === 0) return false;
 
-      // Return true if we can find a resizable object.
-      for (let i = 0; i < selection.length; i++) {
-        if (selection[i].resizable) return true;
-      }
-      return false;
+      return _.some(this._editor.selectedObjects, o => o.resizable);
+
     }
 
     /** Gets the current tool's keyboard shortcut. */
@@ -123,19 +118,9 @@ namespace PRKR.Editor.Tools {
           helper = hit.helper;
         }
 
-        // Update active helper state.
-        if (hit) {
-          if (this._activeHit && this._activeHit.handle !== hit.handle) {
-            this._activeHit.helper.setHovered(event, null);
-          }
-          hit.helper.setHovered(event, hit);
-          this._editor.requestRender();
-        } else { // !hit
-          if (this._activeHit) { 
-            this._activeHit.helper.setHovered(event, null);
-            this._editor.requestRender();
-          }
-        }
+        // Update helpers and keep active hit (if any).
+        this._helpers.forEach(h => h.setHovered(hit));
+        this._editor.requestRender();
         this._activeHit = hit;
         this._updateEditor();
 
@@ -144,11 +129,29 @@ namespace PRKR.Editor.Tools {
         let resizeDelta = this._activeHit.helper.resizeMove(event);
 
         if (resizeDelta) {
+          
+          // Adjust helpers
+          let deltas = this._buildResizeDeltas(resizeDelta);
+          this._helpers.forEach((h, i) => {
+
+            if (deltas[i]) {
+              h.setResizeDelta(this._activeHit.handle, resizeDelta);
+
+              // Hides each object that is being resized. This is mainly so the resize helper can be seen if it
+              // gets smaller than the current object.
+              this._targets[i].sceneObject.visible = false;
+            } else {
+              h.visible = false;
+            }
+
+          });
+
+
           // Build the corresponding edit step.
-          let editStep = this._buildEditStep(resizeDelta);
+          let editStep = this._buildEditStep(deltas);
           // Validate it.
           let validations = this._editor.validateEditStep(editStep);
-          let someErrors = _.some(validations, x => x.level === ResultLevel.Error)
+          let someErrors = _.some(validations, Validators.isError);
 
           // Validate resize and update helpers.
           if (someErrors) {
@@ -173,10 +176,10 @@ namespace PRKR.Editor.Tools {
 
       if (this._resizing && this._resizeValid) {
 
-        let resizeDelta = this._activeHit.helper.resizeEnd(mouseEvent);
-        if (resizeDelta) {      
+        let delta = this._activeHit.helper.resizeEnd(mouseEvent);
+        if (delta) {      
 
-          let editStep = this._buildEditStep(resizeDelta);
+          let editStep = this._buildEditStep(this._buildResizeDeltas(delta));
           this._editor.addEditStep(editStep);
 
         }
@@ -193,7 +196,13 @@ namespace PRKR.Editor.Tools {
 
       // Clean up if necessary.
       if (this._helpers) {
-        this._helpers.forEach(h => { this._editor.removeFromScene(h); });
+        this._helpers.forEach((h, i) => {
+          this._editor.removeFromScene(h);
+
+          // Make sure all targets' scene objects are shown because we might have hid some during the resize.
+          this._targets[i].sceneObject.visible = true;
+        });
+
       }
 
       // Build resize helpers for every resizable selected object.
@@ -224,7 +233,16 @@ namespace PRKR.Editor.Tools {
         }
       } else {
         if (resizeDelta) {
-          let newSize = this._targets[0].boundingBox.getSize().add(resizeDelta.size);
+
+          let po = this._targets[0].model;
+
+          let newSize = new THREE.Vector3();
+          if (po instanceof Model.RoomArea) {
+            newSize.copy(po.size).add(resizeDelta.size);
+          } else if (po instanceof Model.StaticObject || po instanceof Model.DynamicObject) {
+            newSize.copy(po.size).add(resizeDelta.size).multiplyScalar(2);
+          }
+
           this._editor.setStatus('Release to resize. New dimensions: [' +
             newSize.x.toFixed(2) + ', ' + 
             newSize.y.toFixed(2) + ', ' + 
@@ -236,14 +254,43 @@ namespace PRKR.Editor.Tools {
       }
     }
 
-    /** */
-    private _buildEditStep(resizeDelta: ResizeDelta) {
-      let editStep = 
-        new PRKR.Editor.EditSteps.ResizeStep(
-          resizeDelta.location,
-          resizeDelta.size,
-          this._targets.map(t => { return t.id })
-        );
+    /**
+     * Builds an array of resize deltas for each target. When the current resize operation can not be applied to a
+     * target, a `null` in inserted at its index.
+     * @param delta Resize delta generated by the active handle.
+     */
+    private _buildResizeDeltas(delta: ResizeDelta): ResizeDelta[] {
+
+      let deltas: ResizeDelta[] = this._helpers.map(h => {
+        if (h === this._activeHit.helper) {
+          return delta;
+        } else if (h.isCompatible(this._activeHit.handle)) {
+          return h.computeAdjustedDelta(delta);
+        } else {
+          return null;
+        }
+      });
+      return deltas;
+    }
+
+    /**
+     * @param deltas An array containing a resize delta for each target.
+     */
+    private _buildEditStep(deltas: ResizeDelta[]) {
+
+      let steps: EditSteps.ResizeStep[] = [];
+
+      deltas.forEach((d, i) => {
+        if (d) {
+          steps.push(new PRKR.Editor.EditSteps.ResizeStep(
+            d.location,
+            d.size,
+            [ this._targets[i].id ]
+          ));
+        }
+      });
+      let editStep = new EditSteps.ComposedStep(steps);
+
       return editStep;
     }
   }

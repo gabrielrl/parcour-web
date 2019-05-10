@@ -40,6 +40,269 @@ namespace PRKR.Editor.Objects {
     /** Override. */
     public get resizable(): boolean { return true; }
 
+    /** Builds an array of resize helepers for the current room object. */
+    public get resizeHandles(): Tools.ResizeHandle[] {
+
+      let box = this.boundingBox;
+      let size = box.getSize();
+      let origin = this.getWorldPosition();
+
+      function applyDeltaGenerator(locationFactor: Vector3, sizeFactor: Vector3) {
+        return (delta: Vector3) => {
+          return {
+            location: new Vector3(
+              delta.x * locationFactor.x,
+              delta.y * locationFactor.y,
+              delta.z * locationFactor.z              
+            ),
+            size: new Vector3(
+              delta.x * sizeFactor.x,
+              delta.y * sizeFactor.y,
+              delta.z * sizeFactor.z              
+            )
+          };          
+        };
+      }
+
+      let handles = [
+
+        // X-axis handles
+        // from x max (adjusting size).
+        new Tools.PlaneResizeHandle({
+          label: 'X max',
+          width: 1,
+          height: size.z - 1,
+          axes: M.Vector3.PositiveX,
+          minDelta: new Vector3(-(size.x - 1), 0, 0),
+          maxDelta: new Vector3(Model.Constants.MaximumAreaSize - size.x, 0, 0),
+          location: new Vector3(
+            origin.x + box.max.x, 
+            origin.y + box.min.y,
+            origin.z + box.max.z * .5),
+          applyDelta: applyDeltaGenerator(M.Vector3.Zero, M.Vector3.OneOneOne)
+        }),
+        // form x min (adjusting location and size).
+        new Tools.PlaneResizeHandle({
+          label: 'X min',
+          width: 1,
+          height: size.z - 1,
+          axes: M.Vector3.PositiveX,
+          minDelta: new Vector3(-(Model.Constants.MaximumAreaSize - size.x), 0, 0),
+          maxDelta: new Vector3(size.x - 1, 0 , 0),
+          location: new Vector3(
+            origin.x + box.min.x,
+            origin.y + box.min.y,
+            origin.z + box.max.z * .5
+          ),
+          applyDelta: applyDeltaGenerator(M.Vector3.OneOneOne, M.Vector3.MinusOneOneOne)
+        }),
+
+        // from z max (adjusting size)
+        new Tools.PlaneResizeHandle({
+          label: 'Z max',
+          width: size.x - 1,
+          height: 1,
+          axes: M.Vector3.PositiveZ,
+          minDelta: new Vector3(0, 0, -(size.z - 1)),
+          maxDelta: new Vector3(0, 0, Model.Constants.MaximumAreaSize - size.z),
+          location: new Vector3(
+            origin.x + box.max.x * .5, 
+            origin.y + box.min.y,
+            origin.z + box.max.z
+          ),
+          applyDelta: applyDeltaGenerator(M.Vector3.Zero, M.Vector3.OneOneOne)
+        }),
+
+        // from z min (adjusting location and size)
+        new Tools.PlaneResizeHandle({
+          label: 'Z min',
+          width: size.x - 1,
+          height: 1,
+          axes: M.Vector3.PositiveZ,
+          minDelta: new Vector3(0, 0, -(Model.Constants.MaximumAreaSize - size.z)),
+          maxDelta: new Vector3(0, 0, size.z - 1),
+          location: new Vector3(
+            origin.x + box.max.x * .5, 
+            origin.y + box.min.y,
+            origin.z + box.min.z
+          ),
+          applyDelta: applyDeltaGenerator(M.Vector3.OneOneOne, M.Vector3.MinusOneOneOne)
+        }),
+
+        // from xz max (adjusting size).
+        new Tools.PlaneResizeHandle({
+          label: 'XZ max',
+          width: 1, 
+          height: 1,
+          axes: new Vector3(1, 0, 1),
+          minDelta: new Vector3(-(size.x - 1), 0, -(size.z - 1)),
+          maxDelta: new Vector3(
+            Model.Constants.MaximumAreaSize - size.x,
+            0,
+            Model.Constants.MaximumAreaSize - size.z
+          ),
+          location: new Vector3(
+            origin.x + box.max.x, 
+            origin.y + box.min.y,
+            origin.z + box.max.z
+          ),
+          applyDelta: applyDeltaGenerator(M.Vector3.Zero, M.Vector3.OneOneOne)
+        }),
+
+        // xz min (adjust location and size)
+        new Tools.PlaneResizeHandle({
+          label: 'XZ min',
+          width: 1, 
+          height: 1,
+          axes: new Vector3(1, 0, 1),
+          minDelta: new Vector3(
+            -(Model.Constants.MaximumAreaSize - size.x),
+            0,
+            -(Model.Constants.MaximumAreaSize - size.z)
+          ),
+          maxDelta: new Vector3(size.x - 1, 0, size.z - 1),
+          location: new Vector3(
+            origin.x + box.min.x, 
+            origin.y + box.min.y,
+            origin.z + box.min.z
+          ),
+          applyDelta: applyDeltaGenerator(M.Vector3.OneOneOne, M.Vector3.MinusOneOneOne)
+        }),
+
+        // from x max (adjusting size) z min (adjusting location and size)
+        new Tools.PlaneResizeHandle({
+          label: 'X max',
+          width: 1, 
+          height: 1,
+          axes: new Vector3(1, 0, 1),
+          minDelta: new Vector3(-(size.x - 1), 0, -(Model.Constants.MaximumAreaSize - size.z)),
+          maxDelta: new Vector3(
+            Model.Constants.MaximumAreaSize - size.x,
+            0,
+            size.z - 1
+          ),
+          location: new Vector3(
+            origin.x + box.max.x, 
+            origin.y + box.min.y,
+            origin.z + box.min.z
+          ),
+          applyDelta: applyDeltaGenerator(
+            new Vector3(0, 0, 1),
+            new Vector3(1, 0, -1)
+          )
+        }),
+
+        // x min z max
+        new Tools.PlaneResizeHandle({
+          label: 'X min Z max',
+          width: 1, 
+          height: 1,
+          axes: new Vector3(1, 0, 1),
+          minDelta: new Vector3(-(Model.Constants.MaximumAreaSize - size.x), 0, -(size.z - 1)),
+          maxDelta: new Vector3(
+            size.x - 1,
+            0,
+            Model.Constants.MaximumAreaSize - size.z
+          ),
+          location: new Vector3(
+            origin.x + box.min.x, 
+            origin.y + box.min.y,
+            origin.z + box.max.z
+          ),
+          applyDelta: applyDeltaGenerator(
+            new Vector3(1, 0, 0),
+            new Vector3(-1, 0, 1)
+          )
+        }),
+
+        // from top of x max wall.
+        new Tools.PlaneResizeHandle({
+          label: 'X max top',
+          width: size.z,
+          height: 1,
+          axes: new Vector3(0, 1, 0),
+          minDelta: new Vector3(0, -(size.y - Model.Constants.MinimumAreaHeight), 0),
+          maxDelta: new Vector3(0, Model.Constants.MaximumAreaSize - size.y, 0),
+          location: new Vector3(
+            origin.x + box.max.x,
+            origin.y + box.max.y,
+            origin.z + box.max.z * .5
+          ),
+          plane: Helpers.OrthoPlane.YZ,
+
+          applyDelta: applyDeltaGenerator(
+            M.Vector3.Zero,
+            M.Vector3.OneOneOne
+          )
+        }),
+
+        // from top of x min wall.
+        new Tools.PlaneResizeHandle({
+          label: 'X min top',
+          width: size.z,
+          height: 1,
+          axes: new Vector3(0, 1, 0),
+          minDelta: new Vector3(0, -(size.y - Model.Constants.MinimumAreaHeight), 0),
+          maxDelta: new Vector3(0, Model.Constants.MaximumAreaSize - size.y, 0),
+          location: new Vector3(
+            origin.x + box.min.x,
+            origin.y + box.max.y,
+            origin.z + box.max.z * .5
+          ),
+          plane: Helpers.OrthoPlane.YZ,
+          normal: M.Vector3.PositiveX,
+          applyDelta: applyDeltaGenerator(
+            M.Vector3.Zero,
+            M.Vector3.OneOneOne
+          )
+        }),
+
+        // from top of z max wall.
+        new Tools.PlaneResizeHandle({
+          label: 'Z max top',
+          width: size.x,
+          height: 1,
+          axes: new Vector3(0, 1, 0),
+          minDelta: new Vector3(0, -(size.y - Model.Constants.MinimumAreaHeight), 0),
+          maxDelta: new Vector3(0, Model.Constants.MaximumAreaSize - size.y, 0),
+          location: new Vector3(
+            origin.x + box.max.x * .5,
+            origin.y + box.max.y,
+            origin.z + box.max.z
+          ),
+          plane: Helpers.OrthoPlane.XY,
+          applyDelta: applyDeltaGenerator(
+            M.Vector3.Zero,
+            M.Vector3.OneOneOne
+          )
+        }),
+
+        // from top of z min wall.
+        new Tools.PlaneResizeHandle({
+          label: 'Z min top',
+          width: size.x,
+          height: 1,
+          axes: new Vector3(0, 1, 0),
+          minDelta: new Vector3(0, -(size.y - Model.Constants.MinimumAreaHeight), 0),
+          maxDelta: new Vector3(0, Model.Constants.MaximumAreaSize - size.y, 0),
+          location: new Vector3(
+            origin.x + box.max.x * .5,
+            origin.y + box.max.y,
+            origin.z + box.min.z
+          ),
+          plane: Helpers.OrthoPlane.XY,
+          normal: M.Vector3.PositiveZ,
+          applyDelta: applyDeltaGenerator(
+            M.Vector3.Zero,
+            M.Vector3.OneOneOne
+          )
+        })
+
+      ];
+      return handles;
+
+    }
+
     public update() {
       this._updateSceneObject();
       super.invalidateAll();

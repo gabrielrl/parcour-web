@@ -1,6 +1,5 @@
 /// <reference path="../../defs/prkr.bundle.d.ts" />
-
-/// <reference path="./resize-handle.ts" />
+/// <reference path="./plane-resize-handle.ts" />
 /// <reference path="./resize-tool.ts" />
 /// <reference path="../objects/editor-object.ts" />
 
@@ -24,8 +23,7 @@ namespace PRKR.Editor.Tools {
 
     private _handles: ResizeHandle[] = [];
 
-    private _resizingHelper: PRKR.Helpers.BoundingBoxHelper;
-    private _resizingAdjustedHelper: PRKR.Helpers.BoundingBoxHelper;
+    private _helper: Tools.EditorObjectHelper;
 
     private _hovered: boolean = false;
 
@@ -42,39 +40,19 @@ namespace PRKR.Editor.Tools {
       super();
       this.name = 'ResizeHelper for ' + this._editorObject.name;
 
-      // Build the handles and add them.
-      this._handles = this._buildHandles();
+      // Fetch the handles and add them.
+      this._handles = this._editorObject.resizeHandles;
+
       for (let i = 0; i < this._handles.length; i++) {
-        this.add(this._handles[i]);
+        this.add(this._handles[i].sceneObject);
       }
 
-      // Build the resizing helpers.
-      var unitBox = new THREE.Box3(M.Vector3.Zero, M.Vector3.OneOneOne)
-      this._resizingHelper = new PRKR.Helpers.BoundingBoxHelper(
-        unitBox, {
-          useFaces: false,
-          useLines: true,
-          lineMaterial: new THREE.LineDashedMaterial({
-            color: Colors.TOOL_SUCCESS_COLOR,
-            dashSize: 0.25,
-            gapSize: 0.125
-          })
-        });
-      this._resizingHelper.visible = false;
-      this._resizingAdjustedHelper = new PRKR.Helpers.BoundingBoxHelper(
-        unitBox, {
-          useFaces: true,
-          useLines: false,
-        faceMaterial: new THREE.MeshBasicMaterial({
-            color: Colors.TOOL_SUCCESS_COLOR,
-            transparent: true,
-            opacity: 0.333
-          })
-        });
-      this._resizingAdjustedHelper.visible = false;
+      this._helper = new Tools.EditorObjectHelper(this._editorObject);
+      this._helper.position.copy(this._editorObject.getWorldPosition());
+      this._helper.setRestRotation(this._editorObject.getRotation());
+      this._helper.visible = false;
 
-      this.add(this._resizingHelper);
-      this.add(this._resizingAdjustedHelper);
+      this.add(this._helper);
     }
 
     public get editorObject() { return this._editorObject; }
@@ -84,17 +62,23 @@ namespace PRKR.Editor.Tools {
       // hit test all the handles.
       let intersections = this._editor.projectMouseOnObjects(
         new THREE.Vector2(event.clientX, event.clientY),
-        this._handles);
+        this._handles.map(h => h.hitObject));
 
       if (intersections.length > 0) {
+
+        // Using the closest intersection.
         let intersection = intersections[0];
 
         // Find out which handle was hit.
         let handle: ResizeHandle = null;
         for (var i = 0; i < this._handles.length; i++) {
-          // FRAGILE. Assusmes the hit was with a child object of the handle
-          // itself... TODO better
-          if (this._handles[i] === intersection.object.parent ) {
+          
+          // FRAGILE. Assumes too much... TODO better
+          if (
+            this._handles[i].sceneObject === intersection.object
+              ||
+            this._handles[i].sceneObject === intersection.object.parent
+          ) {
             handle = this._handles[i];
             break;
           }
@@ -112,23 +96,18 @@ namespace PRKR.Editor.Tools {
     }
 
     /** Sets hovered state. */
-    public setHovered(mouseEvent: JQueryMouseEventObject, hit: ResizeHelperHit) {
+    public setHovered(hit: ResizeHelperHit) {
 
-      if (!mouseEvent) throw new Error('"mouseEvent" parameter can not be null of undefined');
-
-      if (hit && hit.helper === this) {
-
-        this._hovered = true;
-
-        let handle = hit.handle;
-        handle.hovered = true;
-        handle.update();
-
-      } else {
-
+      if (!hit) {
         this.unsetHovered();
+      } else {
+        this._hovered = hit.helper === this;
 
+        this._handles.forEach(handle => {
+          handle.hovered = handle.isCompatible(hit.handle);
+        });
       }
+
     }
 
     /** Unsets hovered state. */
@@ -137,7 +116,6 @@ namespace PRKR.Editor.Tools {
       this._handles.forEach(h => {
         if (h.hovered) {
           h.hovered = false;
-          h.update();
         }
       });
     }
@@ -155,34 +133,55 @@ namespace PRKR.Editor.Tools {
       this._handles.forEach(h => {
         if (hit.handle !== h) h.visible = false;
       });
-      this._resizingHelper.visible = true;
-      this._resizingAdjustedHelper.visible = true;
-      this._updateResizingHelpers(ResizeDelta.Empty, ResizeDelta.Empty);
-      this._updateResizingHelpersColor();
+      this._helper.visible = true;
+      this._updateHelper(ResizeDelta.Empty);
+      this._updateHelperColor();
       
     }
 
     public resizeMove(mouseEvent: JQueryMouseEventObject): ResizeDelta {
       if (this._resizeStartHit) {
         let handle = this._resizeStartHit.handle;
-        let delta = handle.resizeMove(mouseEvent);
-        let resizeDelta = handle.applyDelta(delta);
-        let adjustedDelta = this._computeAdjustedDelta(resizeDelta);
-        this._updateResizingHelpers(resizeDelta, adjustedDelta);
+        let handleDelta = handle.resizeMove(mouseEvent, this._editor);
+        let delta = handle.applyDelta(handleDelta);
+        let adjustedDelta = this.computeAdjustedDelta(delta);
+        this._updateHelper(adjustedDelta);
         return adjustedDelta;
       } else {
         return null;
       }
     }
 
+    /**
+     * Sets the current state (copy) from an other `handle` in another `ResizeHelper`.
+     * 
+     * Hides all the handles and only displays the helper if it has a compatible handle.
+     */
+    public setResizeDelta(handle: ResizeHandle, delta: ResizeDelta) {
+
+      this._handles.forEach(h => h.visible = false);
+
+      if (this.isCompatible(handle)) {
+        let adjustedDelta = this.computeAdjustedDelta(delta);
+        this._helper.visible = true;
+        this._updateHelper(adjustedDelta);
+        return adjustedDelta;
+      } else {
+        this._helper.visible = false;
+        return null;
+      }
+  
+    }
+
+
     public setError() {
       this._resizeValid = false;
-      this._updateResizingHelpersColor();
+      this._updateHelperColor();
     } 
 
     public unsetError() {
       this._resizeValid = true;
-      this._updateResizingHelpersColor();
+      this._updateHelperColor();
     } 
   
 
@@ -192,333 +191,60 @@ namespace PRKR.Editor.Tools {
         let handle = this._resizeStartHit.handle;
         let delta = handle.resizeEnd(mouseEvent);
         let resizeDelta = handle.applyDelta(delta);
-        adjustedDelta = this._computeAdjustedDelta(resizeDelta);
+        adjustedDelta = this.computeAdjustedDelta(resizeDelta);
       }
 
       this._resizeStartHit = null;
       this._resizeValid = true;
 
       this._handles.forEach(h => { h.visible = true; });
-      this._resizingHelper.visible = false;
-      this._resizingAdjustedHelper.visible = false;
+      this._helper.visible = false;
 
       return adjustedDelta;
     }
 
-    private _computeAdjustedDelta(delta: ResizeDelta): ResizeDelta {
+    /**
+     * Checks whether the current helper is compatible with the specified handle.
+     * 
+     * If it **is** compatible, it means a resize delta originating from that `handle` could be adjusted using
+     * `computeAdjustedDelta` and applied to the object for which this helper was created.
+     * 
+     * @param handle A resize handle to test.
+     */
+    public isCompatible(handle: ResizeHandle) {
+      return _.some(this._handles, h => h.isCompatible(handle));
+    }
+
+    public computeAdjustedDelta(delta: ResizeDelta): ResizeDelta {
       if (!delta) return null;
 
-      return {
-        location: delta.location.clone().round(),
-        size: new Vector3(
-          Math.round(delta.size.x),
-          Math.round(delta.size.y * 4) / 4,
-          Math.round(delta.size.z)
-        )
-      };
+      let location = delta.location.clone();
+      if (this._editorObject.moveConstraints) {
+        this._editorObject.moveConstraints.apply(location);
+      }
+
+      let size = delta.size.clone();
+      if (this._editorObject.sizeConstraints) {
+        this._editorObject.sizeConstraints.apply(size);
+      }
+
+      return { location, size };
     }
 
-    private _updateResizingHelpers(resizeDelta: ResizeDelta, adjustedDelta: ResizeDelta) {
-
-      let bbox = this._editorObject.boundingBox;
-      let size = bbox.getSize();
-
-      if (resizeDelta) {
+    private _updateHelper(delta: ResizeDelta) {
       
-        this._resizingHelper.scale.set(
-          size.x + resizeDelta.size.x,
-          size.y + resizeDelta.size.y,
-          size.z + resizeDelta.size.z
-        );
-        this._resizingHelper.position
-          .addVectors(bbox.min, this._editorObject.getWorldPosition())
-          .add(resizeDelta.location);
+      if (delta) {
 
-      } else {
+        this._helper.setMoveBy(delta.location);
+        this._helper.setResizeBy(delta.size);
 
-        this._resizingHelper.scale.copy(size);
-        this._resizingHelper.position
-          .addVectors(bbox.min, this._editorObject.getWorldPosition());
-
-      }
-      
-      if (adjustedDelta) {
-
-        this._resizingAdjustedHelper.scale.set(
-          size.x + adjustedDelta.size.x,
-          size.y + adjustedDelta.size.y,
-          size.z + adjustedDelta.size.z
-        );
-        this._resizingAdjustedHelper.position
-          .addVectors(bbox.min, this._editorObject.getWorldPosition())
-          .add(adjustedDelta.location);
-
-      } else {
-
-        this._resizingAdjustedHelper.scale.copy(size);
-        this._resizingAdjustedHelper.position
-          .addVectors(bbox.min, this._editorObject.getWorldPosition());
-        
       }
     }
 
-    private _updateResizingHelpersColor() {
-      if (this._resizeValid) {
-        this._resizingHelper.setColor(Colors.TOOL_SUCCESS_COLOR);
-        this._resizingAdjustedHelper.setColor(Colors.TOOL_SUCCESS_COLOR);
-      } else {
-        this._resizingHelper.setColor(Colors.TOOL_ERROR_COLOR);
-        this._resizingAdjustedHelper.setColor(Colors.TOOL_ERROR_COLOR);
-      }
+    private _updateHelperColor() {
+      this._helper.setValidState(this._resizeValid);
     }
 
-    private _buildHandles(): ResizeHandle[] {
-      let box = this._editorObject.boundingBox;
-      let size = box.getSize();
-      let origin = this._editorObject.getWorldPosition();
-
-      function applyDeltaGenerator(locationFactor: Vector3, sizeFactor: Vector3) {
-        return (delta: Vector3) => {
-          return {
-            location: new Vector3(
-              delta.x * locationFactor.x,
-              delta.y * locationFactor.y,
-              delta.z * locationFactor.z              
-            ),
-            size: new Vector3(
-              delta.x * sizeFactor.x,
-              delta.y * sizeFactor.y,
-              delta.z * sizeFactor.z              
-            )
-          };          
-        };
-      }
-
-      let handles = [
-
-        // X-axis handles
-        // from x max (adjusting size).
-        new ResizeHandle(this._editor, {
-          width: 1,
-          height: size.z - 1,
-          axes: M.Vector3.PositiveX,
-          minDelta: new Vector3(-(size.x - 1), 0, 0),
-          maxDelta: new Vector3(Model.Constants.MaximumAreaSize - size.x, 0, 0),
-          location: new Vector3(
-            origin.x + box.max.x, 
-            origin.y + box.min.y,
-            origin.z + box.max.z * .5),
-          applyDelta: applyDeltaGenerator(M.Vector3.Zero, M.Vector3.OneOneOne)
-        }),
-        // form x min (adjusting location and size).
-        new ResizeHandle(this._editor, {
-          width: 1,
-          height: size.z - 1,
-          axes: M.Vector3.PositiveX,
-          minDelta: new Vector3(-(Model.Constants.MaximumAreaSize - size.x), 0, 0),
-          maxDelta: new Vector3(size.x - 1, 0 , 0),
-          location: new Vector3(
-            origin.x + box.min.x,
-            origin.y + box.min.y,
-            origin.z + box.max.z * .5
-          ),
-          applyDelta: applyDeltaGenerator(M.Vector3.OneOneOne, M.Vector3.MinusOneOneOne)
-        }),
-
-        // from z max (adjusting size)
-        new ResizeHandle(this._editor, {
-          width: size.x - 1,
-          height: 1,
-          axes: M.Vector3.PositiveZ,
-          minDelta: new Vector3(0, 0, -(size.z - 1)),
-          maxDelta: new Vector3(0, 0, Model.Constants.MaximumAreaSize - size.z),
-          location: new Vector3(
-            origin.x + box.max.x * .5, 
-            origin.y + box.min.y,
-            origin.z + box.max.z
-          ),
-          applyDelta: applyDeltaGenerator(M.Vector3.Zero, M.Vector3.OneOneOne)
-        }),
-
-        // from z min (adjusting location and size)
-        new ResizeHandle(this._editor, {
-          width: size.x - 1,
-          height: 1,
-          axes: M.Vector3.PositiveZ,
-          minDelta: new Vector3(0, 0, -(Model.Constants.MaximumAreaSize - size.z)),
-          maxDelta: new Vector3(0, 0, size.z - 1),
-          location: new Vector3(
-            origin.x + box.max.x * .5, 
-            origin.y + box.min.y,
-            origin.z + box.min.z
-          ),
-          applyDelta: applyDeltaGenerator(M.Vector3.OneOneOne, M.Vector3.MinusOneOneOne)
-        }),
-
-        // from xz max (adjusting size).
-        new ResizeHandle(this._editor, {
-          width: 1, 
-          height: 1,
-          axes: new Vector3(1, 0, 1),
-          minDelta: new Vector3(-(size.x - 1), 0, -(size.z - 1)),
-          maxDelta: new Vector3(
-            Model.Constants.MaximumAreaSize - size.x,
-            0,
-            Model.Constants.MaximumAreaSize - size.z
-          ),
-          location: new Vector3(
-            origin.x + box.max.x, 
-            origin.y + box.min.y,
-            origin.z + box.max.z
-          ),
-          applyDelta: applyDeltaGenerator(M.Vector3.Zero, M.Vector3.OneOneOne)
-        }),
-
-        // xz min (adjust location and size)
-        new ResizeHandle(this._editor, {
-          width: 1, 
-          height: 1,
-          axes: new Vector3(1, 0, 1),
-          minDelta: new Vector3(
-            -(Model.Constants.MaximumAreaSize - size.x),
-            0,
-            -(Model.Constants.MaximumAreaSize - size.z)
-          ),
-          maxDelta: new Vector3(size.x - 1, 0, size.z - 1),
-          location: new Vector3(
-            origin.x + box.min.x, 
-            origin.y + box.min.y,
-            origin.z + box.min.z
-          ),
-          applyDelta: applyDeltaGenerator(M.Vector3.OneOneOne, M.Vector3.MinusOneOneOne)
-        }),
-
-        // from x max (adjusting size) z min (adjusting location and size)
-        new ResizeHandle(this._editor, {
-          width: 1, 
-          height: 1,
-          axes: new Vector3(1, 0, 1),
-          minDelta: new Vector3(-(size.x - 1), 0, -(Model.Constants.MaximumAreaSize - size.z)),
-          maxDelta: new Vector3(
-            Model.Constants.MaximumAreaSize - size.x,
-            0,
-            size.z - 1
-          ),
-          location: new Vector3(
-            origin.x + box.max.x, 
-            origin.y + box.min.y,
-            origin.z + box.min.z
-          ),
-          applyDelta: applyDeltaGenerator(
-            new Vector3(0, 0, 1),
-            new Vector3(1, 0, -1)
-          )
-        }),
-
-        // x min z max
-        new ResizeHandle(this._editor, {
-          width: 1, 
-          height: 1,
-          axes: new Vector3(1, 0, 1),
-          minDelta: new Vector3(-(Model.Constants.MaximumAreaSize - size.x), 0, -(size.z - 1)),
-          maxDelta: new Vector3(
-            size.x - 1,
-            0,
-            Model.Constants.MaximumAreaSize - size.z
-          ),
-          location: new Vector3(
-            origin.x + box.min.x, 
-            origin.y + box.min.y,
-            origin.z + box.max.z
-          ),
-          applyDelta: applyDeltaGenerator(
-            new Vector3(1, 0, 0),
-            new Vector3(-1, 0, 1)
-          )
-        }),
-
-        // from top of x max wall.
-        new ResizeHandle(this._editor, {
-          width: size.z,
-          height: 1,
-          axes: new Vector3(0, 1, 0),
-          minDelta: new Vector3(0, -(size.y - Model.Constants.MinimumAreaHeight), 0),
-          maxDelta: new Vector3(0, Model.Constants.MaximumAreaSize - size.y, 0),
-          location: new Vector3(
-            origin.x + box.max.x,
-            origin.y + box.max.y,
-            origin.z + box.max.z * .5
-          ),
-          plane: Helpers.OrthoPlane.YZ,
-
-          applyDelta: applyDeltaGenerator(
-            M.Vector3.Zero,
-            M.Vector3.OneOneOne
-          )
-        }),
-
-        // from top of x min wall.
-        new ResizeHandle(this._editor, {
-          width: size.z,
-          height: 1,
-          axes: new Vector3(0, 1, 0),
-          minDelta: new Vector3(0, -(size.y - Model.Constants.MinimumAreaHeight), 0),
-          maxDelta: new Vector3(0, Model.Constants.MaximumAreaSize - size.y, 0),
-          location: new Vector3(
-            origin.x + box.min.x,
-            origin.y + box.max.y,
-            origin.z + box.max.z * .5
-          ),
-          plane: Helpers.OrthoPlane.YZ,
-          normal: M.Vector3.PositiveX,
-          applyDelta: applyDeltaGenerator(
-            M.Vector3.Zero,
-            M.Vector3.OneOneOne
-          )
-        }),
-
-        // from top of z max wall.
-        new ResizeHandle(this._editor, {
-          width: size.x,
-          height: 1,
-          axes: new Vector3(0, 1, 0),
-          minDelta: new Vector3(0, -(size.y - Model.Constants.MinimumAreaHeight), 0),
-          maxDelta: new Vector3(0, Model.Constants.MaximumAreaSize - size.y, 0),
-          location: new Vector3(
-            origin.x + box.max.x * .5,
-            origin.y + box.max.y,
-            origin.z + box.max.z
-          ),
-          plane: Helpers.OrthoPlane.XY,
-          applyDelta: applyDeltaGenerator(
-            M.Vector3.Zero,
-            M.Vector3.OneOneOne
-          )
-        }),
-
-        // from top of z min wall.
-        new ResizeHandle(this._editor, {
-          width: size.x,
-          height: 1,
-          axes: new Vector3(0, 1, 0),
-          minDelta: new Vector3(0, -(size.y - Model.Constants.MinimumAreaHeight), 0),
-          maxDelta: new Vector3(0, Model.Constants.MaximumAreaSize - size.y, 0),
-          location: new Vector3(
-            origin.x + box.max.x * .5,
-            origin.y + box.max.y,
-            origin.z + box.min.z
-          ),
-          plane: Helpers.OrthoPlane.XY,
-          normal: M.Vector3.PositiveZ,
-          applyDelta: applyDeltaGenerator(
-            M.Vector3.Zero,
-            M.Vector3.OneOneOne
-          )
-        })
-
-      ];
-      return handles;
-    }
   }
 
   export interface ResizeHelperHit {
