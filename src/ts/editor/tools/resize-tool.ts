@@ -132,17 +132,24 @@ namespace PRKR.Editor.Tools {
           
           // Adjust helpers
           let deltas = this._buildResizeDeltas(resizeDelta);
-          this._helpers.forEach((h, i) => 
-            h !== this._activeHit.helper && deltas[i]
-              ? h.setResizeDelta(this._activeHit.handle, resizeDelta)
-              : null
-          );
+          this._helpers.forEach((h, i) => {
+
+            if (deltas[i]) {
+              h.setResizeDelta(this._activeHit.handle, resizeDelta);
+
+              // Hides each object that is being resized. This is mainly so the resize helper can be seen if it
+              // gets smaller than the current object.
+              this._targets[i].sceneObject.visible = false;
+            }
+
+          });
+
 
           // Build the corresponding edit step.
           let editStep = this._buildEditStep(deltas);
           // Validate it.
           let validations = this._editor.validateEditStep(editStep);
-          let someErrors = _.some(validations, x => x.level === ResultLevel.Error);
+          let someErrors = _.some(validations, Validators.isError);
 
           // Validate resize and update helpers.
           if (someErrors) {
@@ -187,7 +194,13 @@ namespace PRKR.Editor.Tools {
 
       // Clean up if necessary.
       if (this._helpers) {
-        this._helpers.forEach(h => this._editor.removeFromScene(h));
+        this._helpers.forEach((h, i) => {
+          this._editor.removeFromScene(h);
+
+          // Make sure all targets' scene objects are shown because we might have hid some during the resize.
+          this._targets[i].sceneObject.visible = true;
+        });
+
       }
 
       // Build resize helpers for every resizable selected object.

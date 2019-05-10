@@ -133,8 +133,6 @@ namespace PRKR.Editor.Tools {
       this._handles.forEach(h => {
         if (hit.handle !== h) h.visible = false;
       });
-      // !! This is dangerous...
-      this._editorObject.sceneObject.visible = false;
       this._helper.visible = true;
       this._updateHelper(ResizeDelta.Empty);
       this._updateHelperColor();
@@ -157,7 +155,7 @@ namespace PRKR.Editor.Tools {
     /**
      * Sets the current state (copy) from an other `handle` in another `ResizeHelper`.
      * 
-     * Only does something if the current resize helper has a matching "compatible" handle.
+     * Hides all the handles and only displays the helper if it has a compatible handle.
      */
     public setResizeDelta(handle: ResizeHandle, delta: ResizeDelta) {
 
@@ -200,8 +198,6 @@ namespace PRKR.Editor.Tools {
       this._resizeValid = true;
 
       this._handles.forEach(h => { h.visible = true; });
-      // !! This is dangerous...
-      this._editorObject.sceneObject.visible = true;
       this._helper.visible = false;
 
       return adjustedDelta;
