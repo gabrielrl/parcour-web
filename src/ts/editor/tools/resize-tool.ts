@@ -140,6 +140,8 @@ namespace PRKR.Editor.Tools {
               // Hides each object that is being resized. This is mainly so the resize helper can be seen if it
               // gets smaller than the current object.
               this._targets[i].sceneObject.visible = false;
+            } else {
+              h.visible = false;
             }
 
           });
