@@ -134,9 +134,19 @@ namespace PRKR.Player.Model {
           });
           break;
         }
-      }
 
-      
+        case PRKR.Model.Shape.Slope: {
+          
+          body = physics.createSlope({
+            mass: 0,
+            size,
+            position,
+            rotation: this._model.rotation,
+            friction: Constants.StaticObjects.DefaultFriction
+          });
+          break;
+        }
+      }
 
       this._body = body;
 

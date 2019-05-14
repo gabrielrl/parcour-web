@@ -102,6 +102,24 @@ namespace PRKR.Player.Physics {
       return this._createRigidBody(shape, data);
     }
 
+    public createSlope(data: BoxDescription): Ammo.btRigidBody {
+      if (!data) throw new Error('"data" is required.');
+
+      let he = new THREE.Vector3().copy(data.size).multiplyScalar(.5);
+      let g = PRKR.Builders.ShapeGeometryBuilder.buildGeometry(PRKR.Model.Shape.Slope, he);
+
+      let pts: number[] = [];
+      g.vertices.forEach(v => pts.push(...v.toArray()));
+
+      let hull = new Ammo.btConvexHullShape();
+      for (let i = 0; i < g.vertices.length; i ++) {
+        let v = g.vertices[i]
+        hull.addPoint(new Ammo.btVector3(v.x, v.y, v.z));
+      }      
+
+      return this._createRigidBody(hull, data);
+    }
+
     public add(obj: Model.RuntimeObject) {
       if (obj && obj.physicBodies) {
         obj.physicBodies.forEach(b => {
