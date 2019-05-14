@@ -114,6 +114,10 @@ namespace PRKR.Editor.Tools {
           {
             value: Model.Shape.Cone,
             display: 'Cone'
+          },
+          {
+            value: Model.Shape.Slope,
+            display: 'Slope'
           }
         ],
         getValue: t => t instanceof AddDynamicObjectTool && t._shape,
