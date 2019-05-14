@@ -240,6 +240,45 @@ declare namespace Ammo {
     constructor(radius: number, height: number);
   }
 
+  interface btIntArray {
+    size(): number;
+    at(n: number): number;
+  }
+
+  interface btFace {
+    /* [Value] attribute */ m_indices: btIntArray;
+    /* attribute */ m_plane: number[];
+  }
+  
+  interface btVector3Array {
+    size(): number;
+    /* [Const, Ref] */ at(n: number): btVector3;
+  }
+  
+  interface btFaceArray {
+    size(): number;
+    /* [Const, Ref] */ at(n: number): btFace;
+  }
+
+  interface btConvexPolyhedron {
+    /* [Value] attribute */ m_vertices: btVector3Array;
+    /* [Value] attribute */ m_faces: btFaceArray;
+  }
+  
+  interface btConvexHullShape extends btCollisionShape {
+    addPoint(/*[Const, Ref]*/ point: btVector3, recalculateLocalAABB?: boolean): void;
+    setMargin(margin: number): void;
+    getMargin(): number;
+    getNumVertices(): number;
+    initializePolyhedralFeatures(shiftVerticesByMargin: number): boolean;
+    recalcLocalAabb(): void;
+    /*[Const]*/ getConvexPolyhedron(): btConvexPolyhedron;
+  }
+  // btConvexHullShape implements btCollisionShape;
+  class btConvexHullShape {
+    constructor(/*[Const] optional float[]*/ points?: number[], numPoints?: number);
+  }
+
   interface btCylinderShape extends btCollisionShape {
     setMargin(margin: number): void;
     getMargin(): number;
