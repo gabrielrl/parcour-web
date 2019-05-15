@@ -4,8 +4,9 @@ namespace PRKR.Editor.Objects {
   import Quaternion = THREE.Quaternion;
   import Box3 = THREE.Box3;
   import Mesh = THREE.Mesh;
-  import StaticModel = PRKR.Model.StaticObject;
+  import MeshPhongMaterial = THREE.MeshPhongMaterial;
 
+  import StaticModel = PRKR.Model.StaticObject;
   import Parcour = PRKR.Model.Parcour;
   import Area = PRKR.Model.Area;
 
@@ -111,7 +112,7 @@ namespace PRKR.Editor.Objects {
       return box;
     }
 
-    private static Material = new THREE.MeshPhongMaterial({
+    public static Material = new MeshPhongMaterial({
       color: 0xcccccc
     });
 

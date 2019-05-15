@@ -79,6 +79,9 @@ namespace PRKR.Editor.Tools {
         faceMaterial: C.Materials.Faces.Valid
       });
 
+    /** A preview of the object that is about to be built when the user draws. */
+    private _preview: THREE.Object3D = null;
+
     constructor(private _editor: ParcourEditor) {
       super();
 
@@ -159,6 +162,10 @@ namespace PRKR.Editor.Tools {
       this._editor.removeFromScene(this._embeddedRectanglesHelper);
       this._editor.removeFromScene(this._helper);
       this._editor.removeFromScene(this._rawHelper);
+      if (this._preview) {
+        this._editor.removeFromScene(this._preview);
+        this._preview = null;
+      }
     }
 
 
@@ -191,6 +198,19 @@ namespace PRKR.Editor.Tools {
             this._start.worldLocation.setY(position.worldLocation.y);
             this._end.worldLocation.setY(position.worldLocation.y);
             this._state = DrawingState.VerticalDrawing;
+
+            // Update the preview mesh            
+            if (this._preview) {
+              this._editor.removeFromScene(this._preview);
+            }
+
+            // The preview mesh is instanciated once, at drawing start (here), with a fixed size of (1, 1, 1).
+            // It is then scaled, during the drawing, to display the result of the operation to the author. This
+            // works well with all the shapes except the capsule, TODO.
+            let g = Builders.ShapeGeometryBuilder.buildGeometry(this._shape, M.Vector3.Half);
+            this._preview = 
+              new THREE.Mesh(g, Objects.StaticObject.Material);
+            this._editor.addToScene(this._preview);
 
             this._computeLocationAndSize();
             this._validateDrawing();
@@ -320,11 +340,15 @@ namespace PRKR.Editor.Tools {
 
       switch (this._state) {
 
+        default:
         case DrawingState.NotStarted:
 
           // Hide some helpers.
           this._rawHelper.visible = false;
           this._helper.visible = false;
+          if (this._preview) {
+            this._preview.visible = false;
+          }
 
           // Show some helpers.
           if (position) {
@@ -379,13 +403,32 @@ namespace PRKR.Editor.Tools {
 
           setHelper(this._rawHelper, this._rawLocation, this._rawSize, valid);
           setHelper(this._helper, this._location, this._size, valid);
+
+          if (this._preview) {
+            this._preview.visible = false;
+          }
         
           break;
 
-        default:
+        case DrawingState.VerticalDrawing:
 
           setHelper(this._rawHelper, this._rawLocation, this._rawSize, this._drawingValid);
           setHelper(this._helper, this._location, this._size, this._drawingValid);
+
+          if (this._preview) {
+            this._preview.position.copy(this._location).addScaledVector(this._size, .5);
+
+            let halfExtents = this._size.clone().multiplyScalar(.5);
+            let minBox = M.getEffectiveBox(this._shape, halfExtents);
+            let minSize = minBox.getSize();
+            this._preview.scale.set(
+              Math.max(0.001, minSize.x), 
+              Math.max(0.001, minSize.y), 
+              Math.max(0.001, minSize.z)
+            );
+            
+            this._preview.visible = true;
+          }
        
           break;
 
@@ -538,7 +581,7 @@ namespace PRKR.Editor.Tools {
         case DrawingState.VerticalDrawing:
           return 'Drag to draw the vertical shape of the object';
         default:
-          return 'TODO';
+          return 'TODO Write missing status message';
       }
 
     }
