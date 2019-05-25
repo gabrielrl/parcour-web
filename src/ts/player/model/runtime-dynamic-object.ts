@@ -7,7 +7,7 @@ namespace PRKR.Player.Model {
 
     private _body: Ammo.btRigidBody = null;
 
-    /** Relative center of mass. Set during `_buildPhysicalRepresentation`. Is null if equel to the origin. */
+    /** Relative center of mass. Set during `_buildPhysicalRepresentation`. Is null if equal to the origin. */
     private _centerOfMass: Vector3 = null;
 
     private _mesh: THREE.Object3D = null;
@@ -182,10 +182,7 @@ namespace PRKR.Player.Model {
       }
 
       this._body = body;
-      if (this._model.shape !== PRKR.Model.Shape.Slope) {
-        this._centerOfMass = null;
-      }
-
+      
       physics.add(this);
     }    
   }
