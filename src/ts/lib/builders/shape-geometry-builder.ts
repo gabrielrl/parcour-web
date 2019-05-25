@@ -65,6 +65,43 @@ namespace PRKR.Builders {
           return new THREE.ConeGeometry(r, halfExtents.y * 2, 24);
 
           // break;
+
+        case Model.Shape.Slope: {
+          let g = new THREE.Geometry();
+          g.vertices.push(
+            new Vector3(-halfExtents.x, -halfExtents.y, halfExtents.z),
+            new Vector3(halfExtents.x, -halfExtents.y, halfExtents.z),
+            new Vector3(halfExtents.x, -halfExtents.y, -halfExtents.z),
+            new Vector3(-halfExtents.x, -halfExtents.y, -halfExtents.z),
+            new Vector3(-halfExtents.x, halfExtents.y, -halfExtents.z),
+            new Vector3(halfExtents.x, halfExtents.y, -halfExtents.z),
+          );
+          g.faces.push(
+            // Bottom
+            new THREE.Face3(0, 3, 2),
+            new THREE.Face3(2, 1, 0),
+ 
+            // Right side
+            new THREE.Face3(5, 1, 2),
+
+            // Left side
+            new THREE.Face3(4, 3, 0),
+
+            // Back
+            new THREE.Face3(3, 4, 5),
+            new THREE.Face3(5, 2, 3),
+
+            // Front
+            new THREE.Face3(0, 1, 5),
+            new THREE.Face3(5, 4, 0)
+          );
+
+          g.computeFaceNormals();
+
+          return g;
+
+          // break;
+        }
       }
 
     }

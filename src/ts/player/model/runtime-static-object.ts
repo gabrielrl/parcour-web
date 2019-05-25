@@ -134,9 +134,29 @@ namespace PRKR.Player.Model {
           });
           break;
         }
-      }
 
-      
+        case PRKR.Model.Shape.Slope: {
+          
+          let g = PRKR.Builders.ShapeGeometryBuilder.buildGeometry(
+            PRKR.Model.Shape.Slope, this._model.size);
+
+          let avg = g.vertices
+            .reduce((p, c) => p.add(c), new Vector3())
+            .divideScalar(g.vertices.length);
+          let points = g.vertices.map(v => v.clone().sub(avg));
+          
+          let centerOfMass = avg.clone().applyQuaternion(this._model.rotation).add(position);
+
+          body = physics.createConvexHull({
+            mass: 0,
+            points,
+            position: centerOfMass,
+            rotation: this._model.rotation,
+            friction: Constants.StaticObjects.DefaultFriction
+          });
+          break;
+        }
+      }
 
       this._body = body;
 

@@ -108,6 +108,11 @@ namespace PRKR.Model {
           return 1 / 3 * Math.PI * r * r * he.y * 2
           // break;
         }
+
+        case Model.Shape.Slope: {
+          return 4 * he.x * he.y * he.z;
+          // break;
+        }
     
       }
 

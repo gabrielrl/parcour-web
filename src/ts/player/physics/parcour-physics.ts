@@ -102,6 +102,18 @@ namespace PRKR.Player.Physics {
       return this._createRigidBody(shape, data);
     }
 
+    public createConvexHull(data: ConvexHullDescription): Ammo.btRigidBody {
+      if (!data) throw new Error('"data" is required.');
+
+      let hull = new Ammo.btConvexHullShape();
+      for (let i = 0; i < data.points.length; i ++) {
+        let v = data.points[i]
+        hull.addPoint(new Ammo.btVector3(v.x, v.y, v.z));
+      }
+
+      return this._createRigidBody(hull, data);
+    }
+
     public add(obj: Model.RuntimeObject) {
       if (obj && obj.physicBodies) {
         obj.physicBodies.forEach(b => {
