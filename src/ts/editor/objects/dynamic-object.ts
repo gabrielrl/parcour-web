@@ -4,8 +4,9 @@ namespace PRKR.Editor.Objects {
   import Quaternion = THREE.Quaternion;
   import Box3 = THREE.Box3;
   import Mesh = THREE.Mesh;
-  import DynamicModel = PRKR.Model.DynamicObject;
+  import MeshPhongMaterial = THREE.MeshPhongMaterial;
 
+  import DynamicModel = PRKR.Model.DynamicObject;
   import Parcour = PRKR.Model.Parcour;
   import Area = PRKR.Model.Area;
 
@@ -156,7 +157,7 @@ namespace PRKR.Editor.Objects {
     }
 
     /** Default material from which a new object material is cloned. */
-    private static Material = new THREE.MeshPhongMaterial({
+    public static Material = new MeshPhongMaterial({
       color: 0xffff00
     });
 
