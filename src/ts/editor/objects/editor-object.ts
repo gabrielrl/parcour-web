@@ -120,7 +120,7 @@ namespace PRKR.Editor.Objects {
      * No need to override.
      */
     get rotateConstraints(): RotateConstraints {
-      return getRotationConstratins(this.model);
+      return getRotationConstraints(this.model);
     }
 
     /**

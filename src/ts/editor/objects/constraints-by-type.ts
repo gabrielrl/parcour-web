@@ -75,7 +75,7 @@ namespace PRKR.Editor.Objects {
     return c.size;
   }
 
-  export function getRotationConstratins(parcourObject: Model.ParcourObject): RotateConstraints {
+  export function getRotationConstraints(parcourObject: Model.ParcourObject): RotateConstraints {
     let c = constraintsByType[parcourObject.type];
     if (!c || !c.rotate) return undefined;
     return c.rotate;
