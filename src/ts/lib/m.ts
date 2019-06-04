@@ -27,6 +27,7 @@ namespace PRKR {
       NegativeX: new Vector3(-1, 0, 0),
       NegativeY: new Vector3(0, -1, 0),
       NegativeZ: new Vector3(0, 0, -1),
+      OneThousanth: new Vector3(.001, .001, .001)
     };
 
     static Vector2 = {

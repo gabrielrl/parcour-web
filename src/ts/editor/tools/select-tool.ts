@@ -70,7 +70,7 @@ namespace PRKR.Editor.Tools {
       if (
         this._moveBehavior.enabled &&
         this._moveBehavior.ready &&
-        this._target.selected
+        this._editor.isSelected(this._target)
       ) {
 
         this._moveBehavior.down(e);
@@ -107,7 +107,7 @@ namespace PRKR.Editor.Tools {
           this._updateTarget(e);
           if (this._target === this._selectionTarget) {
             if (e.ctrlKey) {
-              if (this._selectionTarget.selected) {
+              if (this._editor.isSelected(this._selectionTarget)) {
                 this._editor.removeFromSelection(this._selectionTarget);
               } else {
                 this._editor.addToSelection(this._selectionTarget);
@@ -174,7 +174,7 @@ namespace PRKR.Editor.Tools {
         let pointer: string = null;      
         if (this._target == null) {
           pointer = 'crosshair';
-        } else if (this._target.selected && this._moveBehavior.ready) {
+        } else if (this._editor.isSelected(this._target) && this._moveBehavior.ready) {
             pointer = '-webkit-grab'; // says "you can move that".
         } else {
           pointer = 'pointer'; // says "you can select that".

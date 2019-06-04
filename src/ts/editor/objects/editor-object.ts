@@ -38,9 +38,6 @@ namespace PRKR.Editor.Objects {
 
       this._model = model;
       this._parcour = parcour;
-      // this._position.copy(model.location);
-
-      this._buildSelectedOverlay();
     }
 
     /**
@@ -76,17 +73,6 @@ namespace PRKR.Editor.Objects {
     /** Gets the parcour to which the backing model object belongs. */
     get parcour() { return this._parcour; }
     
-    private _selected: boolean = false;
-    get selected() {
-      return this._selected;
-    }
-    set selected(value) {
-      if (value != this._selected) {
-        this._selected = value;
-        this._onSelectedChanged(value);
-      }
-    }
-
     /**
      * Gets if the current object can be moved.
      * Override. Defaults to false.
@@ -159,6 +145,20 @@ namespace PRKR.Editor.Objects {
     }
 
     /**
+     * Builds an overlay for the object.
+     * Override. Don't call super. Default to a representation of the object's bounding box.
+     */
+    public buildOverlay(): THREE.Object3D {
+
+      let h = new PRKR.Helpers.BoundingBoxHelper(this.boundingBox, {
+        useLines: false,
+        useFaces: true
+      });
+      return h;
+
+    }
+
+    /**
      * Gets a geometry for the object. May return null since not all object will implement this.
      * Override, don't call super.
      */
@@ -190,7 +190,6 @@ namespace PRKR.Editor.Objects {
 
     protected invalidateAll() {
       this._invalidateBoundingBox();
-      this._updateSelectedOverlay();
       this._invalidateSelectionHotSpot();
     }
 
@@ -206,32 +205,6 @@ namespace PRKR.Editor.Objects {
     protected _buildSelectionHotSpot(): THREE.Object3D {
       let hotSpot = new THREE.Mesh(new THREE.PlaneGeometry(1, 1, 2, 2), null);
       return hotSpot;
-    }
-
-    protected _onSelectedChanged(selected: boolean): void {
-      this._selectedOverlay.visible = selected;
-    }
-
-    // Override. Call only once.
-    protected _buildSelectedOverlay(): void {
-
-      this._selectedOverlay = new PRKR.Helpers.BoundingBoxHelper(new THREE.Box3(
-        M.Vector3.Zero,
-        M.Vector3.OneOneOne
-      ), {
-        useLines: true,
-        useFaces: false
-      });
-      this.sceneObject.add(this._selectedOverlay);
-      this._updateSelectedOverlay();
-    }
-
-    /** Override if you overrode `_buildSelectedOverlay`. */
-    protected _updateSelectedOverlay() {
-      let bbox = this.boundingBox;
-      this._selectedOverlay.scale.copy(bbox.getSize());
-      this._selectedOverlay.position.copy(bbox.min);
-      this._selectedOverlay.visible = this._selected;
     }
 
     /**

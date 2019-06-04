@@ -249,10 +249,40 @@ namespace PRKR.Model {
     }
 
     /**
+     * Gets an orthogonal (axis aligned) bounding box in world coordinates for the specified parcour object.
+     * _Watch out_ as this method might return `null` as some Parcour objects do not implement (have meaning for) a
+     * bounding box.
+     * @param object A ParcourObject for which we want a world relative bounding box.
+     */
+    public getWorldBoundingBox(object: ParcourObject): THREE.Box3 {
+
+      if (this.objects.indexOf(object) === -1) {
+        throw new Error('Specified "object" is not part of the current parcour.');
+      }
+
+      if (object instanceof AreaElement) {
+        let box = object.getBoundingBox();
+        if (box == null) {
+          return null;
+        } else {
+          let area = this.getAreaById(object.areaId);
+          let min = new Vector3();
+          min.addVectors(area.location, box.min);
+          let max = new Vector3();
+          max.addVectors(area.location, box.max);
+          return new THREE.Box3(min, max);
+        }
+      } else if (object instanceof Area) {
+        return object.getBoundingBox();
+      }
+
+    }
+
+    /**
      * Gets an orthogonal (axis aligned) bounding box in world coordinates for the specified area element.
      * @param element An AreaElement for which we want a world relative bounding box.
      */
-    // TODO Make a smart version that works for every object
+    // TODO this method should leave in favour of the one above.
     public getAreaElementBoundingBox(element: AreaElement): THREE.Box3 {      
       let elementBox = element.getBoundingBox();
       if (elementBox == null) {
