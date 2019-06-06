@@ -238,5 +238,53 @@ namespace PRKR {
       }
     }
 
+    /**
+     * Inflates a geometry by displacing all its vertices along their (computed average) vertex normals.
+     * @param geometry A geometry to inflate.
+     * @param factor The displacement of each vertex.
+     */
+    public static inflate(geometry: THREE.Geometry, factor: number) {
+
+      let normals: Map<number, THREE.Vector3> = new Map();
+      function getNormal(index) {
+
+        let n = normals.get(index);
+        if (n) return n;
+
+        for (let f = 0; f < geometry.faces.length; f++) {
+          let face = geometry.faces[f];
+
+          if (face.a === index) {
+            n = face.vertexNormals[0];
+            break;
+          }
+          if (face.b === index) {
+            n = face.vertexNormals[1];
+            break;
+          }
+          if (face.c === index) {
+            n = face.vertexNormals[2];
+            break;
+          }
+        }
+
+        if (n) {
+          normals.set(index, n);
+          return n;
+        }
+
+        return null;
+      }
+
+      geometry.computeFaceNormals();
+      geometry.computeVertexNormals();
+      geometry.vertices.forEach((v, i) => {
+        let n = getNormal(i);
+        if (n) {
+          v.addScaledVector(n, factor);
+        }
+      });
+    }
+
   }
 }
