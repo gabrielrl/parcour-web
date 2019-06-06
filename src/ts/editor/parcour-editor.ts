@@ -1280,12 +1280,26 @@ namespace PRKR.Editor {
 
     /** Calls `eo.buildOverlay` and adds some parameterization to use the overlay as a `Selection Overlay`. */
     private _buildSelectionOverlay(eo: EditorObject) {
-      let ov = eo.buildOverlay();
+      let ov = eo.buildOverlay(ParcourEditor.SelectionOverlayFaceMaterial);
       eo.getWorldPosition(ov.position);
       ov.visible = false;
       ov.renderOrder = 100;
       return ov;
     }
+
+    private static SelectionBoxLineMaterial = new THREE.LineBasicMaterial({
+      color: Colors.SELECTION_COLOR_DIM,
+      depthTest: true,
+      depthWrite: false
+    });
+
+    private static SelectionOverlayFaceMaterial = new THREE.MeshBasicMaterial({
+      color: Colors.SELECTION_COLOR,
+      depthTest: true,
+      depthWrite: false,
+      transparent: true,
+      opacity: .333
+    });
 
     private _initDomLayout() {
       let top = document.createElement('div');
@@ -1552,12 +1566,6 @@ namespace PRKR.Editor {
       this._selectionBox.visible = false;
       this._scene.add(this._selectionBox);
     }
-
-    private static SelectionBoxLineMaterial = new THREE.LineBasicMaterial({
-      color: Colors.SELECTION_COLOR_DIM,
-      depthTest: true,
-      depthWrite: false
-    });
 
     /**
      * Returns an array of dirty IDs expanded with the sub object IDs.

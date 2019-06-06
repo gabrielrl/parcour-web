@@ -147,12 +147,14 @@ namespace PRKR.Editor.Objects {
     /**
      * Builds an overlay for the object.
      * Override. Don't call super. Default to a representation of the object's bounding box.
+     * @param m Optional material to use for the faces of the overlay.
      */
-    public buildOverlay(): THREE.Object3D {
+    public buildOverlay(m?: THREE.Material): THREE.Object3D {
 
       let h = new PRKR.Helpers.BoundingBoxHelper(this.boundingBox, {
         useLines: false,
-        useFaces: true
+        useFaces: true,
+        faceMaterial: m
       });
       return h;
 
