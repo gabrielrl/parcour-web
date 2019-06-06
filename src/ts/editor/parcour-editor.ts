@@ -1546,11 +1546,18 @@ namespace PRKR.Editor {
 
       this._selectionBox = new Helpers.BoundingBoxHelper(M.Box3.Unit, {
         useFaces: false,
-        useLines: true
+        useLines: true,
+        lineMaterial: ParcourEditor.SelectionBoxLineMaterial
       });
       this._selectionBox.visible = false;
       this._scene.add(this._selectionBox);
     }
+
+    private static SelectionBoxLineMaterial = new THREE.LineBasicMaterial({
+      color: Colors.SELECTION_COLOR_DIM,
+      depthTest: true,
+      depthWrite: false
+    });
 
     /**
      * Returns an array of dirty IDs expanded with the sub object IDs.
