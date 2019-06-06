@@ -25,10 +25,10 @@ namespace PRKR.Editor.Behaviors {
   /** TODO I need more comments */
   export class MoveBehavior implements Behavior {
 
-    static SuccessColor = Colors.TOOL_SUCCESS_COLOR;
-    static SuccessColorDim = Colors.TOOL_SUCCESS_COLOR_DIM;
-    static ErrorColor = Colors.TOOL_ERROR_COLOR;
-    static ErrorColorDim = Colors.TOOL_ERROR_COLOR_DIM;
+    static SuccessColor = EditorConstants.ToolSuccessColor;
+    static SuccessColorDim = EditorConstants.ToolSuccessColorDim;
+    static ErrorColor = EditorConstants.ToolErrorColor;
+    static ErrorColorDim = EditorConstants.ToolErrorColorDim;
 
     static HelperLineMaterial = new LineDashedMaterial({
       color: MoveBehavior.SuccessColor,

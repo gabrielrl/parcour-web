@@ -1,4 +1,4 @@
-/// <reference path="../colors.ts" />
+/// <reference path="../editor-constants.ts" />
 
 /// <reference path="./tool.ts" />
 /// <reference path="../edit-steps/move-step.ts" />
@@ -16,8 +16,8 @@ namespace PRKR.Editor.Tools {
   
   export class MoveTool extends Tool {
 
-    static HelperColor = Colors.TOOL_SUCCESS_COLOR;
-    static HelperErrorColor = Colors.TOOL_ERROR_COLOR;
+    static HelperColor = EditorConstants.ToolSuccessColor;
+    static HelperErrorColor = EditorConstants.ToolErrorColor;
 
     private _targets: Objects.EditorObject[] = [];
 
