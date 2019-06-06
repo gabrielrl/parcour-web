@@ -838,8 +838,7 @@ namespace PRKR.Editor {
 
             editorObject.update();
 
-            let ov = editorObject.buildOverlay();
-            editorObject.getWorldPosition(ov.position);
+            let ov = this._buildSelectionOverlay(editorObject);
             ov.visible = this.isSelected(editorObject);
             this._selectionOverlays[index] = ov;
 
@@ -857,8 +856,7 @@ namespace PRKR.Editor {
           } else if (parcourObject) {
             editorObject = this._buildEditorObject(parcourObject);
 
-            let ov = editorObject.buildOverlay();
-            editorObject.getWorldPosition(ov.position);
+            let ov = this._buildSelectionOverlay(editorObject);
             ov.visible = this.isSelected(editorObject);
 
             this._scene.add(editorObject.sceneObject);
@@ -1280,6 +1278,15 @@ namespace PRKR.Editor {
       this._render();
     }
 
+    /** Calls `eo.buildOverlay` and adds some parameterization to use the overlay as a `Selection Overlay`. */
+    private _buildSelectionOverlay(eo: EditorObject) {
+      let ov = eo.buildOverlay();
+      eo.getWorldPosition(ov.position);
+      ov.visible = false;
+      ov.renderOrder = 100;
+      return ov;
+    }
+
     private _initDomLayout() {
       let top = document.createElement('div');
       top.id = 'prkred-top';
@@ -1525,9 +1532,7 @@ namespace PRKR.Editor {
       if (this._model) {
         this._model.objects.forEach(po => {
           let eo = this._buildEditorObject(po);
-          let ov = eo.buildOverlay();
-          eo.getWorldPosition(ov.position);
-          ov.visible = false;
+          let ov = this._buildSelectionOverlay(eo);
           this._scene.add(eo.sceneObject);
           this._scene.add(ov);
 
