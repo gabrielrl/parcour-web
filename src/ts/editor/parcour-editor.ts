@@ -886,6 +886,7 @@ namespace PRKR.Editor {
           let eobox = this._model.getWorldBoundingBox(eo.model);
           if (eobox) {
             hasBox = true;
+            eobox = eobox.clone().expandByScalar(EditorConstants.OverlayInflation);
             min.min(eobox.min);
             max.max(eobox.max);
           }
@@ -1283,6 +1284,7 @@ namespace PRKR.Editor {
       let ov = eo.buildOverlay(EditorConstants.SelectionOverlayFaceMaterial);
       eo.getWorldPosition(ov.position);
       eo.getRotation(ov.quaternion);
+      
       ov.visible = false;
       ov.renderOrder = 100;
       return ov;
