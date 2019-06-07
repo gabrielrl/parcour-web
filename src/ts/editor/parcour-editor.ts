@@ -883,13 +883,11 @@ namespace PRKR.Editor {
         let selected = sel.indexOf(eo) !== -1;
         ov.visible = selected;
         if (selected) {
-          let eobox = this._model.getWorldBoundingBox(eo.model);
-          if (eobox) {
-            hasBox = true;
-            eobox = eobox.clone().expandByScalar(EditorConstants.OverlayInflation);
-            min.min(eobox.min);
-            max.max(eobox.max);
-          }
+          let eobox = eo.boundingBox.clone().translate(eo.getWorldPosition());
+          hasBox = true;
+          eobox = eobox.expandByScalar(EditorConstants.OverlayInflation);
+          min.min(eobox.min);
+          max.max(eobox.max);
         }
       });
 

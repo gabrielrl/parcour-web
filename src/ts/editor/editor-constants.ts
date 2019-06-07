@@ -24,7 +24,7 @@ namespace PRKR.Editor {
     static SelectionBoxLineMaterial = new LineBasicMaterial({
       color: EditorConstants.SelectionColorDim,
       depthTest: true,
-      depthWrite: false
+      depthWrite: true
     });
 
     static SelectionOverlayFaceMaterial = new MeshBasicMaterial({
