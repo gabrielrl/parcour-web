@@ -131,7 +131,7 @@ namespace PRKR.Editor.Tools {
       this._resizeValid = true;
 
       this._handles.forEach(h => {
-        if (hit.handle !== h) h.visible = false;
+        h.visible = hit.handle === h;
       });
       this._helper.visible = true;
       this._updateHelper(ResizeDelta.Empty);
@@ -159,7 +159,7 @@ namespace PRKR.Editor.Tools {
      */
     public setResizeDelta(handle: ResizeHandle, delta: ResizeDelta) {
 
-      this._handles.forEach(h => h.visible = false);
+      this._handles.forEach(h => h.visible = handle === h);
 
       if (this.isCompatible(handle)) {
         let adjustedDelta = this.computeAdjustedDelta(delta);
@@ -197,7 +197,7 @@ namespace PRKR.Editor.Tools {
       this._resizeStartHit = null;
       this._resizeValid = true;
 
-      this._handles.forEach(h => { h.visible = true; });
+      this._handles.forEach(h => h.visible = true);
       this._helper.visible = false;
 
       return adjustedDelta;
