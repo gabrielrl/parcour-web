@@ -234,6 +234,7 @@ namespace PRKR.Editor.Tools {
           }
         });
 
+        this._helpers.forEach(h => h.visible = true);
         this._editor.hideSelectionOverlays();
         this._editor.requestRender();
 
@@ -321,6 +322,7 @@ namespace PRKR.Editor.Tools {
         t.getWorldPosition(h.position);
         h.setRestRotation(t.getRotation());
         h.setMoveBy(M.Vector3.Zero);
+        h.visible = false;
         this._editor.addToScene(h);
         return h;
       });
