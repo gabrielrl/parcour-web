@@ -1177,7 +1177,12 @@ namespace PRKR.Editor {
             'Invoking "' + command.displayName + '" command because the current key event matches its keyboard shortcut.',
             command.keyboardShortcut.toString()
           );
+
+          this._activeTool && this._activeTool.deactivate();
+          
           command.run();
+
+          this._activeTool && this._activeTool.activate();
           e.preventDefault();
           return true;
         }
@@ -1191,10 +1196,13 @@ namespace PRKR.Editor {
             'Selecting "' + tool.displayName + '" tool because the current key event matches its keyboard shortcut.',
             tool.keyboardShortcut.toString()
           );
-          this._setActiveTool(tool);
-          this._ribbon.showTool(tool);
-          e.preventDefault();
-          return true;
+
+          if (this._activeTool !== tool) {
+            this._setActiveTool(tool);
+            this._ribbon.showTool(tool);
+            e.preventDefault();
+            return true;
+          }
         }
       }
 
