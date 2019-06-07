@@ -213,6 +213,7 @@ namespace PRKR.Editor.Behaviors {
         this._targetAdjustedHelpers.forEach(link);        
         this._targetVerticalHelpers.forEach(link);
 
+        this._editor.hideSelectionOverlays();
         this._editor.addToScene(this._sceneObject);
 
       }
@@ -338,6 +339,7 @@ namespace PRKR.Editor.Behaviors {
       this._destination.copy(M.Vector3.Zero);
       this._state = MovingState.Idle;
 
+      this._editor.restoreSelectionOverlays();
       this._editor.removeFromScene(this._sceneObject);
       this._editor.requestRender();
 

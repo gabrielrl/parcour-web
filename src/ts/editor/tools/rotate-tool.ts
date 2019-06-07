@@ -234,6 +234,7 @@ namespace PRKR.Editor.Tools {
           }
         });
 
+        this._editor.hideSelectionOverlays();
         this._editor.requestRender();
 
       }
@@ -265,6 +266,7 @@ namespace PRKR.Editor.Tools {
       this.notifyMouseMove(event);
 
       if (finalStatus) {
+        this._editor.restoreSelectionOverlays();
         this._editor.setStatus(finalStatus);
       }
 

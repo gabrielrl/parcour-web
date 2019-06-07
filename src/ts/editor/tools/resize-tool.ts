@@ -82,6 +82,7 @@ namespace PRKR.Editor.Tools {
         // There is an active helper under the mouse pointer.
         this._activeHit.helper.resizeStart(event, this._activeHit);
         this._resizing = true;
+        this._editor.hideSelectionOverlays();
         this._updateEditor(ResizeDelta.Empty);
         this._editor.requestRender();
 
@@ -188,6 +189,7 @@ namespace PRKR.Editor.Tools {
       this._resizing = false;
       this._reset();
 
+      this._editor.restoreSelectionOverlays();
       this._updateEditor();
       this._editor.requestRender();
     }

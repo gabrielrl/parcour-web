@@ -498,6 +498,29 @@ namespace PRKR.Editor {
     }
 
     /**
+     * Asks the editor to temporarilly hide the selection overlays to enhance visual clarity during a
+     * tool manipulation. Overlays can be hidden until they are shown again by calling
+     * `showSelectionOverlays()` or that any event occurs that triggers a refresh of the overlays state
+     * (e.g. adding an edit step or manipulating the selection).
+     */
+    public hideSelectionOverlays() {
+
+      this._selectionOverlays.forEach(ov => ov.visible = false);
+      this._selectionBox.visible = false;
+      this.requestRender();
+
+    }
+
+    /**
+     * Resets selection overlays display state to normal. Call to restore state after calling
+     * `hideSelectionOverlays`.
+     */
+    public restoreSelectionOverlays() {
+      this._updateSelectedOverlays();
+      this.requestRender();
+    }
+
+    /**
      * Gets the current value of the specified property from 
      * the active object.
      * @param prop 
