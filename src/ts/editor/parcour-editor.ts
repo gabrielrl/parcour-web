@@ -500,7 +500,7 @@ namespace PRKR.Editor {
     /**
      * Asks the editor to temporarilly hide the selection overlays to enhance visual clarity during a
      * tool manipulation. Overlays can be hidden until they are shown again by calling
-     * `showSelectionOverlays()` or that any event occurs that triggers a refresh of the overlays state
+     * `restoreSelectionOverlays()` or that any event occurs that triggers a refresh of the overlays state
      * (e.g. adding an edit step or manipulating the selection).
      */
     public hideSelectionOverlays() {
