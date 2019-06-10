@@ -47,7 +47,6 @@ namespace PRKR.Editor.Objects {
     public buildOverlay(m?: THREE.Material): THREE.Object3D {
 
       let g = this.geometry.clone();
-      g.computeVertexNormals();
       M.inflate(g, EditorConstants.OverlayInflation);
       return new THREE.Mesh(g, m);
 
