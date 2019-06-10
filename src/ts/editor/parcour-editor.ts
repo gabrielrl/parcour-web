@@ -80,6 +80,16 @@ namespace PRKR.Editor {
      */
     private _objects: EditorObject[] = [];
 
+    /** 
+     * A selection overlay for each object in `_objects`.
+     */
+    private _selectionOverlays: THREE.Object3D[] = [];
+
+    /**
+     * The selection's axis-aligned bounding box helper.
+     */
+    private _selectionBox: Helpers.BoundingBoxHelper;
+
     /** The collection of known commands. */
     private _commands: Commands.Command[];
 
@@ -319,6 +329,14 @@ namespace PRKR.Editor {
       return [].concat(this._selectedObjects);
     }
 
+    /**
+     * Checks if an editor object is selected or not.
+     * @param object An editor object to check for selection.
+     */
+    public isSelected(object: EditorObject): boolean {
+      return this._selectedObjects.indexOf(object) !== -1;
+    }
+
     private _renderRequested = false;
     public requestRender() {
       if (!this._renderRequested) {
@@ -362,10 +380,7 @@ namespace PRKR.Editor {
     public getAreas(): RoomObject[] {
       let areas: RoomObject[];
 
-      // throw new Error('Not Implementd');
       areas = <RoomObject[]>_.filter(this._objects, o => o instanceof RoomObject);
-      // let areas: RoomObject[] = <RoomObject[]>
-      //   // _.filter(this._objects, o => o instanceof RoomObject);
 
       return areas;
     }
@@ -398,14 +413,12 @@ namespace PRKR.Editor {
       // Iterate through all the objects and update the "selected" property.
       this._objects.forEach((a) => {
         if (objectArray.indexOf(a) !== -1) {
-          a.selected = true;
           selected.push(a);
-        } else {
-          a.selected = false;
         }
       });
 
       this._selectedObjects = selected;
+      this._updateSelectedOverlays();
 
       this._ribbon.update();
       this._updateObjectsPanel();
@@ -443,26 +456,21 @@ namespace PRKR.Editor {
      * @returns The new selected object list.
      */
     addToSelection(object: Objects.EditorObject): Objects.EditorObject[] {
-      let selected: EditorObject[] = [];
 
-      this._objects.forEach(o => {
-        if (o === object) {
-          o.selected = true;
-          selected.push(o);
-        } else if (o.selected) {
-          selected.push(o);
-        }
+      let sel = this._selectedObjects;
 
-      });
+      if (sel.indexOf(object) === -1) {
 
-      this._selectedObjects = selected;
+        sel.push(object);
 
-      this._ribbon.update();
-      this._updateObjectsPanel();
-
-      this.requestRender();
-
-      return selected;
+        this._ribbon.update();
+        this._updateSelectedOverlays();
+        this._updateObjectsPanel();
+  
+        this.requestRender();
+  
+      }
+      return sel;
     }
 
     /**
@@ -470,25 +478,46 @@ namespace PRKR.Editor {
      * @returns The new selected object list.
      */
     removeFromSelection(object: Objects.EditorObject): Objects.EditorObject[] {
-      let selected: EditorObject[] = [];
 
-      this._objects.forEach(o => {
-        if (o === object) {
-          o.selected = false;
-        } else if (o.selected) {
-          selected.push(o);
-        }
+      let sel = this._selectedObjects;
+      let i = sel.indexOf(object);
+      if (i !== -1) {
 
-      });
+        sel.splice(i);
 
-      this._selectedObjects = selected;
+        this._ribbon.update();
+        this._updateSelectedOverlays();
+        this._updateObjectsPanel();
+  
+        this.requestRender();
 
-      this._ribbon.update();
-      this._updateObjectsPanel();
+      }
 
+      return sel;
+
+    }
+
+    /**
+     * Asks the editor to temporarilly hide the selection overlays to enhance visual clarity during a
+     * tool manipulation. Overlays can be hidden until they are shown again by calling
+     * `restoreSelectionOverlays()` or that any event occurs that triggers a refresh of the overlays state
+     * (e.g. adding an edit step or manipulating the selection).
+     */
+    public hideSelectionOverlays() {
+
+      this._selectionOverlays.forEach(ov => ov.visible = false);
+      this._selectionBox.visible = false;
       this.requestRender();
 
-      return selected;    
+    }
+
+    /**
+     * Resets selection overlays display state to normal. Call to restore state after calling
+     * `hideSelectionOverlays`.
+     */
+    public restoreSelectionOverlays() {
+      this._updateSelectedOverlays();
+      this.requestRender();
     }
 
     /**
@@ -745,6 +774,7 @@ namespace PRKR.Editor {
       this._sanitizeSelection();
 
       this._ribbon.update();
+      this._updateSelectedOverlays();
       this._updateObjectsPanel();
 
       this.requestRender();
@@ -772,6 +802,7 @@ namespace PRKR.Editor {
       this._sanitizeSelection();
 
       this._ribbon.update();
+      this._updateSelectedOverlays();
       this._updateObjectsPanel();
 
       this.requestRender();
@@ -808,6 +839,7 @@ namespace PRKR.Editor {
       this._doorwayPlacer = null;
 
       this._ribbon.update();
+      this._updateSelectedOverlays();
       this._updateObjectsPanel();
 
       this.requestRender();
@@ -823,20 +855,73 @@ namespace PRKR.Editor {
           let parcourObject = this._model.getObjectById(dirtyId);
           let editorObject = this.getObjectById(dirtyId);
           if (editorObject && parcourObject) {
+            let index = this._objects.indexOf(editorObject);
+
+            this._scene.remove(this._selectionOverlays[index]);
+
             editorObject.update();
+
+            let ov = this._buildSelectionOverlay(editorObject);
+            ov.visible = this.isSelected(editorObject);
+            this._selectionOverlays[index] = ov;
+
+            this._scene.add(ov);
+
           } else if (editorObject) {
             let index = this._objects.indexOf(editorObject);
 
-            this._objects.splice(index, 1);
             this._scene.remove(editorObject.sceneObject);
+            this._scene.remove(this._selectionOverlays[index]);
+
+            this._objects.splice(index, 1);
+            this._selectionOverlays.splice(index, 1);
             // TODO editorObject.destroy() ?
           } else if (parcourObject) {
             editorObject = this._buildEditorObject(parcourObject);
 
-            this._objects.push(editorObject)
+            let ov = this._buildSelectionOverlay(editorObject);
+            ov.visible = this.isSelected(editorObject);
+
             this._scene.add(editorObject.sceneObject);
+            this._scene.add(ov);
+
+            this._objects.push(editorObject)
+            this._selectionOverlays.push(ov);
+
           }
         });
+      }
+    }
+
+    private _updateSelectedOverlays() {
+
+      let sel = this._selectedObjects;
+
+      let hasBox = false;
+      let min = new THREE.Vector3(Infinity, Infinity, Infinity);
+      let max = new THREE.Vector3(-Infinity, -Infinity, -Infinity);
+
+      this._selectionOverlays.forEach((ov, index) => {
+        let eo = this._objects[index];
+        let selected = sel.indexOf(eo) !== -1;
+        ov.visible = selected;
+        if (selected) {
+          let eobox = eo.boundingBox.clone().translate(eo.getWorldPosition());
+          hasBox = true;
+          eobox = eobox.expandByScalar(EditorConstants.OverlayInflation);
+          min.min(eobox.min);
+          max.max(eobox.max);
+        }
+      });
+
+      if (hasBox) {
+
+        this._selectionBox.position.copy(min);
+        this._selectionBox.scale.subVectors(max, min).max(M.Vector3.OneThousanth);
+        this._selectionBox.visible = true;
+
+      } else {
+        this._selectionBox.visible = false;
       }
     }
 
@@ -1092,7 +1177,12 @@ namespace PRKR.Editor {
             'Invoking "' + command.displayName + '" command because the current key event matches its keyboard shortcut.',
             command.keyboardShortcut.toString()
           );
+
+          this._activeTool && this._activeTool.deactivate();
+          
           command.run();
+
+          this._activeTool && this._activeTool.activate();
           e.preventDefault();
           return true;
         }
@@ -1106,10 +1196,13 @@ namespace PRKR.Editor {
             'Selecting "' + tool.displayName + '" tool because the current key event matches its keyboard shortcut.',
             tool.keyboardShortcut.toString()
           );
-          this._setActiveTool(tool);
-          this._ribbon.showTool(tool);
-          e.preventDefault();
-          return true;
+
+          if (this._activeTool !== tool) {
+            this._setActiveTool(tool);
+            this._ribbon.showTool(tool);
+            e.preventDefault();
+            return true;
+          }
         }
       }
 
@@ -1214,6 +1307,18 @@ namespace PRKR.Editor {
       this._renderer.setSize(w, h);
       this._render();
     }
+
+    /** Calls `eo.buildOverlay` and adds some parameterization to use the overlay as a `Selection Overlay`. */
+    private _buildSelectionOverlay(eo: EditorObject) {
+      let ov = eo.buildOverlay(EditorConstants.SelectionOverlayFaceMaterial);
+      eo.getWorldPosition(ov.position);
+      eo.getRotation(ov.quaternion);
+      
+      ov.visible = false;
+      ov.renderOrder = 100;
+      return ov;
+    }
+
 
     private _initDomLayout() {
       let top = document.createElement('div');
@@ -1456,15 +1561,29 @@ namespace PRKR.Editor {
     private _initObjects() {
 
       let objects: Objects.EditorObject[] = [];
+      let overlays: THREE.Object3D[] = [];
       if (this._model) {
         this._model.objects.forEach(po => {
           let eo = this._buildEditorObject(po);
-          objects.push(eo);
+          let ov = this._buildSelectionOverlay(eo);
           this._scene.add(eo.sceneObject);
+          this._scene.add(ov);
+
+          objects.push(eo);
+          overlays.push(ov);
         });
       }
       // Save references.
       this._objects = objects;
+      this._selectionOverlays = overlays;
+
+      this._selectionBox = new Helpers.BoundingBoxHelper(M.Box3.Unit, {
+        useFaces: false,
+        useLines: true,
+        lineMaterial: EditorConstants.SelectionBoxLineMaterial
+      });
+      this._selectionBox.visible = false;
+      this._scene.add(this._selectionBox);
     }
 
     /**

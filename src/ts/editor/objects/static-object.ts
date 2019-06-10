@@ -39,6 +39,19 @@ namespace PRKR.Editor.Objects {
 
     }
 
+    /**
+     * Builds an overlay for the object.
+     * Override. Don't call super. Default to a representation of the object's bounding box.
+     * @param m Optional material to use for the faces of the overlay.
+     */
+    public buildOverlay(m?: THREE.Material): THREE.Object3D {
+
+      let g = this.geometry.clone();
+      M.inflate(g, EditorConstants.OverlayInflation);
+      return new THREE.Mesh(g, m);
+
+    }
+
     get geometry(): THREE.Geometry {
       if (!this._geometry) {
         this._geometry = this._buildGeometry();

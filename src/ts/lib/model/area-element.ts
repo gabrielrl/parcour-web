@@ -83,7 +83,7 @@ namespace PRKR.Model {
 
     /**
      * Gets the object's orthogonal bounding box (area relative). Test before using return value as not all
-     * subclasses implements this method and the defulat implementation returns null.
+     * subclasses implements this method and the default implementation returns null.
      */
     // Override.
     public getBoundingBox(): THREE.Box3 {

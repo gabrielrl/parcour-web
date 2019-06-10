@@ -55,6 +55,7 @@ namespace PRKR.Editor.Tools {
         let mouse = this._editor.lastMouseEvent;
         if (mouse) this.notifyMouseMove(mouse);
 
+        this._editor.hideSelectionOverlays();
         this._editor.setStatus('Click on the ground to paste the clipboard content');
         this._editor.setPointer('crosshair');
 
@@ -68,6 +69,7 @@ namespace PRKR.Editor.Tools {
         this._paster.helpers.forEach(h => this._editor.removeFromScene(h));
       }
 
+      this._editor.restoreSelectionOverlays();
       this._editor.requestRender();
       this._editStep = null;
       

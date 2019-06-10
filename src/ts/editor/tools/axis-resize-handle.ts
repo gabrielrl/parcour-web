@@ -106,9 +106,9 @@ namespace PRKR.Editor.Tools {
       this._update();
     }
 
-    public get visible() { return this._handleMesh.visible; }
+    public get visible() { return this._root.visible; }
     public set visible(value) {
-      this._handleMesh.visible = value;
+      this._root.visible = value;
     }
 
     /** A short string used to identify the handle in a set and to match it across helpers. */
