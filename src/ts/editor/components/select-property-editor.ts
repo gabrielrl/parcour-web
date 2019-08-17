@@ -32,7 +32,7 @@ namespace PRKR.Editor.Components {
       this._update();
     }
 
-    private _onOptionClicked(evt: JQueryEventObject, opt: PropertyOption) {
+    private _onOptionClicked(evt: JQuery.ClickEvent, opt: PropertyOption) {
       this.setValue(opt.value, false);
     }
 

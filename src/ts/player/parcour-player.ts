@@ -188,6 +188,8 @@ namespace PRKR.Player {
 
       this._keyboard.on('keydown', e => this._onKeyPress(e));
 
+      
+
       this._startLoop();
       
       return this;
@@ -212,7 +214,7 @@ namespace PRKR.Player {
       this._localConfiguration = cfg;
     }
 
-    private _onKeyPress(e: JQueryKeyEventObject) {
+    private _onKeyPress(e: JQuery.KeyboardEventBase) {
       // console.debug('key pressed', e.which);
       let handled = false;
       if (e.which === 76 /* L */) {

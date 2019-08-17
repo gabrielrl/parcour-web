@@ -27,7 +27,7 @@ namespace PRKR.Editor {
       this._params = params;
     }
 
-    match(e: JQueryKeyEventObject) {
+    match(e: JQuery.KeyboardEventBase) {
       let p = this._params;
       if (e.keyCode !== p.keyCode) return false;
       if (p.ctrl && !e.ctrlKey) return false;

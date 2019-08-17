@@ -103,7 +103,7 @@ namespace PRKR.Editor.Tools {
       this._editor.removeFromScene(this._tileHelper);
     }
 
-    public notifyMouseDown(event: JQueryMouseEventObject): void {
+    public notifyMouseDown(event: JQuery.MouseEventBase): void {
 
       let rawPosition = this._getPosition(event);
       if (rawPosition) {
@@ -115,7 +115,7 @@ namespace PRKR.Editor.Tools {
       }
     }
 
-    public notifyMouseMove(event: JQueryMouseEventObject): void {
+    public notifyMouseMove(event: JQuery.MouseEventBase): void {
 
       let rawPosition = this._getPosition(event);
       if (rawPosition) {
@@ -128,7 +128,7 @@ namespace PRKR.Editor.Tools {
       }
     }
 
-    public notifyMouseUp(event: JQueryMouseEventObject): void {
+    public notifyMouseUp(event: JQuery.MouseEventBase): void {
 
       if (this._placing && this._worldLocationValid) {
 
@@ -225,7 +225,7 @@ namespace PRKR.Editor.Tools {
     /**
      * Gets the current world position from mouse event.
      */
-    private _getPosition(mouseEvent: JQueryMouseEventObject): THREE.Vector3 {
+    private _getPosition(mouseEvent: JQuery.MouseEventBase): THREE.Vector3 {
       let intersect = this._editor.projectMouseOnFloor(
         new Vector2(mouseEvent.clientX, mouseEvent.clientY));
       

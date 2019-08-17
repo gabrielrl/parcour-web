@@ -91,7 +91,7 @@ namespace PRKR.Editor.Tools {
       this._editor.removeFromScene(this._rawHelper);
     }
 
-    notifyMouseMove(event: JQueryMouseEventObject) {
+    notifyMouseMove(event: JQuery.MouseEventBase) {
 
       let areaLocation: AreaLocation = this._editor.projectMouseOnAreas(event);
 
@@ -138,7 +138,7 @@ namespace PRKR.Editor.Tools {
 
     }
 
-    notifyMouseDown(event: JQueryMouseEventObject) {
+    notifyMouseDown(event: JQuery.MouseEventBase) {
 
       if (event.which === 3) { // right button.
       
@@ -164,7 +164,7 @@ namespace PRKR.Editor.Tools {
       this._editor.setStatus(this._buildStatusMessage());
     }
 
-    notifyMouseUp(event: JQueryMouseEventObject) {
+    notifyMouseUp(event: JQuery.MouseEventBase) {
 
       if (event.which === 1) { // left button
 
@@ -191,7 +191,7 @@ namespace PRKR.Editor.Tools {
 
     }
 
-    notifyKeyDown(event: JQueryKeyEventObject) {
+    notifyKeyDown(event: JQuery.KeyboardEventBase) {
 
       if (this._drawing) {
         this._inverted = event.ctrlKey;

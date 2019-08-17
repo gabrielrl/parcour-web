@@ -57,7 +57,7 @@ namespace PRKR.Editor.Tools {
 
     public get editorObject() { return this._editorObject; }
 
-    public test(event: JQueryMouseEventObject): ResizeHelperHit {
+    public test(event: JQuery.MouseEventBase): ResizeHelperHit {
 
       // hit test all the handles.
       let intersections = this._editor.projectMouseOnObjects(
@@ -120,7 +120,7 @@ namespace PRKR.Editor.Tools {
       });
     }
 
-    public resizeStart(mouseEvent: JQueryMouseEventObject, hit: ResizeHelperHit) {
+    public resizeStart(mouseEvent: JQuery.MouseEventBase, hit: ResizeHelperHit) {
 
       if (!mouseEvent) throw new Error('"mouseEvent" parameter can not be null of undefined');
       if (!hit) throw new Error('"hit" parameter can not be null or undefined');
@@ -139,7 +139,7 @@ namespace PRKR.Editor.Tools {
       
     }
 
-    public resizeMove(mouseEvent: JQueryMouseEventObject): ResizeDelta {
+    public resizeMove(mouseEvent: JQuery.MouseEventBase): ResizeDelta {
       if (this._resizeStartHit) {
         let handle = this._resizeStartHit.handle;
         let handleDelta = handle.resizeMove(mouseEvent, this._editor);
@@ -185,7 +185,7 @@ namespace PRKR.Editor.Tools {
     } 
   
 
-    public resizeEnd(mouseEvent: JQueryMouseEventObject): ResizeDelta {
+    public resizeEnd(mouseEvent: JQuery.MouseEventBase): ResizeDelta {
       let adjustedDelta: ResizeDelta = null;
       if (this._resizeStartHit) {
         let handle = this._resizeStartHit.handle;

@@ -53,7 +53,7 @@ namespace PRKR.Editor.Tools {
 
     }
 
-    notifyMouseMove(event: JQueryMouseEventObject): void {
+    notifyMouseMove(event: JQuery.MouseEventBase): void {
 
       let intersect = this._editor.projectMouseOnFloor(new THREE.Vector2(event.clientX, event.clientY));
       if (intersect) {
@@ -84,18 +84,18 @@ namespace PRKR.Editor.Tools {
       this._editor.requestRender();
     }
 
-    notifyMouseDown(event: JQueryMouseEventObject): void { }
+    notifyMouseDown(event: JQuery.MouseEventBase): void { }
 
-    notifyMouseUp(event: JQueryMouseEventObject): void {
+    notifyMouseUp(event: JQuery.MouseEventBase): void {
       if (this._location) {
         this._editor.playFrom(this._location);
       }
       
     }
     
-    notifyClick(event: JQueryMouseEventObject): void { }
+    notifyClick(event: JQuery.MouseEventBase): void { }
 
-    notifyKeyDown(event: JQueryKeyEventObject): void { }
+    notifyKeyDown(event: JQuery.KeyboardEventBase): void { }
 
     /** Builds a character helper to display where the author is pointing. */
     private _buildHelper(): THREE.Object3D {

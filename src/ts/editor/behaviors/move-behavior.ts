@@ -106,7 +106,7 @@ namespace PRKR.Editor.Behaviors {
     /**
      * Notifies the pointer moved. Updates our target.
      */
-    hover(e: JQueryMouseEventObject) {
+    hover(e: JQuery.MouseEventBase) {
       // Update target
       let intersections = this._editor.projectMouseOnObjects(
         new THREE.Vector2(e.clientX, e.clientY),
@@ -148,7 +148,7 @@ namespace PRKR.Editor.Behaviors {
      * Starts moving operation. Sets `_targets` and `_origin`.
      * @param e 
      */
-    down(e: JQueryMouseEventObject) {
+    down(e: JQuery.MouseEventBase) {
       if (this._state !== MovingState.Idle) return;
 
       // Pick the objects we will be moving around.
@@ -220,9 +220,9 @@ namespace PRKR.Editor.Behaviors {
 
     }
 
-    keyDown(e: JQueryKeyEventObject) { }
+    keyDown(e: JQuery.KeyboardEventBase) { }
 
-    move(e: JQueryMouseEventObject) {
+    move(e: JQuery.MouseEventBase) {
       let current = this._getPosition(e);
       if (current) {
         this._destination.copy(current);
@@ -295,7 +295,7 @@ namespace PRKR.Editor.Behaviors {
     }
 
     /** Notifies this behavior that the button has been released, completing the move action. */
-    up(e: JQueryMouseEventObject) {
+    up(e: JQuery.MouseEventBase) {
 
       if (this._state !== MovingState.Idle) {
 
@@ -356,11 +356,11 @@ namespace PRKR.Editor.Behaviors {
       }
     }
 
-    private _getMovables() {
-      return _.filter(this._editor.selectedObjects, o => o.model);
+    private _getMovables(): Objects.EditorObject[] {
+      return this._editor.selectedObjects.filter(o => o.model);
     }
 
-    private _getPosition(e: JQueryMouseEventObject) {
+    private _getPosition(e: JQuery.MouseEventBase) {
 
       let mouse = new THREE.Vector2(e.clientX, e.clientY);
       let vertical = this._verticalityEnabled && e.ctrlKey;

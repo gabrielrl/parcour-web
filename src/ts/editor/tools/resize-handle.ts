@@ -25,13 +25,13 @@ namespace PRKR.Editor.Tools {
      * @returns the current "handle delta". Type depends on implementation.
      */ 
     // TODO comment better
-    resizeMove(mouseEvent: JQueryMouseEventObject, editor: ParcourEditor): any;
+    resizeMove(mouseEvent: JQuery.MouseEventBase, editor: ParcourEditor): any;
 
     /**
      * @returns the current "handle delta". Type depends on implementation.
      */ 
     // TODO comment better
-    resizeEnd(mouseEvent: JQueryMouseEventObject): any;
+    resizeEnd(mouseEvent: JQuery.MouseEventBase): any;
 
     /**
      * @param handleDelta The "handle delta" to apply/convert. Type depends on implementation.

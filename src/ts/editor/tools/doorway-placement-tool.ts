@@ -48,7 +48,7 @@ namespace PRKR.Editor.Tools {
       this._editor.setPointer(null);
     }
 
-    notifyMouseMove(event: JQueryMouseEventObject): void {
+    notifyMouseMove(event: JQuery.MouseEventBase): void {
 
       // See if the mouse position gets us any doorway candidate.
       let intersection = this._editor.projectMouseOnFloor(
@@ -75,12 +75,12 @@ namespace PRKR.Editor.Tools {
       }       
     }
 
-    notifyMouseDown(event: JQueryMouseEventObject): void {
+    notifyMouseDown(event: JQuery.MouseEventBase): void {
       // Enter "placing" mode.
       this._placing = true;
     }
 
-    notifyMouseUp(event: JQueryMouseEventObject): void {
+    notifyMouseUp(event: JQuery.MouseEventBase): void {
       
       if (this._placing && this._activeCandidate) {
         let step = this._buildEditStep();
@@ -95,7 +95,7 @@ namespace PRKR.Editor.Tools {
       }
     }
 
-    notifyClick(event: JQueryMouseEventObject): void {
+    notifyClick(event: JQuery.MouseEventBase): void {
       // throw new Error('Method not implemented.');
     }
 

@@ -57,7 +57,7 @@ namespace PRKR.Editor.Tools {
       this._clippedMaterial.clippingPlanes = [].concat(clippingPlanes);
     }
 
-    test(mouse: JQueryMouseEventObject, editor: ParcourEditor): WidgetHitTestResult {
+    test(mouse: JQuery.MouseEventBase, editor: ParcourEditor): WidgetHitTestResult {
       let intersection = editor.projectMouseOnPlane(
         new THREE.Vector2(mouse.clientX, mouse.clientY),
         this._root.position,

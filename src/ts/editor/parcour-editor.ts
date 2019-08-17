@@ -113,7 +113,7 @@ namespace PRKR.Editor {
     private _activeTool: PRKR.Editor.Tools.Tool = null; // this._tools[0];
 
     /** Last occurred mouse event. */
-    private _lastMouseEvent: JQueryMouseEventObject = null;
+    private _lastMouseEvent: JQuery.MouseEventBase = null;
 
     /** The currently delegated tool. (e.g. overrides through keyboard/mouse "shortcuts") */
     private _mouseDelegation: PRKR.Editor.Tools.Delegation = null;
@@ -621,7 +621,7 @@ namespace PRKR.Editor {
      * @param mouseEvent jQuery mouse event from which the mouse location is taken.
      * @returns An area location or null.
      */
-    public projectMouseOnAreas(mouseEvent: JQueryMouseEventObject): AreaLocation {
+    public projectMouseOnAreas(mouseEvent: JQuery.MouseEventBase): AreaLocation {
       let intersect = this.projectMouseOnFloor(
         new Vector2(mouseEvent.clientX, mouseEvent.clientY));
 
@@ -1155,7 +1155,7 @@ namespace PRKR.Editor {
       this._updateToolPanel();
     }
 
-    private _onKeyDown(e: JQueryKeyEventObject) {
+    private _onKeyDown(e: JQuery.KeyDownEvent) {
 
       if (!this._handleKeyboardShortcuts(e)) {
 
@@ -1168,7 +1168,7 @@ namespace PRKR.Editor {
      * run (or the tool actiavted), the event's default is prevented and true is returned. Else it return false.
      * @param e Keyboard event
      */
-    private _handleKeyboardShortcuts(e: JQueryKeyEventObject): boolean {
+    private _handleKeyboardShortcuts(e: JQuery.KeyDownEvent): boolean {
       // For all known commands
       for(let i = 0; i < this._commands.length; i++) {
         let command = this._commands[i];
@@ -1217,13 +1217,13 @@ namespace PRKR.Editor {
       return false;
     }
 
-    private _checkDelegationQuit(e: JQueryMouseEventObject) {
+    private _checkDelegationQuit(e: JQuery.MouseEventBase) {
       if (this._mouseDelegation && this._mouseDelegation.quitCondition(e)) {
           this._mouseDelegation = null;
       }
     }
 
-    private _onMouseMove(e: JQueryMouseEventObject) {
+    private _onMouseMove(e: JQuery.MouseMoveEvent) {
       // console.log('mousemove', e);
       this._lastMouseEvent = e;
 
@@ -1235,7 +1235,7 @@ namespace PRKR.Editor {
       }
     }
 
-    private _onMouseDown(e: JQueryMouseEventObject) {
+    private _onMouseDown(e: JQuery.MouseDownEvent) {
       //console.log('mousedown', e);
       // console.debug('which=', e.which);
       this._lastMouseEvent = e;
@@ -1262,7 +1262,7 @@ namespace PRKR.Editor {
       }
     }
 
-    private _onMouseUp(e: JQueryMouseEventObject) {
+    private _onMouseUp(e: JQuery.MouseUpEvent) {
       // console.log('mouseup', e);
       this._lastMouseEvent = e;
 
@@ -1274,7 +1274,7 @@ namespace PRKR.Editor {
       }
     }
 
-    private _onClick(e: JQueryMouseEventObject) {
+    private _onClick(e: JQuery.ClickEvent) {
       // console.log('click', e);
       this._lastMouseEvent = e;
 

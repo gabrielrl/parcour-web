@@ -1,7 +1,7 @@
 namespace PRKR.Editor.Tools {
 
   export interface QuitCondition {
-     (e: JQueryMouseEventObject): boolean;
+     (e: JQuery.MouseEventBase): boolean;
   };
 
   export class Delegation {

@@ -36,11 +36,11 @@ namespace PRKR.Player {
       this.visible = !this._visible;
     }
 
-    private _onCloseClicked(evt: JQueryMouseEventObject) {
+    private _onCloseClicked(evt: JQuery.ClickEvent) {
       this.hide();
     }
 
-    private _onInputChange(evt: JQueryEventObject) {
+    private _onInputChange(evt: JQuery.ChangeEvent) {
 
       let $target = $(evt.target);
       let config = LocalConfiguration.get();

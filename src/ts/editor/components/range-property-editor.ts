@@ -22,15 +22,15 @@ namespace PRKR.Editor.Components {
     }
 
     /** Called every time the value changes (while it's being dragged). */
-    private _onInput(evt: JQueryEventObject) {
+    private _onInput(evt: JQuery.TriggeredEvent) {
       // console.log('on input', evt);
     }
 
     /** Called once the user releases the thumb. */
-    private _onChange(evt: JQueryEventObject) {
+    private _onChange(evt: JQuery.ChangeEvent) {
       // console.log('on value', evt);
 
-      let newValue = this._$input.val() / RangePropertyEditor.STEP;
+      let newValue = <number>this._$input.val() / RangePropertyEditor.STEP;
 
       console.log(`Set '${ this.prop.name }' value to ${ newValue }`);
 

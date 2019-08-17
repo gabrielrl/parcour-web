@@ -169,7 +169,7 @@ namespace PRKR.Editor.Tools {
     }
 
 
-    public notifyMouseDown(event: JQueryMouseEventObject): void {
+    public notifyMouseDown(event: JQuery.MouseEventBase): void {
 
       if (event.which === 3) { // right button.
 
@@ -223,7 +223,7 @@ namespace PRKR.Editor.Tools {
       this._editor.setStatus(this._buildStatusMessage());      
     }
 
-    public notifyMouseMove(event: JQueryMouseEventObject): void {
+    public notifyMouseMove(event: JQuery.MouseEventBase): void {
 
       let position: AreaLocation = null;
 
@@ -265,7 +265,7 @@ namespace PRKR.Editor.Tools {
       this._editor.setStatus(this._buildStatusMessage());      
     }
 
-    public notifyMouseUp(event: JQueryMouseEventObject): void {
+    public notifyMouseUp(event: JQuery.MouseEventBase): void {
 
       if (event.which === 1) { // left button
 
@@ -533,7 +533,7 @@ namespace PRKR.Editor.Tools {
       });
     }
 
-    private _getVerticalLocation(mouseEvent: JQueryMouseEventObject): AreaLocation {
+    private _getVerticalLocation(mouseEvent: JQuery.MouseEventBase): AreaLocation {
 
       let n = this._editor.getCameraRig().getWorldDirection();
       n.setY(0).normalize().negate();

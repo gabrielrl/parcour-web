@@ -62,7 +62,7 @@ namespace PRKR.Editor.Tools {
       this._editor.setStatus(`Click and drag to move ${ this._buildObjectsString() }`);
     }
 
-    public notifyMouseDown(event: JQueryMouseEventObject): void {
+    public notifyMouseDown(event: JQuery.MouseEventBase): void {
 
       if (this._moving) return;
 
@@ -112,7 +112,7 @@ namespace PRKR.Editor.Tools {
       }
     }
 
-    public notifyMouseMove(event: JQueryMouseEventObject): void {
+    public notifyMouseMove(event: JQuery.MouseEventBase): void {
       if (this._moving) {
         let current = this._getPosition(event);
         if (!current) {
@@ -166,7 +166,7 @@ namespace PRKR.Editor.Tools {
       }
     }
 
-    public notifyMouseUp(event: JQueryMouseEventObject): void {
+    public notifyMouseUp(event: JQuery.MouseEventBase): void {
 
       if (this._moving) {
 
@@ -195,12 +195,12 @@ namespace PRKR.Editor.Tools {
       }
     }
     
-    public notifyClick(event: JQueryMouseEventObject): void { }
+    public notifyClick(event: JQuery.MouseEventBase): void { }
 
     /**
      * Computes the current scene position from the mouse position.
      */
-    private _getPosition(event: JQueryMouseEventObject) {
+    private _getPosition(event: JQuery.MouseEventBase) {
       let intersect = this._editor.projectMouseOnFloor(
           new THREE.Vector2(event.clientX, event.clientY));
       

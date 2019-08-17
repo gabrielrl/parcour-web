@@ -75,7 +75,7 @@ namespace PRKR.Editor.Tools {
       
     }
 
-    notifyMouseMove(event: JQueryMouseEventObject): void {
+    notifyMouseMove(event: JQuery.MouseEventBase): void {
 
       if (!this._paster) return;
 
@@ -104,7 +104,7 @@ namespace PRKR.Editor.Tools {
 
     }
 
-    notifyMouseUp(event: JQueryMouseEventObject) {
+    notifyMouseUp(event: JQuery.MouseEventBase) {
 
       if (!this._editStep) {
 

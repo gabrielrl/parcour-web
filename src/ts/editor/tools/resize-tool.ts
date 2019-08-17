@@ -75,7 +75,7 @@ namespace PRKR.Editor.Tools {
     /**
      * Handles mouse down.
      */
-    public notifyMouseDown(event: JQueryMouseEventObject): void {
+    public notifyMouseDown(event: JQuery.MouseEventBase): void {
 
       if (this._activeHit) {
 
@@ -93,7 +93,7 @@ namespace PRKR.Editor.Tools {
     /**
      * Handles mouse move.
      */
-    public notifyMouseMove(event: JQueryMouseEventObject): void {
+    public notifyMouseMove(event: JQuery.MouseEventBase): void {
 
       if (!this._resizing) {
 
@@ -173,7 +173,7 @@ namespace PRKR.Editor.Tools {
     /**
      * Handles mouse up.
      */
-    public notifyMouseUp(mouseEvent: JQueryMouseEventObject) {
+    public notifyMouseUp(mouseEvent: JQuery.MouseEventBase) {
 
       if (this._resizing && this._resizeValid) {
 

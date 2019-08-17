@@ -94,7 +94,7 @@ namespace PRKR.Editor.Tools {
 
     }
 
-    notifyMouseMove(event: JQueryMouseEventObject): void {
+    notifyMouseMove(event: JQuery.MouseEventBase): void {
 
       if (!this._rotating) {
 
@@ -218,7 +218,7 @@ namespace PRKR.Editor.Tools {
 
     }
 
-    notifyMouseDown(event: JQueryMouseEventObject): void {
+    notifyMouseDown(event: JQuery.MouseEventBase): void {
 
       let intersection = this._getNearestWidgetIntersection(event);
       if (intersection) {
@@ -242,7 +242,7 @@ namespace PRKR.Editor.Tools {
 
     }
 
-    notifyMouseUp(event: JQueryMouseEventObject): void {
+    notifyMouseUp(event: JQuery.MouseEventBase): void {
 
       let step = this._buildEditStep();
       let finalStatus: string = null;
@@ -273,7 +273,7 @@ namespace PRKR.Editor.Tools {
 
     }
     
-    notifyKeyDown(event: JQueryKeyEventObject): void {
+    notifyKeyDown(event: JQuery.KeyboardEventBase): void {
 
     }
 
@@ -370,7 +370,7 @@ namespace PRKR.Editor.Tools {
       });
     }
 
-    private _getNearestWidgetIntersection(mouse: JQueryMouseEventObject): WidgetHitTestResult {
+    private _getNearestWidgetIntersection(mouse: JQuery.MouseEventBase): WidgetHitTestResult {
       let w = this._widgets.filter((w, i) => this._axes[i]);
       let intersections = w.map(w => w.test(mouse, this._editor));
       return _.minBy(intersections, i => i ? i.distance : Infinity);

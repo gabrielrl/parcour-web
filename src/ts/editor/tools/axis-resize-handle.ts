@@ -136,7 +136,7 @@ namespace PRKR.Editor.Tools {
       this._update();
     }
 
-    resizeMove(mouseEvent: JQueryMouseEventObject, editor: ParcourEditor): number {
+    resizeMove(mouseEvent: JQuery.MouseEventBase, editor: ParcourEditor): number {
       if (!mouseEvent) throw new Error('"mouseEvent" can not be null or undefined');
       if (!this._resizing) return;
 
@@ -175,7 +175,7 @@ namespace PRKR.Editor.Tools {
         return this._delta;
       }
 
-    resizeEnd(mouseEvent: JQueryMouseEventObject): number {
+    resizeEnd(mouseEvent: JQuery.MouseEventBase): number {
       if (!mouseEvent) throw new Error('"mouseEvent" can not be null or undefined');
 
       this._resizing = false;

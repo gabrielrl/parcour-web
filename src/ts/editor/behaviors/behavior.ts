@@ -7,7 +7,7 @@ namespace PRKR.Editor.Behaviors {
     enabled: boolean;
 
     /** Notifies this behavior that the pointer is hovering. */
-    hover(event: JQueryMouseEventObject);
+    hover(event: JQuery.MouseEventBase);
 
     /**
      * Gets if the behavior could be activated next. Value might take into account the current
@@ -28,19 +28,19 @@ namespace PRKR.Editor.Behaviors {
      * - there might bo 0 to n call to `keyDown`,
      * - there will be exactly one call to either `up` or `cancel`.
      */
-    down(event: JQueryMouseEventObject);
+    down(event: JQuery.MouseEventBase);
 
     /**
      * Notifies this behavior that a key has been pressed. 
      * @param event jQuery keyboard event.
      */
-    keyDown(event: JQueryKeyEventObject);
+    keyDown(event: JQuery.KeyboardEventBase);
 
     /** Notifies this behavior that the pointer has moved. `down` will have been called before. */
-    move(event: JQueryMouseEventObject);
+    move(event: JQuery.MouseEventBase);
 
     /** Notifies this behavior that a button has been released, completing the action. */
-    up(event: JQueryMouseEventObject);
+    up(event: JQuery.MouseEventBase);
 
     /** Notifies this behavior that a previous `down` has been canceled. */
     cancel(event: JQueryInputEventObject);

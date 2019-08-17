@@ -31,14 +31,14 @@ namespace PRKR.Player {
       return keyCode in this._state ? !this._state[keyCode] : true;
     }
 
-    private _onKeyDown(e: JQueryKeyEventObject) {
+    private _onKeyDown(e: JQuery.KeyDownEvent) {
       if (this.isKeyUp(e.which)) {
         this._state[e.which] = true;
         this.emit('keydown', e);
       }
     }
 
-    private _onKeyUp(e: JQueryKeyEventObject) {
+    private _onKeyUp(e: JQuery.KeyUpEvent) {
       if (this.isKeyDown(e.which)) {
         this._state[e.which] = false;
         this.emit('keyup', e);

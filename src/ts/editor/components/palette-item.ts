@@ -44,7 +44,7 @@ namespace PRKR.Editor.Components {
 
     public get name() { return this._info.name; }
 
-    private _onClick(e: JQueryMouseEventObject) {
+    private _onClick(e: JQuery.ClickEvent) {
       this._palette.notifyItemClick(this);
     }
 

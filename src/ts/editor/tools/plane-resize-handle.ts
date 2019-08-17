@@ -181,7 +181,7 @@ namespace PRKR.Editor.Tools {
     /**
      * Returns the current resize delta.
      */
-    public resizeMove(mouseEvent: JQueryMouseEventObject, editor: ParcourEditor) {
+    public resizeMove(mouseEvent: JQuery.MouseEventBase, editor: ParcourEditor) {
       if (!mouseEvent) throw new Error('"mouseEvent" can not be null or undefined');
       if (!this._resizing) return;
 
@@ -225,7 +225,7 @@ namespace PRKR.Editor.Tools {
     /**
      * Returns the current resize delta.
      */
-    public resizeEnd(mouseEvent: JQueryMouseEventObject): Vector3 {
+    public resizeEnd(mouseEvent: JQuery.MouseEventBase): Vector3 {
       if (!mouseEvent) throw new Error('"mouseEvent" can not be null or undefined');
 
       this._resizing = false;

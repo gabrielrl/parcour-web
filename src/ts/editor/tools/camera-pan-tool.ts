@@ -34,7 +34,7 @@ namespace PRKR.Editor.Tools {
       this._editor.setStatus('Click and drag to pan camera');
     }
 
-    public notifyMouseDown(event: JQueryMouseEventObject): void {
+    public notifyMouseDown(event: JQuery.MouseEventBase): void {
 
       this._panning = true;
       this._origin.set(event.offsetX, event.offsetY);
@@ -43,7 +43,7 @@ namespace PRKR.Editor.Tools {
       this._editor.setPointer('-webkit-grabbing');
     }
 
-    public notifyMouseMove(event: JQueryMouseEventObject): void {
+    public notifyMouseMove(event: JQuery.MouseEventBase): void {
 
       if (this._panning) {
 
@@ -77,7 +77,7 @@ namespace PRKR.Editor.Tools {
 
     }
 
-    public notifyMouseUp(event: JQueryMouseEventObject): void {
+    public notifyMouseUp(event: JQuery.MouseEventBase): void {
 
       this._panning = false;
       this._editor.setPointer('-webkit-grab');

@@ -33,7 +33,7 @@ namespace PRKR.Editor.Tools {
       this._editor.setStatus('Click and drag to rotate camera');
     }
 
-    public notifyMouseDown(event: JQueryMouseEventObject): void {
+    public notifyMouseDown(event: JQuery.MouseEventBase): void {
 
       this._rotating = true;
       let rig: CameraRig = this._editor.getCameraRig();
@@ -49,7 +49,7 @@ namespace PRKR.Editor.Tools {
       this._editor.setPointer('-webkit-grabbing');
     }
 
-    public notifyMouseMove(event: JQueryMouseEventObject): void {
+    public notifyMouseMove(event: JQuery.MouseEventBase): void {
       if (this._rotating) {
         let delta = new Vector2(
           (event.offsetX - this._origin.x),
@@ -72,7 +72,7 @@ namespace PRKR.Editor.Tools {
       }
     }
 
-    public notifyMouseUp(event: JQueryMouseEventObject): void {
+    public notifyMouseUp(event: JQuery.MouseEventBase): void {
 
       this._rotating = false;
       this._editor.setPointer('-webkit-grab');

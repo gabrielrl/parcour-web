@@ -175,28 +175,28 @@ class RoomEditorPage {
     // let select = new PRKR.Editor.Tools.SelectTool();
   }
 
-  private _onMouseMove(e: JQueryMouseEventObject) {
+  private _onMouseMove(e: JQuery.MouseEventBase) {
     // console.log('mousemove', e);
     if (this._activeTool) {
       this._activeTool.notifyMouseMove(e);
     }
   }
 
-  private _onMouseDown(e: JQueryMouseEventObject) {
+  private _onMouseDown(e: JQuery.MouseEventBase) {
     // console.log('mousedown', e);
     if (this._activeTool) {
       this._activeTool.notifyMouseDown(e);
     }
   }
 
-  private _onMouseUp(e: JQueryMouseEventObject) {
+  private _onMouseUp(e: JQuery.MouseEventBase) {
     // console.log('mouseup', e);
     if (this._activeTool) {
       this._activeTool.notifyMouseUp(e);
     }
   }
 
-  private _onClick(e: JQueryMouseEventObject) {
+  private _onClick(e: JQuery.MouseEventBase) {
     // console.log('click', e);
     if (this._activeTool) {
       this._activeTool.notifyClick(e);

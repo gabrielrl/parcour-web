@@ -1,6 +1,5 @@
 /// <reference path="../editor-api.ts" />
 
-
 namespace PRKR.Editor.Tools {
 
   export abstract class Tool {
@@ -28,15 +27,15 @@ namespace PRKR.Editor.Tools {
     /** Informs the Tool that it's being deactivated. */
     deactivate() { }
 
-    notifyMouseMove(event: JQueryMouseEventObject): void { }
+    notifyMouseMove(event: JQuery.MouseEventBase): void { }
 
-    notifyMouseDown(event: JQueryMouseEventObject): void { }
+    notifyMouseDown(event: JQuery.MouseEventBase): void { }
 
-    notifyMouseUp(event: JQueryMouseEventObject): void { }
+    notifyMouseUp(event: JQuery.MouseEventBase): void { }
     
-    notifyClick(event: JQueryMouseEventObject): void { }
+    notifyClick(event: JQuery.MouseEventBase): void { }
 
-    notifyKeyDown(event: JQueryKeyEventObject): void { }
+    notifyKeyDown(event: JQuery.KeyDownEvent): void { }
 
   }
 }

@@ -64,7 +64,7 @@ namespace PRKR.Editor.Tools {
       this._updateEditor();
     }
 
-    public notifyMouseDown(e: JQueryMouseEventObject) {
+    public notifyMouseDown(e: JQuery.MouseEventBase) {
 
       // Give priority to the move behavior
       if (
@@ -87,7 +87,7 @@ namespace PRKR.Editor.Tools {
       this._updateEditor();
     }
     
-    public notifyMouseMove(e: JQueryMouseEventObject) {
+    public notifyMouseMove(e: JQuery.MouseEventBase) {
 
       if (this._moving) {
         this._moveBehavior.move(e);
@@ -99,7 +99,7 @@ namespace PRKR.Editor.Tools {
       this._updateEditor();
     }
 
-    public notifyMouseUp(e: JQueryMouseEventObject) {
+    public notifyMouseUp(e: JQuery.MouseEventBase) {
 
       if (this._selecting) {
 
@@ -137,9 +137,9 @@ namespace PRKR.Editor.Tools {
 
     }
 
-    public notifyClick(e: JQueryMouseEventObject) { }
+    public notifyClick(e: JQuery.MouseEventBase) { }
 
-    public notifyKeyDown(e: JQueryKeyEventObject) {
+    public notifyKeyDown(e: JQuery.KeyboardEventBase) {
       if (this._moving) {
         this._moveBehavior.keyDown(e);
       }
@@ -150,7 +150,7 @@ namespace PRKR.Editor.Tools {
      *  using the specified mouse event, `e`.
      * @returns `this._target`.
      */
-    private _updateTarget(e: JQueryMouseEventObject): EditorObject {
+    private _updateTarget(e: JQuery.MouseEventBase): EditorObject {
       let selectables = this._editor.getSelectableObjectsAt(e.clientX, e.clientY);
       if (selectables && selectables.length > 0) {
         this._target = selectables[0];
